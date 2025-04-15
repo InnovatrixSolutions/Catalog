@@ -1,0 +1,5 @@
+.NewContain select{
+    width: 100%;
+    border: none;
+    color: var(--text-color2);
+}

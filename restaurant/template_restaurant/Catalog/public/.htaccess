@@ -1,0 +1,19 @@
+RewriteEngine On
+RewriteBase /
+
+# Bloquear acceso al archivo .env
+
+<FilesMatch "^\.env$">
+Order allow,deny
+Deny from all
+</FilesMatch>
+
+# O puedes usar esta otra forma de bloquear acceso al .env
+
+# RewriteRule ^\.env$ - [F,L]
+
+# Manejar rutas generales de tu aplicación
+
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^ /index.html [L]

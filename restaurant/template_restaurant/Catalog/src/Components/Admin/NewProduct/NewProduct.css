@@ -1,0 +1,136 @@
+.items{
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+}
+.items fieldset{
+    width: 15%;
+}
+
+#flexLabel{
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+
+}
+#flexLabel span{
+    width: 100%;
+}
+#crearForm #flexLabel input{
+    padding: 0;
+    width:auto;
+}
+
+ #textLabel{
+    border-bottom: 1px solid  #949191;
+    width: 100%;
+    padding: 10px;
+    margin: 2px;
+    color: var(--text-color2);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+   
+}
+#textLabel label{
+    width: 100%;
+}
+
+.image-container{
+    display: flex;
+    overflow-x: scroll;
+    width: 100%;
+    gap: 1rem;
+    margin-top: 1rem;
+ 
+}
+.image-container::-webkit-scrollbar{
+    width: 5px;
+    height: 5px;
+    cursor: pointer;
+    background-color: transparent;
+   
+}
+.image-container::-webkit-scrollbar-thumb {
+    background-color: var(--color1); 
+    border-radius: 10px;
+    margin-top: 3rem;
+  }
+.image-input {
+    margin:  0 0 10px 0;
+    position: relative;
+}
+
+.image-label {
+    cursor: pointer;
+}
+
+.image-icon {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+    background-color: var(--gris);
+    cursor: pointer;
+}
+
+.preview-image {
+    width: 150px;
+    height: 150px;
+    object-fit: cover;
+    border-radius: 10px;
+}
+
+.eliminar-imagen {
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: red;
+    padding: 7px;
+    color: var(--blanco);
+    border: none;
+    cursor: pointer;
+    border-radius: 2px;
+}
+#titulo{
+    width: 100%;
+}
+#option{
+    margin-top: -2rem!important;
+}
+
+@media (max-width: 824px){
+    .items fieldset{
+        width: 45%!important;
+    }
+    .items{
+        display: flex;
+        gap: 10px;
+        justify-content: space-between;
+       
+      
+    }
+    .preview-image{
+        width: 115px;
+        height: 115px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    .image-icon {
+        width: 115px;
+        height: 115px;
+        object-fit: cover;
+        border-radius: 10px;
+    }
+    .image-container{
+        gap: 1rem;
+     
+    }
+    .image-input {
+        margin: 2px;
+    }
+}

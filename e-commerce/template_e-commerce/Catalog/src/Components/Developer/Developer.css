@@ -1,0 +1,31 @@
+.Developer{
+    background:var(--color1);
+    padding: 30px;
+    display: flex;
+    justify-content: center;
+    margin: 0;
+}
+.Developer {
+    color: var(--blanco);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.Developer a{
+    color: var(--blanco);
+}
+
+
+
+
+@media (max-width: 900px){
+   
+    .Developer{
+        padding: 20px  3%;
+        text-align: center;
+    
+    }
+   
+}

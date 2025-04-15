@@ -1,0 +1,48 @@
+.QrGenerator{
+    position: relative;
+}
+.canvas {
+    position: absolute; 
+    top: 100%;
+    margin-top: 5.3rem; 
+    left: 50%; 
+    transform: translate(-50%, -50%);
+    border: 1px solid #ccc; 
+    display: none;
+    z-index: 1;
+    cursor: pointer;
+}
+.qrCodeGen {
+    color: var(--text-color2);
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+    padding: 4px 8px;
+    font-size: .9em;
+    font-family: 'Poppins';
+}
+.close-button{
+    color: var(--color1)!important;
+    font-weight: 500;
+    margin-left: 10px;
+    width: auto!important;
+}
+.canvas.show {
+   display: block;
+   border-radius: 10px;
+   -webkit-border-radius: 10px;
+   -moz-border-radius: 10px;
+   -ms-border-radius: 10px;
+   -o-border-radius: 10px;
+}
+
+.canvas.hide {
+    display: none; 
+}
+
+@media (max-width: 1024px){
+    .QrGenerator button{
+     
+        font-size: 16px;
+    }
+}

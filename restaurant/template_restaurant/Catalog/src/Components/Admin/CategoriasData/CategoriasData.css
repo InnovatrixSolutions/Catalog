@@ -1,0 +1,77 @@
+#deFLexTd{
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--gris2);
+    width: 6rem;
+    padding: 0 6px;
+    border-radius: 4px;
+    color: var(--text-color2);
+}
+
+#deFLexTd button{
+    background-color: transparent;
+    border: none;
+    color: var(--text-color2);
+    font-size: 17px;
+}
+.ulTd ul{
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    margin-top: 10px;
+    color: var(--text-color2);
+    font-size: 14px;
+}
+
+.subCategori{
+    margin-bottom: 1rem;
+    margin-left: 2rem;
+}
+.CategoriConten{
+    border-radius: 6px;
+    background-color: var(--gris);
+    margin-top: 10px;
+    display: flex;
+    justify-content: space-between;
+    padding: 10px;
+    border: 1px solid var(--gris2);
+    margin-right: 1rem;
+
+}
+.CategoriConten:hover{
+    background-color: var(--gris2);
+}
+.deFlexContentBtns {
+    display: flex;
+    gap: 1rem;
+}
+#tbody{
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    flex-direction: column;
+
+}
+
+#tr{
+    margin-top: 2rem!important;
+   
+}
+
+.btnCategori{
+    background-color: var(--color1);
+    color: var(--blanco);
+    border: none;
+    padding: 3px;
+    font-size: 0.8em;
+    border-radius: 3px;
+    margin-right: 20px;
+   
+}
+
+.tdFlex{
+    display: flex;
+    align-items: center;
+}

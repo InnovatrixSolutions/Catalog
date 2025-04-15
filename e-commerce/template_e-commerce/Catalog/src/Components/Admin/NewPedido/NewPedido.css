@@ -1,0 +1,42 @@
+.productsGrap{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.productsGrap .deFlexCart{
+    margin: 0;
+}
+.productsGrap .deFlexCart button{
+    border-radius: 5px;
+    padding: 3px 7px;
+}
+
+.productsGrap .cardProductDataText h3{
+    font-size: 16px;
+}
+
+#deFlexInputs{
+    display: flex;
+    width: 100%;
+    gap: 1rem;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+}
+#deFlexInputs .search{
+    width: 50%;
+}
+.btnSelect{
+    background-color: transparent;
+    padding: 3px 10px;
+    width: 100%;
+    text-align: left;
+    border: none;
+    color: var(--text-color2);
+}
+
+.NewPedido select{
+    width: 100%;
+    border: none;
+    color: var(--text-color2);
+}

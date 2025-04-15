@@ -1,0 +1,54 @@
+.botones-grafico{
+    display: flex;
+    gap: 10px;
+    width: auto;
+}
+.desactiveBtn{
+    background-color: transparent;
+    border: none;
+    padding: 10px 30px;
+    font-size: 0.9em;
+    border-bottom: 3px solid var(--gris2);
+    color: var(--text-color2);
+}
+.desactiveBtn:hover{
+    border-bottom: 3px solid var(--color1);
+    color: var(--color1);
+}
+.activeBtnGraf{
+    background-color: transparent;
+    color: var(--color1);
+    padding: 10px 35px;
+    font-size: 0.9em;
+    border: none;
+    border-bottom: 3px solid var(--color1);
+}
+
+.grafico-container {
+    width: 100%; 
+    max-width: 90vh;
+}
+.grafico-container-2{
+    width: 100%; 
+    max-width: 60vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    place-self: center;
+}
+
+.GraficoContent h3{
+    color: var(--text-color2);
+    font-size: 1em;
+    font-weight: 500;
+}
+.GraficoContent{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background-color: var(--blanco);
+    box-shadow: 0px 4px 15px rgba(0, 0, 0, 0.114);
+    width: 100%;
+    border-radius: 10px;
+    padding: 20px;
+}
