@@ -13,11 +13,29 @@
 
 ```bash
 CatalogUSA/
-├── template_e-commerce/         # Base template for e-commerce clients
-├── template_restaurant/         # Base template for restaurant clients
-├── customers/
-│   ├── customer-a/              # Custom implementation for Customer A
-│   └── customer-b/              # Custom implementation for Customer B
-├── ci/                          # Continuous Integration and Deployment scripts
+.
 ├── README.md
-└── LICENSE
+├── catalog_test.pem
+├── e-commerce
+│   ├── ci-cd
+│   │   ├── deploy-customer-a.yml
+│   │   ├── deploy-customer-b.yml
+│   │   └── shared-steps.yml
+│   ├── customer-a
+│   │   ├── config
+│   │   └── env
+│   ├── customer-b
+│   │   ├── config
+│   │   └── env
+│   └── template_e-commerce
+│       └── Catalog
+├── restaurant
+│   ├── ci-cd
+│   │   ├── deploy-customer-a.yml
+│   │   ├── deploy-customer-b.yml
+│   │   └── shared-steps.yml
+│   ├── customers
+│   │   ├── customer-1
+│   │   └── customer-2
+│   └── template_restaurant
+│       └── Catalog
