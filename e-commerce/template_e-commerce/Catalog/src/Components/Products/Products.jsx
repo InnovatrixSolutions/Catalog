@@ -123,7 +123,7 @@ export default function Products() {
                             value="Todo"
                             onClick={() => handleClickCategoria('Todo')}
                             style={{
-                                backgroundColor: categoriaSeleccionada === 'Todo' ? '#F80050' : '',
+                                backgroundColor: categoriaSeleccionada === 'Todo' ? '#09c332' : '',
                                 color: categoriaSeleccionada === 'Todo' ? '#fff' : '',
                             }}
                         />
@@ -134,7 +134,7 @@ export default function Products() {
                                     value={categoria}
                                     onClick={() => handleClickCategoria(idCategoria)}
                                     style={{
-                                        backgroundColor: categoriaSeleccionada === idCategoria ? '#F80050' : '',
+                                        backgroundColor: categoriaSeleccionada === idCategoria ? '#09c332' : '',
                                         color: categoriaSeleccionada === idCategoria ? '#fff' : '',
                                     }}
                                 />
@@ -152,8 +152,8 @@ export default function Products() {
                                     value="Todo"
                                     onClick={() => handleClickSubcategoria('Todo')}
                                     style={{
-                                        borderBottom: subcategoriaSeleccionada === 'Todo' ? '2px solid #F80050' : '',
-                                        color: subcategoriaSeleccionada === 'Todo' ? '#F80050' : '',
+                                        borderBottom: subcategoriaSeleccionada === 'Todo' ? '2px solid #09c332' : '',
+                                        color: subcategoriaSeleccionada === 'Todo' ? '#09c332' : '',
                                     }}
                                     id='subcategoriaInput'
                                 />

@@ -46,8 +46,7 @@ export default function BtnWhatsapp() {
 
             const message = `${noteMessage}`;
 
-            //const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-            const whatsappUrl = `https://api.whatsapp.com/send?phone=${'+573166402868'}&text=${encodeURIComponent(message)}`;
+            const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
 
             window.open(whatsappUrl, '_blank');
 

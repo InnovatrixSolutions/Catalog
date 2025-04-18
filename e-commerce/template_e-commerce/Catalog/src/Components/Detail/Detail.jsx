@@ -179,8 +179,7 @@ export default function Detail() {
 
         const message = `Hola 🌟, quisiera más información sobre\n\n✅ *${title}*\n     ${selectedItemsText}\n     ${moneda} ${formattedPrice}`;
 
-        //const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-        const whatsappUrl = `https://api.whatsapp.com/send?phone=${+573166402868}&text=${encodeURIComponent(message)}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
 
         window.open(whatsappUrl, '_blank');
     };

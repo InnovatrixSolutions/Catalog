@@ -2,13 +2,13 @@ import IndexLayout from "../Layouts/IndexLayout";
 import MainLayout from "../Layouts/MainLayout";
 import PagesLayaut from '../Layouts/PagesLayaut'
 import { createBrowserRouter } from "react-router-dom";
-import Productos from './Productos/Productos'
-import Usuarios from './Usuarios/Usuarios'
+import Productos from '../Pages/Productos/Productos'
+import Usuarios from '../Pages/Usuarios/Usuarios'
 import Banners from "./Banners/Banners";
 import Main from "./Main/Main";
 import Categorias from "./Categorias/Categorias";
 import Codigos from "./Codigos/Codigos";
-import PageDetail from './PageDetail/PageDetail';
+import PageDetail from '../Pages/PageDetail/PageDetail';
 import PageProductos from "./PageProductos/PageProductos";
 import Pedidos from "./Pedidos/Pedidos";
 import Tienda from "./Tienda/Tienda";
