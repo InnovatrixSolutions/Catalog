@@ -1,12 +1,20 @@
 import React from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useNavigate } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/react-router/dist';
-import { FontAwesomeIcon } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/@fortawesome/react-fontawesome';
-import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+//import { useNavigate } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/react-router/dist';
+//import { FontAwesomeIcon } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/@fortawesome/react-fontawesome';
+//import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import baseURL from '../../url';
 
-import { Link as Anchor } from "../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/react-router-dom/dist";
+import { Link as Anchor } from "../../../../node_modules/react-router-dom/dist";
+
+
+// En lugar de rutas relativas infinitas
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { useNavigate } from 'react-router-dom';
+
+//../../../../../template_restaurant/e-commerce/Catalog/node_modules/react-router-dom/dist";
 export default function Logout() {
     const navigate = useNavigate();
 

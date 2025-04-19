@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import './NavbarDashboard.css';
 import { Link as Anchor, useLocation, useNavigate } from "../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/react-router-dom/dist";
-import { FontAwesomeIcon } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/@fortawesome/react-fontawesome';
+//import { FontAwesomeIcon } from '../../../../../../../e-commerce/template_e-commerce/Catalog/node_modules/@fortawesome/react-fontawesome';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome, faUser, faBook, faImage, faChevronDown, faChevronUp, faCode, faClipboardList, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { faGauge, faStore, faList, faRectangleList, faBuilding, faTag } from '@fortawesome/free-solid-svg-icons';
 import { faProductHunt } from '@fortawesome/free-brands-svg-icons';
