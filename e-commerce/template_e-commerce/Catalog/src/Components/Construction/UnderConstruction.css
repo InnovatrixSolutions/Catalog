@@ -1,0 +1,22 @@
+.under-construction {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 80vh;
+    text-align: center;
+    color: #555;
+    padding: 2rem;
+    background-color: #f7f7f7;
+}
+
+.under-construction h1 {
+    margin-top: 1rem;
+    font-size: 2rem;
+}
+
+.under-construction p {
+    margin-top: 0.5rem;
+    font-size: 1.2rem;
+    color: #888;
+}

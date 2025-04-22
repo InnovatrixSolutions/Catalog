@@ -13,6 +13,7 @@ import PageProductos from "./PageProductos/PageProductos";
 import Pedidos from "./Pedidos/Pedidos";
 import Tienda from "./Tienda/Tienda";
 import MetodosDePago from "./MetodosDePago/MetodosDePago";
+import PricesList from "../Components/Admin/PricesList/PricesList";
 export const router = createBrowserRouter([
 
     {
@@ -48,9 +49,14 @@ export const router = createBrowserRouter([
                 element: <Productos />,
             },
             {
+                path: `/dashboard/lista-precios`,
+                element: <PricesList />,
+            },
+            {
                 path: `/dashboard/usuarios`,
                 element: <Usuarios />,
             },
+
             {
                 path: `/dashboard/banners`,
                 element: <Banners />,

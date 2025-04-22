@@ -23,7 +23,9 @@ export default function Main() {
         fetchData();
     }, []);
 
-    const usuarioLegued = getUsuario();
+const usuarioLegued = getUsuario();
+    
+    
 
     return (
         <div className='containerGrid'>

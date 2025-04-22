@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faEdit, faArrowUp, faArrowDown, faSync, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faEdit, faArrowUp, faArrowDown, faSync, faEye, faInfo, faFile, faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
@@ -23,6 +23,8 @@ export default function ProductosData() {
     const [nuevoPrecioAnterior, setNuevoPrecioAnterior] = useState(0);
     const [producto, setProducto] = useState({});
     const [modalImagenVisible, setModalImagenVisible] = useState(false);
+    const [modalPriceListVisible, setModalPriceListVisible] = useState(false);
+
     const [imagenSeleccionada, setImagenSeleccionada] = useState('');
     const [filtroId, setFiltroId] = useState('');
     const [filtroTitulo, setFiltroTitulo] = useState('');
@@ -67,6 +69,14 @@ export default function ProductosData() {
     useEffect(() => {
         cargarCategoriasYSubcategorias();
     }, []);
+
+
+    const openModalPriceList = (item) => {
+        setModalPriceListVisible(true);
+        }
+    const closeModalPriceList = () => {
+        setModalPriceListVisible(false);
+         }
     const cargarCategoriasYSubcategorias = async () => {
         try {
             const [categoriasRes, subcategoriasRes] = await Promise.all([
@@ -944,12 +954,14 @@ export default function ProductosData() {
                         <tr>
                             <th>Imagen</th>
                             <th>Titulo</th>
-                            <th>Precio</th>
+                            <th>Precio</th>                   
+                            <th>Lista de precio</th>
                             <th>Categoria</th>
                             <th>Subcategoria</th>
                             <th>Stock</th>
                             <th>Más vendido</th>
                             <th>Acciones</th>
+                            
                         </tr>
                     </thead>
                     <tbody>
@@ -971,6 +983,10 @@ export default function ProductosData() {
                                     color: '#008000',
                                 }}>
                                     {moneda} {`${item?.precio}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                </td>
+
+                                <td>
+                                    Catalogo o Dropshipper
                                 </td>
 
                                 {categorias
@@ -1026,6 +1042,15 @@ export default function ProductosData() {
                                         <>
                                             {usuarioLegued?.rol === 'admin' ? (
                                                 <>
+
+                                                {/*Button for see the prices List*/}
+                                                {/*Class for priceList is ProductosData.css*/}
+                                                    <button className='priceList' onClick={() => openModalPriceList(item)}>
+                                                        <FontAwesomeIcon icon={faMoneyBill} />
+                                                    </button>
+
+                                                {/****************************************/}    
+
                                                     <button className='eliminar' onClick={() => eliminarProducto(item.idProducto)}>
                                                         <FontAwesomeIcon icon={faTrash} />
                                                     </button>
@@ -1054,6 +1079,7 @@ export default function ProductosData() {
                                         </>
                                     ) : (
                                         <>
+
                                             <button className='eliminar' onClick={() => eliminarProducto(item.idProducto)}>
                                                 <FontAwesomeIcon icon={faTrash} />
                                             </button>
@@ -1067,12 +1093,25 @@ export default function ProductosData() {
                                     )}
 
                                 </td>
+
+
                             </tr>
                         ))}
                     </tbody>
 
                 </table>
             </div>
+            {modalPriceListVisible && (
+
+            <div className="modal">
+                <div className="modal-content">
+                    <span className="close" onClick={closeModalPriceList}>&times;</span>
+                    <h2>Lista de precios</h2>
+                    <p>Este es un modal vacío por ahora.</p>
+                </div>
+            </div>
+        )}
+
             {productosFiltrados?.length > visibleCount && (
                 <button onClick={handleShowMore} id="show-more-btn">
                     Mostrar  más </button>

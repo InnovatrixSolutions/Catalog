@@ -34,9 +34,11 @@ export default function Login() {
                     console.log(data.mensaje);
                     toast.success(data.mensaje);
                     setTimeout(() => {
-                        window.location.reload();
+                        //window.location.reload();
+                        //window.location.hrf== '/dashboard';
+                        navigate('/dashboard');
 
-                    }, 2000);
+                    }, 500);
 
                 } else if (data.error) {
                     setErrorMessage(data.error);

@@ -51,7 +51,7 @@ export default function ProductosMain() {
             <table className='table'>
                 <thead>
                     <tr>
-                        <th>Imagen</th>
+                        <th>Imagenx</th>
                         <th>Titulo</th>
                         <th>Precio</th>
                         <th>Categoria</th>

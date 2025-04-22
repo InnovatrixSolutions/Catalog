@@ -225,6 +225,19 @@ button{
 .deFLex h2{
     color: var(--text-color2);
 }
+
+/* styles for button "PriceList" */
+.priceList{
+    background-color: transparent;
+    border: none;
+    font-size: 20px;
+    color: var(--color2);
+    margin-left: 20px;
+    margin-right: 10px;
+}
+/* styles for button "PriceList" */
+
+
 .editar{
     background-color: transparent;
     border: none;

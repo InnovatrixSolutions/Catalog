@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './NavbarDashboard.css';
 import { Link as Anchor, useLocation, useNavigate } from "react-router-dom";
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faHome, faUser, faBook, faImage, faChevronDown, faChevronUp, faCode, faClipboardList, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
+import { faHome, faUser, faBook, faImage, faChevronDown, faChevronUp, faCode, faClipboardList, faShoppingCart, faMoneyBill } from '@fortawesome/free-solid-svg-icons';
 import { faGauge, faStore, faList, faRectangleList, faBuilding, faTag } from '@fortawesome/free-solid-svg-icons';
 import { faProductHunt } from '@fortawesome/free-brands-svg-icons';
 import { fetchUsuario, getUsuario } from '../../user';
@@ -125,6 +125,10 @@ export default function Navbar() {
 
                             <Anchor to={`/dashboard/productos`} className={location.pathname === '/dashboard/productos' ? 'activeLink' : ''}>
                                 <FontAwesomeIcon icon={faProductHunt} /> Productos
+                            </Anchor>
+
+                            <Anchor to={`/dashboard/lista-precios`} className={location.pathname === '/dashboard/lista-precios' ? 'activeLink' : ''}>
+                                <FontAwesomeIcon icon={faMoneyBill} /> Lista de precios
                             </Anchor>
 
                             <Anchor to={`/dashboard/pedidos`} className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}>

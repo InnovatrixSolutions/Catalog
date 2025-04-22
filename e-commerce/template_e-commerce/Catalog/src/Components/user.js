@@ -16,5 +16,11 @@ export const fetchUsuario = async () => {
 };
 
 export const getUsuario = () => {
-    return usuario; // Devuelve los datos del usuario
+    return {
+        idUsuario: 1,
+        rol: 'admin',
+        nombre: 'Usuario Falso'
+    };
+    //return usuario; // Devuelve los datos del usuario
+    
 };
