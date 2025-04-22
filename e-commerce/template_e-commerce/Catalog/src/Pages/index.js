@@ -3,6 +3,9 @@ import MainLayout from "../Layouts/MainLayout";
 import PagesLayaut from '../Layouts/PagesLayaut'
 import { createBrowserRouter } from "react-router-dom";
 import Productos from '../Pages/Productos/Productos'
+
+import PagePriceList from "./ListaPrecios/PagePriceList";
+
 import Usuarios from '../Pages/Usuarios/Usuarios'
 import Banners from "./Banners/Banners";
 import Main from "./Main/Main";
@@ -13,7 +16,7 @@ import PageProductos from "./PageProductos/PageProductos";
 import Pedidos from "./Pedidos/Pedidos";
 import Tienda from "./Tienda/Tienda";
 import MetodosDePago from "./MetodosDePago/MetodosDePago";
-import PricesList from "../Components/Admin/PricesList/PricesList";
+
 export const router = createBrowserRouter([
 
     {
@@ -50,7 +53,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: `/dashboard/lista-precios`,
-                element: <PricesList />,
+                element: <PagePriceList />,
             },
             {
                 path: `/dashboard/usuarios`,

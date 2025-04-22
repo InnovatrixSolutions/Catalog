@@ -31,6 +31,7 @@ export default function Login() {
             if (response.ok) {
                 const data = await response.json();
                 if (data.mensaje) {
+                    console.log(data);
                     console.log(data.mensaje);
                     toast.success(data.mensaje);
                     setTimeout(() => {

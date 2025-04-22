@@ -14,6 +14,7 @@ import moneda from '../../moneda';
 import { Link as Anchor } from "react-router-dom";
 import imageIcon from '../../../images/imageIcon.png';
 import { fetchUsuario, getUsuario } from '../../user';
+import PricesList from '../PricesList/PricesList';
 export default function ProductosData() {
     const [productos, setProductos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -1107,7 +1108,11 @@ export default function ProductosData() {
                 <div className="modal-content">
                     <span className="close" onClick={closeModalPriceList}>&times;</span>
                     <h2>Lista de precios</h2>
-                    <p>Este es un modal vacío por ahora.</p>
+                    {/* <PricesList idProducto={3} /> */}
+                    <PricesList/>
+
+
+
                 </div>
             </div>
         )}

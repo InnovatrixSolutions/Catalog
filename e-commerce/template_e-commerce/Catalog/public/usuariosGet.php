@@ -1,4 +1,16 @@
 <?php
+
+// header("Access-Control-Allow-Origin: http://localhost:3000"); // o '*'
+// header("Access-Control-Allow-Credentials: true");
+// header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
+// header("Access-Control-Allow-Headers: Content-Type, Authorization");
+
+// // Manejar las preflight requests
+// if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+//     http_response_code(204);
+//     exit();
+// }
+
 header('Content-Type: application/json');
 header('Access-Control-Allow-Origin: *'); // Permitir solicitudes desde cualquier origen (no seguro para producción)
 
