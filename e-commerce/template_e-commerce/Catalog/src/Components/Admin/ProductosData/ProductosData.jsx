@@ -624,7 +624,7 @@ export default function ProductosData() {
                                     </select>
                                 </fieldset>
                                 <fieldset>
-                                    <legend>Stock (*)</legend>
+                                    <legend>Disponible (*)</legend>
                                     <select
                                         value={nuevoStock}
                                         onChange={(e) => {
@@ -661,7 +661,7 @@ export default function ProductosData() {
                                     />
                                 </fieldset>
                                 <div id='textLabel'>
-                                    <label>Ingredientes (opcionales)</label>
+                                    <label>Variaciones (opcionales)</label>
                                     <div id='flexLabel'>
                                         Dar a elegir a los clientes
                                         <input
@@ -677,7 +677,7 @@ export default function ProductosData() {
                                 {verItems === 'Si' && (
                                     <div className='items'>
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item1"
@@ -689,7 +689,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item2"
@@ -701,7 +701,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item3"
@@ -713,7 +713,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item4"
@@ -725,7 +725,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item5"
@@ -737,7 +737,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item6"
@@ -749,7 +749,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item7"
@@ -761,7 +761,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item8"
@@ -773,7 +773,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item9"
@@ -785,7 +785,7 @@ export default function ProductosData() {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item10"
@@ -959,7 +959,7 @@ export default function ProductosData() {
                             <th>Lista de precio</th>
                             <th>Categoria</th>
                             <th>Subcategoria</th>
-                            <th>Stock</th>
+                            <th>Disponible</th>
                             <th>Más vendido</th>
                             <th>Acciones</th>
                             
@@ -1108,8 +1108,8 @@ export default function ProductosData() {
                 <div className="modal-content">
                     <span className="close" onClick={closeModalPriceList}>&times;</span>
                     <h2>Lista de precios</h2>
-                    {/* <PricesList idProducto={3} /> */}
-                    <PricesList/>
+                    <PricesList idProducto={3} />
+                    {/* <PricesList/> */}
 
 
 

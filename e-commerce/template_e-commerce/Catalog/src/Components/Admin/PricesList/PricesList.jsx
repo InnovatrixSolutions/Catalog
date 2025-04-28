@@ -489,6 +489,8 @@ export default function PricesList(idProducto =null) {
     }
     return (
         <div>
+            
+            <h1>Lista de precios</h1>
 
             <ToastContainer />
             <div className='deFlexContent'>
@@ -686,7 +688,7 @@ export default function PricesList(idProducto =null) {
                                     />
                                 </fieldset>
                                 <div id='textLabel'>
-                                    <label>Ingredientes (opcionales)</label>
+                                    <label>Variaciones (opcionales)</label>
                                     <div id='flexLabel'>
                                         Dar a elegir a los clientes
                                         <input
@@ -702,7 +704,7 @@ export default function PricesList(idProducto =null) {
                                 {verItems === 'Si' && (
                                     <div className='items'>
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item1"
@@ -714,7 +716,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item2"
@@ -726,7 +728,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item3"
@@ -738,7 +740,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item4"
@@ -750,7 +752,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item5"
@@ -762,7 +764,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item6"
@@ -774,7 +776,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item7"
@@ -786,7 +788,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item8"
@@ -798,7 +800,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item9"
@@ -810,7 +812,7 @@ export default function PricesList(idProducto =null) {
                                         </fieldset>
 
                                         <fieldset>
-                                            <legend>Ingrediente</legend>
+                                            <legend>Variación</legend>
                                             <input
                                                 type="text"
                                                 id="item10"

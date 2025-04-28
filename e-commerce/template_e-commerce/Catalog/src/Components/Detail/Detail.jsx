@@ -199,7 +199,7 @@ export default function Detail() {
     const addToCart = () => {
         if (producto) {
             if (producto.stock < 1) {
-                toast.error('No hay stock', { autoClose: 400 });
+                toast.error('No hay disponible', { autoClose: 400 });
                 return;
             }
             const cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -398,7 +398,7 @@ export default function Detail() {
                                 ))
                         }
                         {producto.stock === 1 ? (
-                            <h4 style={{ color: 'green', backgroundColor: '#ccffcc', padding: '0px 10px', borderRadius: '6px' }}>Stock</h4>
+                            <h4 style={{ color: 'green', backgroundColor: '#ccffcc', padding: '0px 10px', borderRadius: '6px' }}>Disponible</h4>
                         ) : producto.stock <= 0 ? (
                             <h4 style={{ color: 'red', backgroundColor: '#ffc1c1', padding: '0px 10px', borderRadius: '6px' }}>Agotado</h4>
                         ) : (

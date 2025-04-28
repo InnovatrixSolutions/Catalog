@@ -171,7 +171,7 @@ export default function NewProduct() {
             formData.append('idSubCategoria', '0');
         }
 
-        formData.append('stock', stock === 'elegir' ? cantidadStock : stock);
+        formData.append('Disponible', stock === 'elegir' ? cantidadStock : stock);
 
         try {
             const response = await fetch(`${baseURL}/productosPost.php`, {
@@ -363,7 +363,7 @@ export default function NewProduct() {
 
 
                                 <fieldset>
-                                    <legend>Precio (*)</legend>
+                                    <legend>Costo Compra(*)</legend>
                                     <input
                                         type="number"
                                         id="precio"
@@ -376,7 +376,7 @@ export default function NewProduct() {
                                     />
                                 </fieldset>
                                 <fieldset>
-                                    <legend>Precio tachado</legend>
+                                    <legend>Costo Venta</legend>
                                     <input
                                         type="number"
                                         id="precioAnterior"
@@ -403,7 +403,7 @@ export default function NewProduct() {
                                     </select>
                                 </fieldset>
                                 <fieldset>
-                                    <legend>Stock (*)</legend>
+                                    <legend>Disponible (*)</legend>
                                     <select
                                         id="stock"
                                         name="stock"
@@ -439,7 +439,7 @@ export default function NewProduct() {
                                 </fieldset>
 
                                 <div id='textLabel'>
-                                    <label >Ingredientes (opcionales) </label>
+                                    <label >Variaciones (opcionales) </label>
                                     <div id='flexLabel'> Dar a elegir a los clientes
                                         <input
                                             type="checkbox"
@@ -455,7 +455,7 @@ export default function NewProduct() {
                                         <div className='items'>
                                             {[...Array(10)].map((_, index) => (
                                                 <fieldset key={index}>
-                                                    <legend>Ingrediente</legend>
+                                                    <legend>Variación</legend>
                                                     <input
                                                         type="text"
                                                         id={`item${index + 1}`}

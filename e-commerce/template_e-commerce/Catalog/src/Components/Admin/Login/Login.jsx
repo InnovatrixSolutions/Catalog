@@ -34,6 +34,12 @@ export default function Login() {
                     console.log(data);
                     console.log(data.mensaje);
                     toast.success(data.mensaje);
+
+                    // ✅ Save user info to sessionStorage
+                    const usuario = data.usuario || data; // fallback if your API sends plain user
+                    sessionStorage.setItem('usuario', JSON.stringify(usuario));
+                    console.log('👤 Usuario guardado en sessionStorage:', usuario);
+
                     setTimeout(() => {
                         //window.location.reload();
                         //window.location.hrf== '/dashboard';

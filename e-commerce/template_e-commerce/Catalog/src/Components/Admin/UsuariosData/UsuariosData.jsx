@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faEdit, faArrowUp, faArrowDown, faSync } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faEdit, faArrowUp, faArrowDown, faSync, faUserPen, faKey } from '@fortawesome/free-solid-svg-icons';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
@@ -9,14 +9,20 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import Register from '../Register/Register';
+import EditUserModal from '../UsuariosInfoEdit/UsuariosInfoEdit';
 import { fetchUsuario, getUsuario } from '../../user';
 export default function UsuariosData() {
+
     const [usuarios, setUsuarios] = useState([]);
     const [filtroIdUsuario, setFiltroIdUsuario] = useState('');
     const [filtroNombre, setFiltroNombre] = useState('');
     const [filtroRol, setFiltroRol] = useState('');
     const [filtroEmail, setFiltroEmail] = useState('');
     const [ordenInvertido, setOrdenInvertido] = useState(false);
+
+
+    const [editingUser, setEditingUser] = useState(null);
+
 
     useEffect(() => {
         cargarUsuarios();
@@ -33,8 +39,8 @@ export default function UsuariosData() {
             .catch(error => console.error('Error al cargar usuarios:', error));
     };
 
-    const eliminar = (idUsuario) => {
-        Swal.fire({
+    const eliminar = async (idUsuario) => {
+        await Swal.fire({
             title: '¿Estás seguro?',
             text: '¡No podrás revertir esto!',
             icon: 'warning',
@@ -65,8 +71,8 @@ export default function UsuariosData() {
         });
     };
 
-    const editar = (idUsuario, rolActual) => {
-        Swal.fire({
+    const editar = async (idUsuario, rolActual) => {
+        await Swal.fire({
             title: 'Editar Rol',
             input: 'select',
             inputOptions: {
@@ -82,7 +88,7 @@ export default function UsuariosData() {
             if (result.isConfirmed) {
                 const nuevoRol = result.value;
                 fetch(`${baseURL}/usuariosGet.php?idUsuario=${idUsuario}`, {
-                    method: 'PUT',
+                    method: 'PATCH',
                     headers: {
                         'Content-Type': 'application/json',
                     },
@@ -176,8 +182,8 @@ export default function UsuariosData() {
         fetchData();
     }, []);
     const usuarioLegued = getUsuario();
-    const alertPermiso = () => {
-        Swal.fire(
+    const alertPermiso = async () => {
+       await Swal.fire(
             '¡Error!',
             '¡No tienes permisos!',
             'error'
@@ -185,6 +191,43 @@ export default function UsuariosData() {
     }
     return (
         <div>
+
+            {editingUser && (
+                <EditUserModal
+    user={editingUser}
+    onClose={() => setEditingUser(null)}
+    onSave={async (updatedUser) => {
+        try {
+            const response = await fetch(`${baseURL}/usuariosGet.php?idUsuario=${updatedUser.idUsuario}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    name: updatedUser.nombre,
+                    email: updatedUser.email,
+                    password: updatedUser.password,
+                    rol: updatedUser.rol,
+                }),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+                toast.success('Usuario actualizado exitosamente');
+                cargarUsuarios(); // Refresh the list without reloading page
+                setEditingUser(null);
+            } else {
+                toast.error(`Error al actualizar usuario: ${data.mensaje}`);
+            }
+        } catch (error) {
+            console.error('Error al actualizar usuario:', error);
+            toast.error('Error de red al actualizar usuario');
+        }
+    }}
+/>
+
+            )}
             <div className='deFlexContent'>
 
                 <div className='deFlex2'>
@@ -260,7 +303,8 @@ export default function UsuariosData() {
                                             {usuarioLegued?.rol === 'admin' ? (
                                                 <>
                                                     <button className='eliminar' onClick={() => eliminar(usuario.idUsuario)}><FontAwesomeIcon icon={faTrash} /></button>
-                                                    <button className='editar' onClick={() => editar(usuario.idUsuario, usuario.rol)}><FontAwesomeIcon icon={faEdit} /></button>
+                                                    <button className='editar' onClick={() => editar(usuario.idUsuario, usuario.rol)}><FontAwesomeIcon icon={faKey} /></button>
+                                                    <button className='editar' onClick={() => setEditingUser(usuario)}><FontAwesomeIcon icon={faUserPen} /></button>
                                                 </>
                                             ) : usuarioLegued?.rol === 'colaborador' ? (
                                                 <>
@@ -275,6 +319,7 @@ export default function UsuariosData() {
                                         <>
                                             <button className='eliminar' onClick={() => eliminar(usuario.idUsuario)}><FontAwesomeIcon icon={faTrash} /></button>
                                             <button className='editar' onClick={() => editar(usuario.idUsuario, usuario.rol)}><FontAwesomeIcon icon={faEdit} /></button>
+                                            
                                         </>
                                     )}
 

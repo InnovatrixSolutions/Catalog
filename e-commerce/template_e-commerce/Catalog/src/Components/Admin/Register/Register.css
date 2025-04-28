@@ -6,3 +6,17 @@
     background-color: transparent;
     border: none;
 }
+
+.btnCancel{
+    padding: 13px 13px;
+    border-radius: 10px;
+    border: none;
+    background-color: red;
+    color: var(--blanco);
+    width: 20vh;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    align-items: center;
+    margin-top: 1rem;
+}

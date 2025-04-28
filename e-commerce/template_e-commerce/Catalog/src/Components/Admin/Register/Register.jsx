@@ -171,6 +171,7 @@ export default function Register() {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
+                                            className="toggle-password-button"
                                         >
                                             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                         </button>

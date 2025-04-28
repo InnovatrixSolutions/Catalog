@@ -96,6 +96,7 @@ export default function UsuariosData() {
                             'success'
                         );
                         cargarUsuarios();
+                        window.location.reload();
                     })
                     .catch(error => {
                         console.error('Error al editar el rol del usuario:', error)
