@@ -19,6 +19,8 @@ export default function Register() {
     const [formularioEnviado, setFormularioEnviado] = useState(false);
     const [modalOpen, setModalOpen] = useState(false);
 
+
+    
     const toggleModal = () => {
         setModalOpen(!modalOpen);
     };
@@ -67,14 +69,19 @@ export default function Register() {
     useEffect(() => {
         const fetchData = async () => {
             await fetchUsuario();
+
+            //const usuario = getUsuario(); // ahora si después de fetch
+            //setUsuarioLegued(usuario);
+
+
             setLoading(false);
         };
 
         fetchData();
     }, []);
     const usuarioLegued = getUsuario();
-    const alertPermiso = () => {
-        Swal.fire(
+    const alertPermiso = async () => {
+        await Swal.fire(
             '¡Error!',
             '¡No tienes permisos!',
             'error'
@@ -82,7 +89,7 @@ export default function Register() {
     }
     return (
         <div >
-            <ToastContainer />
+            {/* <ToastContainer /> */}
             {loading ? (
                 <></>
             ) : usuarioLegued?.idUsuario ? (
@@ -171,7 +178,7 @@ export default function Register() {
                                         <button
                                             type="button"
                                             onClick={() => setShowPassword(!showPassword)}
-                                            className="toggle-password-button"
+                                            
                                         >
                                             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
                                         </button>

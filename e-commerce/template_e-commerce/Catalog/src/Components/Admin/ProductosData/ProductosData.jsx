@@ -56,13 +56,65 @@ export default function ProductosData() {
     const [item10, setItem10] = useState('');
     const [nuevoStock, setNuevoStock] = useState('');
     const [subcategorias, setSubCategorias] = useState([]);
+    //Old paginator
     const [visibleCount, setVisibleCount] = useState(20);
+
     const [categoriasConSubcategorias, setCategoriasConSubcategorias] = useState([]);
     const [idCategoria, setIdCategoria] = useState('');
     const [idSubCategoria, setIdSubCategoria] = useState('');
     const [mostrarItems, setMostrarItems] = useState(false);
     const [cantidadStock, setCantidadStock] = useState('');
     const [verItems, setVerItems] = useState('No');
+
+
+    // Here the multiple deleting
+    const [selectedProducts, setSelectedProducts] = useState([]);
+
+
+    const handleSelectProduct = (idProducto) => {
+        setSelectedProducts(prev =>
+          prev.includes(idProducto)
+            ? prev.filter(id => id !== idProducto)
+            : [...prev, idProducto]
+        );
+      };
+      
+      const handleSelectAll = () => {
+        if (selectedProducts.length === productosFiltrados.length) {
+          setSelectedProducts([]);
+        } else {
+          setSelectedProducts(productosFiltrados.map(p => p.idProducto));
+        }
+      };
+      
+      const handleDeleteSelected = () => {
+        Swal.fire({
+          title: '¿Estás seguro?',
+          text: `Vas a eliminar ${selectedProducts.length} productos.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonText: 'Sí, eliminar',
+          cancelButtonText: 'Cancelar'
+        }).then(async (result) => {
+          if (result.isConfirmed) {
+            try {
+              for (const id of selectedProducts) {
+                await fetch(`${baseURL}/productDelete.php?idProducto=${id}`, {
+                  method: 'DELETE',
+                });
+              }
+              toast.success('Productos eliminados correctamente');
+              setSelectedProducts([]);
+              cargarProductos();
+            } catch (err) {
+              console.error(err);
+              toast.error('Error eliminando productos');
+            }
+          }
+        });
+      };
+      
+
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -212,13 +264,25 @@ export default function ProductosData() {
     };
 
     const productosFiltrados = productos.filter(item => {
+        
         const idMatch = item.idProducto.toString().includes(filtroId);
         const tituloMatch = !filtroTitulo || item.titulo.toLowerCase().includes(filtroTitulo.toLowerCase());
         const categoriaMatch = item.idCategoria.toString().includes(filtroCategoria);
         const masVendidoMatch = !filtroMasVendido || item.masVendido.includes(filtroMasVendido);
         const categoriasMatch = !filtroCategoria2 || item.categoria.includes(filtroCategoria2);
+        // const disponibleMatch = !filtroCategoria2 || item.stock.includes(filtroCategoria2);
         return idMatch && tituloMatch && categoriaMatch && masVendidoMatch && categoriasMatch;
     });
+
+        //New Paginator
+        const [currentPage, setCurrentPage] = useState(1);
+        const pageSize = 20;
+        const totalPages = Math.ceil(productosFiltrados.length / pageSize);
+        const paginatedProducts = productosFiltrados.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+    
+    
+    
+    
 
     const descargarExcel = () => {
         const data = productosFiltrados.map(item => ({
@@ -470,6 +534,16 @@ export default function ProductosData() {
 
                 <div className='deFlex2'>
                     <NewProduct />
+                    {selectedProducts.length > 0 && (
+                    <button
+                        className='btnDanger'
+                        onClick={handleDeleteSelected}
+                        style={{ margin: '1px 0' }}
+                    >
+                        Eliminar  ({selectedProducts.length})
+                    </button>
+                    )}
+
                     <button className='excel' onClick={descargarExcel}><FontAwesomeIcon icon={faArrowDown} /> Excel</button>
                     <button className='pdf' onClick={descargarPDF}><FontAwesomeIcon icon={faArrowDown} /> PDF</button>
                 </div>
@@ -952,10 +1026,20 @@ export default function ProductosData() {
             <div className='table-container'>
                 <table className='table'>
                     <thead>
+                        
                         <tr>
+{/* Here multipple selection to delete it */}
+                        <th>
+  <input
+    type="checkbox"
+    onChange={handleSelectAll}
+    checked={productosFiltrados.length > 0 && selectedProducts.length === productosFiltrados.length}
+  />
+</th>
                             <th>Imagen</th>
                             <th>Titulo</th>
-                            <th>Precio</th>                   
+                            <th>Costo Venta</th>     
+                            <th>Costo Compra</th>                   
                             <th>Lista de precio</th>
                             <th>Categoria</th>
                             <th>Subcategoria</th>
@@ -966,8 +1050,21 @@ export default function ProductosData() {
                         </tr>
                     </thead>
                     <tbody>
-                        {productosFiltrados?.slice(0, visibleCount)?.map(item => (
+                        {/* {productosFiltrados?.slice(0, visibleCount)?.map(item => ( */}
+                        {paginatedProducts?.map(item => (
+
                             <tr key={item.idProducto}>
+
+
+                    {/* Here multipple selection to delete it */}
+                            <td>
+                            <input
+                                type="checkbox"
+                                checked={selectedProducts.includes(item.idProducto)}
+                                onChange={() => handleSelectProduct(item.idProducto)}
+                            />
+                            </td>
+
 
                                 <td>
                                     {item.imagen1 ? (
@@ -985,6 +1082,13 @@ export default function ProductosData() {
                                 }}>
                                     {moneda} {`${item?.precio}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                                 </td>
+
+                                <td style={{
+                                    color: '#008000',
+                                }}>
+                                    {moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                                </td>
+
 
                                 <td>
                                     Catalogo o Dropshipper
@@ -1037,6 +1141,8 @@ export default function ProductosData() {
 
 
                                 <td>
+
+                                    
                                     {loading ? (
                                         <></>
                                     ) : usuarioLegued?.idUsuario ? (
@@ -1101,6 +1207,7 @@ export default function ProductosData() {
                     </tbody>
 
                 </table>
+                
             </div>
             {modalPriceListVisible && (
 
@@ -1117,10 +1224,31 @@ export default function ProductosData() {
             </div>
         )}
 
-            {productosFiltrados?.length > visibleCount && (
+            {/* {productosFiltrados?.length > visibleCount && (
                 <button onClick={handleShowMore} id="show-more-btn">
                     Mostrar  más </button>
-            )}
+            )} */}
+
+<div className="pagination">
+  <button onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))} disabled={currentPage === 1}>
+    Anterior
+  </button>
+
+  {Array.from({ length: totalPages }, (_, i) => (
+    <button
+      key={i + 1}
+      onClick={() => setCurrentPage(i + 1)}
+      className={currentPage === i + 1 ? 'active' : ''}
+    >
+      {i + 1}
+    </button>
+  ))}
+
+  <button onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))} disabled={currentPage === totalPages}>
+    Siguiente
+  </button>
+</div>
+
         </div>
     );
 };

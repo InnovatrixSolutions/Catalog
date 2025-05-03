@@ -11,7 +11,12 @@ import 'jspdf-autotable';
 import Register from '../Register/Register';
 import EditUserModal from '../UsuariosInfoEdit/UsuariosInfoEdit';
 import { fetchUsuario, getUsuario } from '../../user';
+
+
+
+
 export default function UsuariosData() {
+    
 
     const [usuarios, setUsuarios] = useState([]);
     const [filtroIdUsuario, setFiltroIdUsuario] = useState('');
@@ -206,9 +211,10 @@ export default function UsuariosData() {
                 body: JSON.stringify({
                     name: updatedUser.nombre,
                     email: updatedUser.email,
-                    password: updatedUser.password,
+                    contrasena: updatedUser.contrasena,
                     rol: updatedUser.rol,
                 }),
+                
             });
 
             const data = await response.json();

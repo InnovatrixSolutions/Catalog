@@ -40,6 +40,9 @@ export default function NewProduct() {
     const [verItems, setVerItems] = useState('No');
     const [customStock, setCustomStock] = useState('');
     const [cantidadStock, setCantidadStock] = useState(''); // Nuevo estado para cantidad de stock manual
+    
+    const [addingProduct, setAddingProduct] = useState(false);
+
 
     useEffect(() => {
         cargarCategoriasYSubcategorias();
@@ -161,6 +164,8 @@ export default function NewProduct() {
             return;
         }
 
+        setAddingProduct(true); // Start loading
+
         // Añadir idCategoria al FormData
         formData.append('idCategoria', idCategoria);
         formData.append('verItems', verItems);
@@ -170,6 +175,8 @@ export default function NewProduct() {
         } else {
             formData.append('idSubCategoria', '0');
         }
+
+        
 
         formData.append('Disponible', stock === 'elegir' ? cantidadStock : stock);
 
@@ -261,7 +268,7 @@ export default function NewProduct() {
 
     return (
         <div className='NewContain'>
-            <ToastContainer />
+            {/* <ToastContainer /> */}
             {loading ? (
                 <></>
             ) : usuarioLegued?.idUsuario ? (
@@ -501,7 +508,7 @@ export default function NewProduct() {
                                 </div>
 
                             </div>
-                            {mensaje ? (
+                            {/* {mensaje ? (
                                 <button type="button" className='btnLoading' disabled>
                                     {mensaje}
                                 </button>
@@ -509,7 +516,17 @@ export default function NewProduct() {
                                 <button type="button" onClick={crear} className='btnPost'>
                                     Agregar
                                 </button>
-                            )}
+                            )} */}
+
+                            <button
+                                type="button"
+                                onClick={crear}
+                                className={addingProduct ? 'btnLoading' : 'btnPost'}
+                                disabled={addingProduct}
+                            >
+                                {addingProduct ? 'Agregando...' : 'Agregar'}
+                            </button>
+
                         </form>
                     </div>
                 </div>

@@ -40,6 +40,12 @@
     width: 100%;
 }
 
+.btnLoading {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+
 .image-container{
     display: flex;
     overflow-x: scroll;

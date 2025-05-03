@@ -237,6 +237,53 @@ button{
 }
 /* styles for button "PriceList" */
 
+/* styles for button "Danger" */
+.btnDanger {
+    background-color: #d9534f;
+    color: var(--blanco);
+    border-radius: 7px;
+    padding: 7px 13px;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: .9em;
+    font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  }
+  .btnDanger:hover {
+    background-color: #c9302c;
+
+    
+  }
+  
+/* For pagination styles */
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin: 20px 0;
+  }
+  
+  .pagination button {
+    padding: 6px 12px;
+    border: none;
+    background-color: #FFFFFF;
+    cursor: pointer;
+  }
+  
+  .pagination button.active {
+    background-color:  green;;
+    color: white;
+    font-weight: bold;
+  }
+  
+  .pagination button:disabled {
+    background-color: #FFFFFF;
+    cursor: not-allowed;
+  }
+  
+
+
 
 .editar{
     background-color: transparent;
