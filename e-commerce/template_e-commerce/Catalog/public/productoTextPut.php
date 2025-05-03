@@ -33,6 +33,10 @@ try {
     
         $nuevaDescripcion = isset($data['nuevaDescripcion']) ? $data['nuevaDescripcion'] : null;
         $nuevoTitulo = isset($data['nuevoTitulo']) ? $data['nuevoTitulo'] : null;
+
+        //Adding SKU to the request
+        $sku = isset($data['sku']) ? $data['sku'] : null;
+
         $nuevaCategoria = isset($data['nuevaCategoria']) ? $data['nuevaCategoria'] : null;
         $nuevaSubCategoria = isset($data['nuevaSubCategoria']) ? $data['nuevaSubCategoria'] : null;
         $nuevoPrecio = isset($data['nuevoPrecio']) ? $data['nuevoPrecio'] : null;
@@ -75,6 +79,10 @@ try {
         $sentenciaUpdate = $conexion->prepare($sqlUpdate);
         $sentenciaUpdate->bindParam(':descripcion', $nuevaDescripcion);
         $sentenciaUpdate->bindParam(':titulo', $nuevoTitulo);
+        
+        // Bind SKU to the query
+        $sentenciaUpdate->bindParam(':sku', $sku);
+
         $sentenciaUpdate->bindParam(':idCategoria', $nuevaCategoria); 
         $sentenciaUpdate->bindParam(':idSubCategoria', $nuevaSubCategoria); 
         $sentenciaUpdate->bindParam(':precio', $nuevoPrecio);

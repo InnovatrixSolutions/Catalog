@@ -27,6 +27,9 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $descripcion = $_POST['descripcion'];
         $titulo = $_POST['titulo'];
+        //Adding SKU to the request
+        //$sku = $_POST['sku'];
+        $sku = isset($_POST['sku']) ? $_POST['sku'] : null;
         $precio = $_POST['precio'];
         $idCategoria = $_POST['idCategoria'];
         $idSubCategoria = $_POST['idSubCategoria'];
@@ -113,6 +116,9 @@ try {
                 $stmt = $conexion->prepare($sqlInsert);
                 $stmt->bindParam(':descripcion', $descripcion);
                 $stmt->bindParam(':titulo', $titulo);
+                
+                //Adding SKU to the request
+                //$stmt->bindParam(':sku', $sku);
                 $stmt->bindParam(':precio', $precio);
                 $stmt->bindParam(':idCategoria', $idCategoria);
                 $stmt->bindParam(':idSubCategoria', $idSubCategoria);
