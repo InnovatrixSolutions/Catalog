@@ -34,8 +34,8 @@ export default function MainLayout() {
                     )}
                 </>
             ) : (
-                // <Auth />
-                <Outlet />
+                <Auth />
+                // <Outlet />
             )}
         </div>
     );

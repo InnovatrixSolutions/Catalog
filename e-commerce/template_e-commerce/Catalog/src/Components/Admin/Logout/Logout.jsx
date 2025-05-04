@@ -24,6 +24,7 @@ export default function Logout() {
                     setTimeout(() => {
                         window.location.reload();
                     }, 2000);
+                    sessionStorage.removeItem('usuario');
                 } else if (data.error) {
                     console.log(data.error);
                     toast.error(data.error);
