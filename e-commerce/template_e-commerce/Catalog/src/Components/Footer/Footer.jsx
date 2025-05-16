@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import './Footer.css'
 import { Link as Anchor } from 'react-router-dom';
 import logo from '../../images/logo.png'
+import Nologo from '../../images/Nologo.jpeg';
 import baseURL from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faUser } from '@fortawesome/free-solid-svg-icons';
@@ -47,7 +48,7 @@ export default function Footer() {
                     {tienda?.imagen1 ? (
                         <img src={tienda?.imagen1} alt="logo" />
                     ) : (
-                        <img src={logo} alt="logo" />
+                        <img src={Nologo} alt="logo" />
                     )}
                 </Anchor>
 

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Modal from 'react-modal';
 import { Link as Anchor } from 'react-router-dom';
 import logo from '../../images/logo.png';
+import Nologo from '../../images/Nologo.jpeg';
 import baseURL from '../url';
 import 'swiper/swiper-bundle.css';
 import Profile from '../Profile/Profile';
@@ -59,7 +60,8 @@ export default function Navbar() {
                     {tienda?.imagen1 ? (
                         <img src={tienda?.imagen1} alt="logo" />
                     ) : (
-                        <img src={logo} alt="logo" />
+                        <img src={Nologo} alt="logo" />
+                        
                     )}
 
 

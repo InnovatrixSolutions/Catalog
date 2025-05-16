@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import logo from '../../images/logo.png'
+import Nologo from '../../images/Nologo.jpeg';
 import './Profile.css'
 import { Link as Anchor } from 'react-router-dom';
 import baseURL from '../url';
@@ -28,7 +29,7 @@ export default function Profile() {
             {tienda?.imagen1 ? (
                 <img src={tienda?.imagen1} alt="logo" />
             ) : (
-                <img src={logo} alt="logo" />
+                <img src={Nologo} alt="logo" />
             )}
             <h2>{tienda.nombre}</h2>
             <div className='profileText'>
