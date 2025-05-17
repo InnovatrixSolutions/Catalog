@@ -193,6 +193,7 @@ export default function TiendaData() {
     return (
         <div>
             <ToastContainer />
+            <h1 className='titles-text-heading'>Datos de la tienda</h1>
             <div className='deFlexContent'>
                 {
                     !tienda &&

@@ -92,6 +92,7 @@ export default function CodigosData() {
 
     return (
         <div>
+            <h1 className='titles-text-heading'>Códigos promocionales</h1>
             <ToastContainer />
             <NewCodigo />
 

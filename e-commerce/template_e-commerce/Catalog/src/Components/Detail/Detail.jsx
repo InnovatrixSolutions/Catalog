@@ -267,7 +267,7 @@ export default function Detail() {
         <div className="detail">
             
 
-            <h1 className="text-heading">
+            <h1 className="titles-text-heading">
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: "10px", color: "#ffc107" }} />
                 Aqui puedes ver las caracteristicas de tu producto
             </h1>

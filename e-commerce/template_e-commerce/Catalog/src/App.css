@@ -44,6 +44,20 @@ a{
 .modaldashboard{ opacity: 0; animation: slideUp 0.4s ease-in-out forwards; -webkit-animation: slideUp 0.4s ease-in-out forwards;
 }
 
+.titles-text-heading {
+  font-size: 2rem;
+  font-weight: bold;
+  color: var(--color1); /* Or another standout color */
+  text-align: center;
+  margin-bottom: 2rem;
+  margin-top: 2rem;
+  border-bottom: 2px solid var(--color1); /* Optional underline */
+  padding-bottom: 0.5rem;
+  background-color: #f3f3f3; /* Optional background highlight */
+  border-radius: 8px;
+}
+
+
 @keyframes slideFromLeft {
   from {
       opacity: 0;

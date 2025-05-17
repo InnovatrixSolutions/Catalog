@@ -32,6 +32,9 @@ export default function ProductosData() {
     const [filtroCategoria, setFiltroCategoria] = useState('');
     const [filtroCategoria2, setFiltroCategoria2] = useState('');
     const [filtroMasVendido, setFiltroMasVendido] = useState('');
+    
+    const [filtroSKU, setFiltroSKU] = useState('');
+
     const [ordenInvertido, setOrdenInvertido] = useState(false);
     const [imagenPreview, setImagenPreview] = useState(null);
     const [imagenPreview2, setImagenPreview2] = useState(null);
@@ -271,7 +274,12 @@ export default function ProductosData() {
         const masVendidoMatch = !filtroMasVendido || item.masVendido.includes(filtroMasVendido);
         const categoriasMatch = !filtroCategoria2 || item.categoria.includes(filtroCategoria2);
         // const disponibleMatch = !filtroCategoria2 || item.stock.includes(filtroCategoria2);
-        return idMatch && tituloMatch && categoriaMatch && masVendidoMatch && categoriasMatch;
+        //return idMatch && tituloMatch && categoriaMatch && masVendidoMatch && categoriasMatch;
+
+        const skuMatch = !filtroSKU || (item.sku && item.sku.toLowerCase().includes(filtroSKU.toLowerCase())); // 👈
+
+        return idMatch && tituloMatch && categoriaMatch && masVendidoMatch && categoriasMatch && skuMatch;
+        
     });
 
         //New Paginator
@@ -527,10 +535,13 @@ export default function ProductosData() {
         );
     }
     return (
+        
         <div>
-
+        <h1 className='titles-text-heading'>Productos</h1>
             <ToastContainer />
+            
             <div className='deFlexContent'>
+                
 
                 <div className='deFlex2'>
                     <NewProduct />
@@ -551,6 +562,17 @@ export default function ProductosData() {
                     <div className='inputsColumn'>
                         <button  >{String(productosFiltrados?.length)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} / {String(productos?.length)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} </button>
                     </div>
+
+
+                    <div className='inputsColumn'>
+                        <input
+                            type="text"
+                            value={filtroSKU}
+                            onChange={(e) => setFiltroSKU(e.target.value)}
+                            placeholder='SKU'
+                        />
+                    </div>
+
                     <div className='inputsColumn'>
                         <input type="number" value={filtroId} onChange={(e) => setFiltroId(e.target.value)} placeholder='Id Producto' />
                     </div>

@@ -294,6 +294,7 @@ export default function CategoriasData() {
     };
     return (
         <div>
+            <h1 className='titles-text-heading'>Categorias</h1>
             <div className='deFlexContentBtns'>
                 <NewCategoria />
                 <NewSubCategoria />

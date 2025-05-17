@@ -234,7 +234,9 @@ export default function UsuariosData() {
 />
 
             )}
+            <h1 className='titles-text-heading'>Usuarios</h1>
             <div className='deFlexContent'>
+            
 
                 <div className='deFlex2'>
                     <Register />

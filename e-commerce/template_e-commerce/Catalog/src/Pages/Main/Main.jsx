@@ -10,6 +10,7 @@ import CardsCantidad from '../../Components/Admin/CardsCantidad/CardsCantidad'
 import InfoUserMain from '../../Components/Admin/InfoUserMain/InfoUserMain'
 import GraficoPedidos from '../../Components/Admin/Graficos/GraficoPedidos'
 import GraficoProductos from '../../Components/Admin/Graficos/GraficoProductos'
+import GraficoPedidosVSListaPrecios from '../../Components/Admin/Graficos/GraficosPedidosVSListaPrecios';
 import { fetchUsuario, getUsuario } from '../../Components/user';
 export default function Main() {
     const [loading, setLoading] = useState(true);
@@ -38,9 +39,13 @@ const usuarioLegued = getUsuario();
                     < ></>
                 ) : usuarioLegued?.idUsuario ? (
                     <>
+
                         {usuarioLegued?.rol === 'admin' ? (
                             <>
+
                                 <div className='containerMain'>
+
+
                                     <div className='deFLexMain'>
                                         <CardsCantidad />
                                         <UsuariosMain />
@@ -51,7 +56,8 @@ const usuarioLegued = getUsuario();
                                     </div>
                                     <div className='deFLexMain'>
                                         <ProductosMain />
-                                        <InfoUserMain />
+                                        {/* <InfoUserMain /> */}
+                                        <GraficoPedidosVSListaPrecios />
                                     </div>
 
                                 </div>

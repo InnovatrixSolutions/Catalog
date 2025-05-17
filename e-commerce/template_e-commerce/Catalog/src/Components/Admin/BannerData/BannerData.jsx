@@ -98,6 +98,7 @@ export default function BannerData() {
 
     return (
         <div className='BannerContainer'>
+            <h1 className='titles-text-heading'>Banners</h1>
             <NewBanner />
             <div className='BannerWrap'>
                 {banners.map(item => (

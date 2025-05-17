@@ -490,7 +490,7 @@ export default function PricesList(idProducto =null) {
     return (
         <div>
             
-            <h1>Lista de precios</h1>
+            <h1 className='titles-text-heading'>Lista de precios</h1>
 
             <ToastContainer />
             <div className='deFlexContent'>

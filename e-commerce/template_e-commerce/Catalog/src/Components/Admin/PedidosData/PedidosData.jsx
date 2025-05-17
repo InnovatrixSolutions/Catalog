@@ -668,7 +668,7 @@ export default function PedidosData() {
         <div>
 
             <ToastContainer />
-            <h1>Pedidos</h1>
+            <h1 className='titles-text-heading'>Pedidos</h1>
             <div className='deFlexContent2'>
                 <div className='deFlex2'>
                     <NewPedido />

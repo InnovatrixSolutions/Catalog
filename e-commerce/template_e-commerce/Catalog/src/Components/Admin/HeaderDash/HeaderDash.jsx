@@ -22,7 +22,7 @@ const [userType, setUserType] = useState('');
     return (
         <div className={`HeaderDashContain`}>
             <InputSearch />
-            <h1>Bienvenido: {userType? userType: 'No se carga'}</h1>
+            
             <div className='deFlexHeader'>
                 <ButonScreen />
                 
