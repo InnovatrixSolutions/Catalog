@@ -96,6 +96,7 @@ export default function GraficoProductos() {
                     }
                 }
             },
+
             scales: {
                 y: {
                     beginAtZero: true,
@@ -142,6 +143,8 @@ export default function GraficoProductos() {
         const textColor = documentStyle.getPropertyValue('--text-color');
 
         setChartOptions({
+            responsive: true,
+            maintainAspectRatio: false, // 👈 Esto asegura que use todo el espacio disponible
             plugins: {
                 legend: {
                     labels: {

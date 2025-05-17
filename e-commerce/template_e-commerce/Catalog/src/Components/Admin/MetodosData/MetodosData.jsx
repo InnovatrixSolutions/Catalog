@@ -130,6 +130,7 @@ export default function MetodosData() {
         <div>
             <ToastContainer />
             <NewMetodo />
+            <h1 className='titles-text-heading'>Métodos de pago</h1>
 
             {modalVisible && (
                 <div className="modal">

@@ -202,6 +202,7 @@ export default function GraficoPedidosVSListaPrecios() {
     
         const options = {
             responsive: true,
+            maintainAspectRatio: false, // 👈 añade esta línea
             plugins: {
                 legend: {
                     position: 'right'
@@ -262,6 +263,7 @@ export default function GraficoPedidosVSListaPrecios() {
                 
             </div>
             <div className="grafico-container">
+            {/* <div className="chart-wrapper"> */}
                 {activeChart === 'dia' && <Chart type="line" data={chartDataDia} options={chartOptions} />}
                 {activeChart === 'semana' && <Chart type="line" data={chartDataSemana} options={chartOptions} />}
                 {activeChart === 'mes' && <Chart type="line" data={chartDataMes} options={chartOptions} />}

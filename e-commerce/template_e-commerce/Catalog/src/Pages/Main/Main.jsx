@@ -49,15 +49,26 @@ const usuarioLegued = getUsuario();
                                     <div className='deFLexMain'>
                                         <CardsCantidad />
                                         <UsuariosMain />
+                                        
+                                        
+                                        
+                                    </div>
+                                    <div className='deFLexMain'>
+                                        
+                                        
+                                        
                                     </div>
                                     <div className='graficosFlex'>
-                                        <GraficoPedidos />
+                                        {/* <GraficoPedidos /> */}
                                         <GraficoProductos />
+                                        <GraficoPedidosVSListaPrecios />
                                     </div>
                                     <div className='deFLexMain'>
                                         <ProductosMain />
                                         {/* <InfoUserMain /> */}
-                                        <GraficoPedidosVSListaPrecios />
+                                        
+                                        
+                                        
                                     </div>
 
                                 </div>
