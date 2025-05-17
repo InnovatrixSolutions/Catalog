@@ -46,6 +46,7 @@ try {
         $item10 = $_POST['item10'];
         $precioAnterior = $_POST['precioAnterior'];
         $stock = $_POST['stock'];
+        $sku = $_POST['sku'];
         $verItems = $_POST['verItems'];
 
         // Validar que el título no contenga caracteres prohibidos
@@ -139,6 +140,7 @@ try {
                 $stmt->bindParam(':item10', $item10);
                 $stmt->bindParam(':precioAnterior', $precioAnterior);
                 $stmt->bindParam(':stock', $stock);
+                $stmt->bindParam(':sku', $sku);
                 $stmt->bindParam(':verItems', $verItems);
                 $stmt->execute();
 

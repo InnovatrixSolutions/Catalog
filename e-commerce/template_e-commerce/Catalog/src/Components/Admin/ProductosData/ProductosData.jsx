@@ -1036,6 +1036,7 @@ export default function ProductosData() {
     checked={productosFiltrados.length > 0 && selectedProducts.length === productosFiltrados.length}
   />
 </th>
+
                             <th>Imagen</th>
                             <th>Titulo</th>
                             <th>Costo Venta</th>     
@@ -1043,6 +1044,7 @@ export default function ProductosData() {
                             <th>Lista de precio</th>
                             <th>Categoria</th>
                             <th>Subcategoria</th>
+                            <th>SKU</th>
                             <th>Disponible</th>
                             <th>Más vendido</th>
                             <th>Acciones</th>
@@ -1121,7 +1123,7 @@ export default function ProductosData() {
                                         </>
                                     }
                                 </td>
-
+                                <td>{item.sku}</td>
 
                                 {item.stock === 1 ? (
                                     <td style={{ color: '#008000' }}>Disponible</td>

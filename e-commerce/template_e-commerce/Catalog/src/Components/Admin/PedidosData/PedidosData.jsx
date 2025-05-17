@@ -17,6 +17,7 @@ import { Link as Anchor } from 'react-router-dom';
 import NewPedido from '../NewPedido/NewPedido'
 import contador from '../../contador'
 export default function PedidosData() {
+    const userType = process.env.REACT_APP_USER_TYPE;
     const [pedidos, setPedidos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [nuevoEstado, setNuevoEstado] = useState('');
@@ -37,6 +38,10 @@ export default function PedidosData() {
     const [metodos, setMetodos] = useState([]);
     const location = useLocation();
     const [visibleCount, setVisibleCount] = useState(20);
+    const [filtroListaPrecio, setFiltroListaPrecio] = useState('');
+    
+    
+
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -198,7 +203,12 @@ export default function PedidosData() {
                 ? item?.entrega !== "Sucursal" && item?.entrega !== "Retiro en Sucursal"
                 : item.entrega?.includes(filtroEntrega));
 
-        return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch;
+        const listaPrecioMatch = !filtroListaPrecio || item.listaPrecio?.toLowerCase().includes(filtroListaPrecio.toLowerCase());
+
+
+
+        //return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch;
+        return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch && listaPrecioMatch;
     });
 
 
@@ -658,6 +668,7 @@ export default function PedidosData() {
         <div>
 
             <ToastContainer />
+            <h1>Pedidos</h1>
             <div className='deFlexContent2'>
                 <div className='deFlex2'>
                     <NewPedido />
@@ -691,6 +702,17 @@ export default function PedidosData() {
                             <option value="Rechazado">Rechazado</option>
                         </select>
                     </div>
+                    <div className='inputsColumn'>
+                    <select value={filtroListaPrecio} onChange={(e) => setFiltroListaPrecio(e.target.value)}>
+                        
+                            <option value="">Lista de precio</option>
+                            {userType !== 'Dropshipper' && <option value="Catalogo">Catalogo</option>}
+
+                            <option value="Dropshipper">Dropshipper</option>
+                        </select>
+
+                        </div>
+
                     <div className='inputsColumn'>
                         <select value={filtroPagado} onChange={(e) => setFiltroPagado(e.target.value)}>
                             <option value="">Pagado</option>
@@ -789,12 +811,16 @@ export default function PedidosData() {
                         <thead>
                             <tr>
                                 <th>Id Pedido</th>
-                                <th>Estado</th>
                                 <th>Pagado</th>
                                 <th>Nombre</th>
                                 <th>Telefono</th>
                                 <th>Entrega</th>
+                                <th>Lista Precio</th>
+                                <th>Estado</th>
                                 <th>Pago</th>
+                                <th>Comisión</th>
+                                <th>Envio</th>
+                                <th>Valor envío</th>
                                 <th>Total</th>
                                 <th>Fecha</th>
                                 <th>Acciones</th>
@@ -805,15 +831,7 @@ export default function PedidosData() {
                                 <tr key={item.idPedido}>
                                     <td>{item.idPedido}</td>
 
-                                    <td style={{
-                                        color: item.estado === 'Pendiente' ? '#DAA520' :
-                                            item.estado === 'Preparacion' ? '#0000FF' :
-                                                item.estado === 'Rechazado' ? '#FF0000' :
-                                                    item.estado === 'Entregado' ? '#008000' :
-                                                        '#3366FF'
-                                    }}>
-                                        {item?.estado}
-                                    </td>
+
 
                                     <td style={{
                                         color: item?.pagado === 'Si' ? '#008000' : item?.pagado === 'No' ? '#FF0000' : ''
@@ -824,7 +842,20 @@ export default function PedidosData() {
                                     <td>{item.nombre}</td>
                                     <td>{item.telefono}</td>
                                     <td>{item.entrega}</td>
+                                    <td>{item.listaPrecio}</td>
+                                    <td style={{
+                                        color: item.estado === 'Pendiente' ? '#DAA520' :
+                                            item.estado === 'Preparacion' ? '#0000FF' :
+                                                item.estado === 'Rechazado' ? '#FF0000' :
+                                                    item.estado === 'Entregado' ? '#008000' :
+                                                        '#3366FF'
+                                    }}>
+                                        {item?.estado}
+                                    </td>
                                     <td>{item.pago}</td>
+                                    <td>{item.comision}</td>
+                                    <td>{item.envio}</td>
+                                    <td>{item.valorEnvio}</td>
                                     <td style={{ color: '#008000', }}>{moneda} {item.total}</td>
                                     <td> {new Date(item?.createdAt)?.toLocaleString('es-ES', {
                                         hour: '2-digit',

@@ -37,14 +37,14 @@ export default function Login() {
 
                     // ✅ Save user info to sessionStorage
                     //const usuario = data.usuario || data; // fallback if your API sends plain user
-                    
+
                     // sessionStorage.setItem('usuario', JSON.stringify(usuario));
                     // console.log('👤 Usuario guardado en sessionStorage:', usuario);
 
                     setTimeout(() => {
-                        window.location.reload();
+                        //window.location.reload();
                         //window.location.hrf== '/dashboard';
-                        //navigate('/dashboard');
+                        navigate('/dashboard');
 
                     }, 500);
 

@@ -9,16 +9,25 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faHome } from '@fortawesome/free-solid-svg-icons';
 import QrGenerator from '../QrGenerator/QrGenerator';
 import Estado from '../Estado/Estado';
+import { useEffect } from 'react';
 export default function HeaderDash() {
+const [userType, setUserType] = useState('');
+  useEffect(() => {
+
+    setUserType(process.env.REACT_APP_USER_TYPE);
+
+  }, []);
 
 
     return (
         <div className={`HeaderDashContain`}>
             <InputSearch />
-
+            <h1>Bienvenido: {userType? userType: 'No se carga'}</h1>
             <div className='deFlexHeader'>
                 <ButonScreen />
+                
                 <Estado />
+
                 <ButonInstallAppNav />
                 <Anchor to={'/'} className='link'>
                     <FontAwesomeIcon icon={faHome} /> Tienda

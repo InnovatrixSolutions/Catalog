@@ -265,6 +265,13 @@ export default function Detail() {
 
 
         <div className="detail">
+            
+
+            <h1 className="text-heading">
+                <FontAwesomeIcon icon={faStar} style={{ marginRight: "10px", color: "#ffc107" }} />
+                Aqui puedes ver las caracteristicas de tu producto
+            </h1>
+
 
             <ToastContainer />
             <div className={`deFlexDetail ${fixedCategories ? 'fixedHeader' : ''}`} ref={categoriasInputRef}>
@@ -304,6 +311,7 @@ export default function Detail() {
                                         <img
                                             src={producto.imagen1}
                                             alt={producto.titulo}
+
                                             className="imagen1"
                                             onClick={() => {
                                                 setModalImage(producto.imagen1);
@@ -378,6 +386,7 @@ export default function Detail() {
                 </SwiperSlide>
                 <div className="textDetail">
                     <h2 className="title">{producto.titulo}</h2>
+                    <h4 style={{ color: 'white', backgroundColor: '#000000', padding: '0px 10px', borderRadius: '5px' }}>Código de producto: {producto.sku}</h4>
                     <hr />
                     <div className="deFLexBuet">
                         {
@@ -417,11 +426,12 @@ export default function Detail() {
                             (producto?.precioAnterior !== 0 && producto?.precioAnterior !== undefined) && (
                                 <h5 className='precioTachadoDetail'> {moneda} {`${producto?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
                             )
+
                         }
 
 
                     </div>
-                    <p>{producto.descripcion}</p>
+                    <p className="descripcion">{producto.descripcion}</p>
                     {
                         producto?.verItems === 'Si' && (
                             <div className="itemsDetail">

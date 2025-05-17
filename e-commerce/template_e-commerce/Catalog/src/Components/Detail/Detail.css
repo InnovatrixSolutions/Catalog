@@ -265,3 +265,29 @@ hr{
        
 }
 }
+.descripcion {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
+    font-size: 1.1rem;       /* Increase font size */
+    line-height: 1.6;        /* Improve line spacing */
+    padding: 100px;           /* Add some space inside */
+    margin-top: 10px;        /* Space from previous element */
+    background-color: #f9f9f9; /* Optional: subtle background */
+    border-radius: 6px;      /* Optional: rounded edges */
+    border: 1px solid #ddd;  /* Optional: soft border */
+  }
+  
+  .text-heading {
+    font-size: 2rem;
+    font-weight: bold;
+    color: var(--color1); /* Or another standout color */
+    text-align: center;
+    margin-bottom: 2rem;
+    margin-top: 2rem;
+    border-bottom: 2px solid var(--color1); /* Optional underline */
+    padding-bottom: 0.5rem;
+    background-color: #f3f3f3; /* Optional background highlight */
+    border-radius: 8px;
+  }
+  
