@@ -73,6 +73,9 @@ export default function ProductosData() {
     // Here the multiple deleting
     const [selectedProducts, setSelectedProducts] = useState([]);
 
+    const [nuevoSku, setNuevoSku] = useState('');
+
+
 
     const handleSelectProduct = (idProducto) => {
         setSelectedProducts(prev =>
@@ -205,6 +208,8 @@ export default function ProductosData() {
         setNuevoPrecioAnterior(producto.precioAnterior)
         setNuevoStock(producto.stock)
         setVerItems(producto.verItems)
+        setNuevoSku(producto.sku);
+
     }, [producto]);
 
     const cargarProductos = () => {
@@ -374,6 +379,7 @@ export default function ProductosData() {
             item10: item10 !== undefined ? item10 : producto.item10,
             precioAnterior: nuevoPrecioAnterior !== 0 ? nuevoPrecioAnterior : producto.precioAnterior,
             stock: nuevoStock === 'elegir' ? cantidadStock : nuevoStock !== '' ? nuevoStock : producto.stock,
+            sku: nuevoSku !== '' ? nuevoSku : producto.sku,
             verItems: verItems !== '' ? verItems : producto.verItems,
         };
 
@@ -652,6 +658,9 @@ export default function ProductosData() {
                                         onChange={(e) => setNuevoTitulo(e.target.value)}
                                     />
                                 </fieldset>
+
+
+
                                 <fieldset>
                                     <legend>Categoría (*)</legend>
                                     <select
@@ -680,9 +689,11 @@ export default function ProductosData() {
                                         }
                                         {categoriasConSubcategorias.map(categoria => (
                                             <optgroup key={categoria.idCategoria}>
-                                                <option value={`${categoria.idCategoria}`} id='option'>{categoria.categoria}</option>
+                                                <option key={`cat-${categoria.idCategoria}`} value={`${categoria.idCategoria}`} id='option'>{categoria.categoria}</option>
                                                 {categoria.subcategorias.map(subcategoria => (
-                                                    <option key={subcategoria.idSubCategoria} value={`${categoria.idCategoria}-${subcategoria.idSubCategoria}`}>
+                                                    <option 
+                                                    key={`sub-${categoria.idCategoria}-${subcategoria.idSubCategoria}`}
+                                                    value={`${categoria.idCategoria}-${subcategoria.idSubCategoria}`}>
                                                         {categoria.categoria} {`>`} {subcategoria.subcategoria}
                                                     </option>
                                                 ))}
@@ -690,6 +701,16 @@ export default function ProductosData() {
                                         ))}
                                     </select>
                                 </fieldset>
+
+                                <fieldset>
+                                <legend>SKU (*)</legend>
+                                <input
+                                    type="text"
+                                    value={nuevoSku}
+                                    onChange={(e) => setNuevoSku(e.target.value)}
+                                />
+                                </fieldset>
+
 
                                 <fieldset>
                                     <legend>Precio (*)</legend>

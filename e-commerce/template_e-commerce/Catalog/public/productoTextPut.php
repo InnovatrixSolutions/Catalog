@@ -34,7 +34,8 @@ try {
         $nuevaDescripcion = isset($data['nuevaDescripcion']) ? $data['nuevaDescripcion'] : null;
         $nuevoTitulo = isset($data['nuevoTitulo']) ? $data['nuevoTitulo'] : null;
 
-        
+        //Adding SKU to the request
+        $sku = isset($data['sku']) ? $data['sku'] : null;
 
         $nuevaCategoria = isset($data['nuevaCategoria']) ? $data['nuevaCategoria'] : null;
         $nuevaSubCategoria = isset($data['nuevaSubCategoria']) ? $data['nuevaSubCategoria'] : null;
@@ -60,9 +61,10 @@ try {
          $item10 = isset($data['item10']) ? $data['item10'] : null;
          $precioAnterior = isset($data['precioAnterior']) ? $data['precioAnterior'] : null;
          $stock = isset($data['stock']) ? $data['stock'] : null;
-         //Adding SKU to the request
+         
+        //Adding SKU to the request
          $sku = isset($data['sku']) ? $data['sku'] : null;
-
+         
          $verItems = isset($data['verItems']) ? $data['verItems'] : null;
 
         if (empty($nuevaCategoria)) {
@@ -76,7 +78,7 @@ try {
 
         $sqlUpdate = "UPDATE productos SET descripcion = :descripcion, titulo = :titulo, idCategoria = :idCategoria, idSubCategoria = :idSubCategoria, precio = :precio, masVendido = :masVendido, 
         item1 = :item1, item2 = :item2, item3 = :item3, item4 = :item4, item5 = :item5, item6 = :item6, item7 = :item7, item8 = :item8, 
-        item9 = :item9, item10 = :item10, precioAnterior = :precioAnterior, stock = :stock , verItems = :verItems
+        item9 = :item9, item10 = :item10, precioAnterior = :precioAnterior, stock = :stock , verItems = :verItems, sku = :sku
         WHERE idProducto = :idProducto";
         $sentenciaUpdate = $conexion->prepare($sqlUpdate);
         $sentenciaUpdate->bindParam(':descripcion', $nuevaDescripcion);
@@ -100,8 +102,11 @@ try {
         $sentenciaUpdate->bindParam(':item9', $item9); 
         $sentenciaUpdate->bindParam(':item10', $item10);  
         $sentenciaUpdate->bindParam(':precioAnterior', $precioAnterior);  
-        $sentenciaUpdate->bindParam(':stock', $stock);
+        $sentenciaUpdate->bindParam(':stock', $stock);  
+        //Adding sku
         $sentenciaUpdate->bindParam(':sku', $sku);
+        
+        
         $sentenciaUpdate->bindParam(':verItems', $verItems);  
         $sentenciaUpdate->bindParam(':idProducto', $idProducto, PDO::PARAM_INT);
 

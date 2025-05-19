@@ -1,8 +1,17 @@
 <?php
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    header("Access-Control-Allow-Origin: *");
+    header("Access-Control-Allow-Methods: POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
+    http_response_code(200);
+    exit;
+}
+
+// CORS headers para todas las peticiones
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Requested-With");
 header("Content-Type: application/json");
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
 
 // Cargar variables de entorno desde el archivo .env
 require __DIR__.'/vendor/autoload.php';
@@ -30,6 +39,7 @@ try {
         //Adding SKU to the request
         //$sku = $_POST['sku'];
         $sku = isset($_POST['sku']) ? $_POST['sku'] : null;
+        
         $precio = $_POST['precio'];
         $idCategoria = $_POST['idCategoria'];
         $idSubCategoria = $_POST['idSubCategoria'];
@@ -46,7 +56,9 @@ try {
         $item10 = $_POST['item10'];
         $precioAnterior = $_POST['precioAnterior'];
         $stock = $_POST['stock'];
+        //Agregar sku a productos
         $sku = $_POST['sku'];
+        
         $verItems = $_POST['verItems'];
 
         // Validar que el título no contenga caracteres prohibidos
@@ -110,9 +122,9 @@ try {
                 }
 
                 // Almacenar enlaces completos en la base de datos
-                $sqlInsert = "INSERT INTO `productos` (descripcion, titulo, precio, idCategoria, idSubCategoria, masVendido, imagen1, imagen2 , imagen3, imagen4,
+                $sqlInsert = "INSERT INTO `productos` (descripcion, titulo, sku, precio, idCategoria, idSubCategoria, masVendido, imagen1, imagen2 , imagen3, imagen4,
                  item1, item2, item3, item4, item5, item6, item7, item8, item9, item10,precioAnterior,stock, verItems) 
-                 VALUES (:descripcion, :titulo, :precio, :idCategoria, :idSubCategoria, :masVendido, :imagen1, :imagen2, :imagen3 , :imagen4,
+                 VALUES (:descripcion, :titulo, :sku, :precio, :idCategoria, :idSubCategoria, :masVendido, :imagen1, :imagen2, :imagen3 , :imagen4,
                  :item1, :item2, :item3, :item4, :item5, :item6, :item7, :item8, :item9, :item10, :precioAnterior, :stock, :verItems)";
                 $stmt = $conexion->prepare($sqlInsert);
                 $stmt->bindParam(':descripcion', $descripcion);
@@ -140,7 +152,10 @@ try {
                 $stmt->bindParam(':item10', $item10);
                 $stmt->bindParam(':precioAnterior', $precioAnterior);
                 $stmt->bindParam(':stock', $stock);
+                
+                //Agregar sku a productos
                 $stmt->bindParam(':sku', $sku);
+                
                 $stmt->bindParam(':verItems', $verItems);
                 $stmt->execute();
 

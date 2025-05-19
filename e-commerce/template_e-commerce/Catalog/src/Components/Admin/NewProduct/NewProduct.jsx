@@ -39,6 +39,8 @@ export default function NewProduct() {
     const [mostrarItems, setMostrarItems] = useState(false);
     const [verItems, setVerItems] = useState('No');
     const [customStock, setCustomStock] = useState('');
+    const [sku, setSku] = useState('');
+
     const [cantidadStock, setCantidadStock] = useState(''); // Nuevo estado para cantidad de stock manual
     
     const [addingProduct, setAddingProduct] = useState(false);
@@ -159,11 +161,18 @@ export default function NewProduct() {
         const formData = new FormData(form);
 
         // Validar que los campos obligatorios estén completos
-        if (!formData.get('titulo') || !idCategoria || !formData.get('precio')) {
-            toast.error('Por favor, complete todos los campos obligatorios.');
-            return;
-        }
+        // if (!formData.get('titulo') || !idCategoria || !formData.get('precio')) {
+        //     toast.error('Por favor, complete todos los campos obligatorios.');
+        //     return;
+        // }
 
+    // Validar que los campos obligatorios estén completos antes de crear FormData
+    if (!formData.get('titulo') || !idCategoria || !formData.get('precio') || !formData.get('sku')) {
+        toast.error('Por favor, complete todos los campos obligatorios.');
+        setAddingProduct(false); // 👈 Para no dejar el botón en "Agregando..."
+        return;
+    }
+    
         setAddingProduct(true); // Start loading
 
         // Añadir idCategoria al FormData
@@ -180,6 +189,11 @@ export default function NewProduct() {
 
         formData.append('Disponible', stock === 'elegir' ? cantidadStock : stock);
 
+
+
+        formData.append('sku', sku);
+
+
         try {
             const response = await fetch(`${baseURL}/productosPost.php`, {
                 method: 'POST',
@@ -187,16 +201,19 @@ export default function NewProduct() {
             });
 
             const data = await response.json();
+            console.log(data);
 
             if (data.mensaje) {
                 toast.success(data.mensaje);
                 window.location.reload();
             } else {
                 toast.error(data.error);
+                setAddingProduct(false); // 👈 Agregado aquí también
             }
         } catch (error) {
             console.error('Error al crear producto:', error);
             toast.error('Error de conexión. Inténtelo de nuevo.');
+            setAddingProduct(false); // 👈 Agregado aquí
         }
     };
 
@@ -367,6 +384,18 @@ export default function NewProduct() {
                                 </fieldset>
 
 
+                                <fieldset>
+
+                                <legend>SKU (*)</legend>
+                                <input
+                                    type="text"
+                                    id="sku"
+                                    name="sku"
+                                    required
+                                    value={sku}
+                                    onChange={(e) => setSku(e.target.value)}
+                                />
+                            </fieldset>
 
 
                                 <fieldset>
