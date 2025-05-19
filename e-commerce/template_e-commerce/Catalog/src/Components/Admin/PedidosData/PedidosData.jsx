@@ -221,12 +221,21 @@ export default function PedidosData() {
     };
     const descargarExcel = () => {
         let totalGeneral = 0;
-
+        let totalComision = 0;
+        let totalValorEnvio = 0;
+        
         const data = filtrados.map(item => {
-            const total = parseFloat(item.total); // Convertir a número
+            const total = parseFloat(item.total);
+            const comision = parseFloat(item.comision) || 0;
+            const valorEnvio = parseFloat(item.valorEnvio) || 0;
+        
             totalGeneral += total;
+            totalComision += comision;
+            totalValorEnvio += valorEnvio;
+        
             const productos = JSON.parse(item.productos);
-            const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}  `);
+            const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}`);
+        
             return {
                 'ID Pedido': item.idPedido,
                 'Estado': item.estado,
@@ -234,33 +243,48 @@ export default function PedidosData() {
                 'Nombre': item.nombre,
                 'Telefono': item.telefono,
                 'Pago': item.pago,
-                'Entrega': item.entrega,
                 'Nota': item.nota,
+                'Pago al recibirlo': item.pagoRecibir || '',
+                'Entrega': item.entrega,
+                'Lista Precio': item.listaPrecio,
+                'Comisión': comision.toFixed(2),
+                'Método de Pago': item.metodoPago,
+                'Envio': item.envio,
+                'Valor Envío': valorEnvio.toFixed(2),
                 'Productos': infoProductos.join('\n'),
-                'Codigo': item.codigo,
+                'Código': item.codigo,
                 'Total': `${moneda} ${total.toFixed(2)}`,
                 'Fecha': item.createdAt,
             };
         });
+        
+        
 
         // Formatear el total general
         const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
 
         // Agregar fila con el total general
         const totalRow = {
-
             'ID Pedido': '',
             'Estado': '',
+            'Pagado': '',
             'Nombre': '',
-            'Telfono': '',
+            'Telefono': '',
             'Pago': '',
-            'Entrega': '',
             'Nota': '',
+            'Pago al recibirlo': '',
+            'Entrega': '',
+            'Lista Precio': '',
+            'Comisión': totalComision.toFixed(2),
+            'Método de Pago': '',
+            'Envio': '',
+            'Valor Envío': totalValorEnvio.toFixed(2),
             'Productos': '',
-            'Codigo': 'Total General:',
-            'Total': formattedTotal,
+            'Código': 'Total General:',
+            'Total': `${moneda} ${totalGeneral.toFixed(2)}`,
             'Fecha': '',
         };
+        
 
         data.push(totalRow);
 
@@ -280,15 +304,20 @@ export default function PedidosData() {
             { title: 'Estado', dataKey: 'estado' },
             { title: 'Pagado', dataKey: 'pagado' },
             { title: 'Nombre', dataKey: 'nombre' },
-            { title: 'Telfono', dataKey: 'telefono' },
+            { title: 'Telefono', dataKey: 'telefono' },
             { title: 'Pago', dataKey: 'pago' },
             { title: 'Entrega', dataKey: 'entrega' },
-            { title: 'Nota', dataKey: 'nota' },
+            { title: 'Lista Precio', dataKey: 'listaPrecio' },
+            { title: 'Comisión', dataKey: 'comision' },
+            { title: 'Envío', dataKey: 'envio' },
+            { title: 'Valor Envío', dataKey: 'valorEnvio' },
             { title: 'Productos', dataKey: 'productos' },
-            { title: 'Codigo', dataKey: 'codigo' },
+            { title: 'Código', dataKey: 'codigo' },
             { title: 'Total', dataKey: 'total' },
             { title: 'Fecha', dataKey: 'createdAt' },
         ];
+        
+        
 
         let totalGeneral = 0;
 
@@ -305,12 +334,16 @@ export default function PedidosData() {
                 telefono: item.telefono,
                 pago: item.pago,
                 entrega: item.entrega,
-                nota: item.nota,
+                listaPrecio: item.listaPrecio,
+                comision: item.comision,
+                envio: item.envio,
+                valorEnvio: item.valorEnvio,
                 productos: infoProductos.join('\n'),
                 codigo: item.codigo,
                 total: `${moneda} ${total.toFixed(2)}`,
                 createdAt: item.createdAt,
             };
+            
         });
 
         // Formatear el total general

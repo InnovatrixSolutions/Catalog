@@ -44,7 +44,11 @@ export default function PedidosMain() {
                         <th>Nombre</th>
                         <th>Telefono</th>
                         <th>Entrega</th>
+                        <th>Lista de precio</th>
                         <th>Pago</th>
+                        <th>Comisión</th>
+                        <th>Envio</th>
+                        <th>Valor envío</th>
                         <th>Total</th>
                         <th>Fecha</th>
                     </tr>
@@ -66,7 +70,11 @@ export default function PedidosMain() {
                             <td>{item.nombre}</td>
                             <td>{item.telefono}</td>
                             <td>{item.entrega}</td>
+                            <td>{item.listaPrecio}</td>
                             <td>{item.pago}</td>
+                            <td>{item.comision}</td>
+                            <td>{item.envio}</td>
+                            <td>{item.valorEnvio}</td>
                             <td style={{ color: '#008000', }}>{moneda} {item.total}</td>
                             <td> {new Date(item?.createdAt)?.toLocaleString('es-ES', {
                                 hour: '2-digit',
