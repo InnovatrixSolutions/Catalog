@@ -15,12 +15,13 @@ import { faTrash, faEdit, faArrowUp, faArrowDown, faSync, faEye, faInfo, faFile,
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Swal from 'sweetalert2';
-
+import Nologo from '../../../images/Nologo.jpeg';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import baseURL from '../../url';
 import NewProduct from '../NewProduct/NewProduct';
+import NewPricesListt from '../NewPricesList/NewPricesList';
 import moneda from '../../moneda';
 import { Link as Anchor } from "react-router-dom";
 import imageIcon from '../../../images/imageIcon.png';
@@ -45,7 +46,7 @@ export default function PricesList(idProducto =null) {
     const [filtroCategoria2, setFiltroCategoria2] = useState('');
     const [filtroMasVendido, setFiltroMasVendido] = useState('');
     const [ordenInvertido, setOrdenInvertido] = useState(false);
-    const [imagenPreview, setImagenPreview] = useState(null);
+    
     const [imagenPreview2, setImagenPreview2] = useState(null);
     const [imagenPreview3, setImagenPreview3] = useState(null);
     const [imagenPreview4, setImagenPreview4] = useState(null);
@@ -55,7 +56,7 @@ export default function PricesList(idProducto =null) {
     const [nuevaImagen4, setNuevaImagen4] = useState(null);
     const [selectedSection, setSelectedSection] = useState('texto');
     const [nuevoMasVendido, setNuevoMasVendido] = useState('');
-    const [categorias, setCategoras] = useState([]);
+    
     const [item1, setItem1] = useState('');
     const [item2, setItem2] = useState('');
     const [item3, setItem3] = useState('');
@@ -67,14 +68,54 @@ export default function PricesList(idProducto =null) {
     const [item9, setItem9] = useState('');
     const [item10, setItem10] = useState('');
     const [nuevoStock, setNuevoStock] = useState('');
-    const [subcategorias, setSubCategorias] = useState([]);
+    
     const [visibleCount, setVisibleCount] = useState(20);
+    
+    
+    
+
+
+
+
+
+
+    const [mensaje, setMensaje] = useState('');
+    const [imagenPreview, setImagenPreview] = useState([null, null, null, null]); // Arreglo para imágenes
+    const [isImageSelected, setIsImageSelected] = useState([false, false, false, false]); // Arreglo para selección de imágenes
+    const [descripcion, setDescripcion] = useState('');
+    const [titulo, setTitulo] = useState('');
+    const [categoria, setCategoria] = useState('');
+    const [masVendido, setMasVendido] = useState('');
+    const [precio, setPrecio] = useState('');
+    const [modalOpen, setModalOpen] = useState(false);
+    const [categorias, setCategoras] = useState([]);
+
+    const [stock, setStock] = useState('');
+    
+    const [subcategorias, setSubCategorias] = useState([]);
+    const [subcategoria, setSubCategoria] = useState([]);
+    const [categoriaSeleccionada, setCategoriaSeleccionada] = useState('');
     const [categoriasConSubcategorias, setCategoriasConSubcategorias] = useState([]);
     const [idCategoria, setIdCategoria] = useState('');
     const [idSubCategoria, setIdSubCategoria] = useState('');
     const [mostrarItems, setMostrarItems] = useState(false);
-    const [cantidadStock, setCantidadStock] = useState('');
     const [verItems, setVerItems] = useState('No');
+    const [customStock, setCustomStock] = useState('');
+    const [estado, setEstado] = useState(''); // Nuevo estado para el campo de estado
+    const [sku, setSku] = useState('');
+    const [autoFill, setAutoFill] = useState(false); // controls disabled state
+
+        //Producto seleccionado
+    const [productoSeleccionado, setProductoSeleccionado] = useState('');
+    
+    const [cantidadStock, setCantidadStock] = useState(''); // Nuevo estado para cantidad de stock manual
+        
+    const [addingProduct, setAddingProduct] = useState(false);
+
+
+
+    const [productos, setProductos] = useState([]);
+    
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -137,12 +178,12 @@ export default function PricesList(idProducto =null) {
 
 
     // useEffect(() => {
-    //     cargarProductos();
+    //     cargarListaPrecios();
 
     // }, []);
 
     useEffect(() => {
-        cargarProductos();
+        cargarListaPrecios();
     }, [idProducto]);
 
     useEffect(() => {
@@ -168,7 +209,26 @@ export default function PricesList(idProducto =null) {
         setVerItems(priceList.verItems)
     }, [priceList]);
 
+        useEffect(() => {
+            cargarProductos();
+    
+        }, []);
+    
+
     const cargarProductos = () => {
+        fetch(`${baseURL}/productosGet.php`, {
+            method: 'GET',
+        })
+            .then(response => response.json())
+            .then(data => {
+                setProductos(data.productos || []);
+                console.log(data.productos)
+            })
+            .catch(error => console.error('Error al cargar productos:', error));
+    };
+
+
+    const cargarListaPrecios = () => {
         const url = idProducto
     ? `${baseURL}/listaPreciosGet.php?idProducto=${idProducto}`
     : `${baseURL}/listaPreciosGet.php`;
@@ -207,7 +267,7 @@ export default function PricesList(idProducto =null) {
                             'success'
                         );
                         window.location.reload();
-                        cargarProductos();
+                        cargarListaPrecios();
                     })
                     .catch(error => {
                         console.error('Error al eliminar la Producto:', error);
@@ -297,8 +357,8 @@ export default function PricesList(idProducto =null) {
     };
 
 
-    const recargarProductos = () => {
-        cargarProductos();
+    const recargarListaPrecios = () => {
+        cargarListaPrecios();
     };
     const invertirOrden = () => {
         setPricesList([...pricesList].reverse());
@@ -353,7 +413,7 @@ export default function PricesList(idProducto =null) {
                         data.mensaje,
                         'success'
                     );
-                    cargarProductos();
+                    cargarListaPrecios();
                     cerrarModal()
                 }
             })
@@ -469,6 +529,17 @@ export default function PricesList(idProducto =null) {
             toast.error('Error al guardar los cambios');
         }
     }
+
+
+    const handleStock = (e) => {
+        setStock(e.target.value);
+        if (e.target.value !== 'elegir') {
+            setCustomStock('');
+        }
+    };
+
+
+
     //Trae usuario logueado-----------------------------
     const [loading, setLoading] = useState(true);
     useEffect(() => {
@@ -496,7 +567,7 @@ export default function PricesList(idProducto =null) {
             <div className='deFlexContent'>
 
                 <div className='deFlex2'>
-                    {/* <NewProduct /> */}
+                    <NewPricesListt/>
                     <button className='excel' onClick={descargarExcel}><FontAwesomeIcon icon={faArrowDown} /> Excel</button>
                     <button className='pdf' onClick={descargarPDF}><FontAwesomeIcon icon={faArrowDown} /> PDF</button>
                 </div>
@@ -532,7 +603,7 @@ export default function PricesList(idProducto =null) {
                         </select>
                     </div> */}
 
-                    <button className='reload' onClick={recargarProductos}><FontAwesomeIcon icon={faSync} /></button>
+                    <button className='reload' onClick={recargarListaPrecios}><FontAwesomeIcon icon={faSync} /></button>
                     <button className='reverse' onClick={invertirOrden}>
                         {ordenInvertido ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
                     </button>
@@ -566,7 +637,7 @@ export default function PricesList(idProducto =null) {
                                     className={selectedSection === 'texto' ? 'selected' : ''}
                                     onClick={() => handleSectionChange('texto')}
                                 >
-                                    Editar Texto
+                                    Editar Lista de precios
                                 </button>
                             </div>
                             <span className="close" onClick={cerrarModal}>
@@ -575,392 +646,162 @@ export default function PricesList(idProducto =null) {
                         </div>
                         <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
                             <div className='flexGrap'>
-                                <fieldset id='titulo'>
-                                    <legend>Titulo (*)</legend>
-                                    <input
-                                        type="text"
-                                        value={nuevoTitulo}
-                                        onChange={(e) => setNuevoTitulo(e.target.value)}
-                                    />
-                                </fieldset>
+
+
                                 <fieldset>
-                                    <legend>Categoría (*)</legend>
+                                    <legend>Seleccionar Producto</legend>
                                     <select
-                                        id="categoriaSeleccionada"
-                                        name="categoriaSeleccionada"
-                                        onChange={handleCategoriaSeleccion}
-                                        required
+                                        id="productoSeleccionado"
+                                        name="productoSeleccionado"
+                                        value={productoSeleccionado}
+                                        onChange={(e) => 
+                                            
+                                            setProductoSeleccionado(e.target.value)}
                                     >
-                                        {
-                                            categorias
-                                                ?.filter(categoriaFiltrada => categoriaFiltrada?.idCategoria === priceList?.idCategoria)
-                                                ?.map(categoriaFiltrada => (
-
-                                                    <option value={priceList?.categoria}>{categoriaFiltrada?.categoria}
-                                                        {subcategorias
-                                                            ?.filter(subcategoriaFiltrada => subcategoriaFiltrada.idSubCategoria === priceList.idSubCategoria)
-                                                            ?.map(subcategoriaFiltrada => (
-                                                                <>
-                                                                    {` >`} {subcategoriaFiltrada?.subcategoria}
-                                                                </>
-                                                            ))
-                                                        }
-
-                                                    </option>
-                                                ))
-                                        }
-                                        {categoriasConSubcategorias.map(categoria => (
-                                            <optgroup key={categoria.idCategoria}>
-                                                <option value={`${categoria.idCategoria}`} id='option'>{categoria.categoria}</option>
-                                                {categoria.subcategorias.map(subcategoria => (
-                                                    <option key={subcategoria.idSubCategoria} value={`${categoria.idCategoria}-${subcategoria.idSubCategoria}`}>
-                                                        {categoria.categoria} {`>`} {subcategoria.subcategoria}
-                                                    </option>
-                                                ))}
-                                            </optgroup>
+                                        <option value="">Selecciona un producto</option>
+                                        
+                                        {productos.map((producto) => (
+                                            <option key={producto.id} value={producto.id}>
+                                                {producto.titulo}
+                                            </option>
                                         ))}
                                     </select>
+
+                                    {productoSeleccionado && (
+                                        <div style={{ marginTop: '10px' }}>
+                                            <img
+                                                src={productos.find(p => 
+                                                    
+                                                     p.titulo === productoSeleccionado)?.imagen1 || Nologo}
+                                                   
+                                                alt="Vista previa"
+                                                style={{ width: '40px', height: '40px', objectFit: 'cover', marginTop: '10px', borderRadius: '8px' }}
+                                            />
+                                        </div>
+                                    )}
                                 </fieldset>
+
+
+                                <fieldset>
+                                    <legend>Categoría / Subcategoría (*)</legend>
+                                    {autoFill ? (
+                                        <label style={{ padding: '8px', display: 'block' }}>
+                                            {
+                                                categoriasConSubcategorias.find(cat => cat.idCategoria === parseInt(idCategoria))?.categoria
+                                            }
+                                            {idSubCategoria && (
+                                                <>
+                                                    {' > '}
+                                                    {
+                                                        subcategorias.find(sub => sub.idSubCategoria === parseInt(idSubCategoria))?.subcategoria
+                                                    }
+                                                </>
+                                            )}
+                                        </label>
+                                    ) : (
+                                        <select
+                                            id="categoriaSeleccionada"
+                                            name="categoriaSeleccionada"
+                                            onChange={handleCategoriaSeleccion}
+                                            required
+                                            value={idSubCategoria ? `${idCategoria}-${idSubCategoria}` : idCategoria}
+                                        >
+                                            <option value="">Categoría / subcategoría</option>
+                                            {categoriasConSubcategorias.map(categoria => (
+                                                <optgroup key={categoria.idCategoria} label={categoria.categoria}>
+                                                    <option value={`${categoria.idCategoria}`}>{categoria.categoria}</option>
+                                                    {categoria.subcategorias.map(subcategoria => (
+                                                        <option key={subcategoria.idSubCategoria} value={`${categoria.idCategoria}-${subcategoria.idSubCategoria}`}>
+                                                            {categoria.categoria} &gt; {subcategoria.subcategoria}
+                                                        </option>
+                                                    ))}
+                                                </optgroup>
+                                            ))}
+                                        </select>
+                                    )}
+                                </fieldset>
+
+
+                                <fieldset>
+                                    <legend>SKU (*)</legend>
+                                    {autoFill ? (
+                                        <label style={{ padding: '8px', display: 'block' }}>{sku}</label>
+                                    ) : (
+                                        <input
+                                            type="text"
+                                            id="sku"
+                                            name="sku"
+                                            required
+                                            value={sku}
+                                            onChange={(e) => setSku(e.target.value)}
+                                            disabled={true} // Deshabilitar el campo si se selecciona un producto
+                                        />
+                                    )}
+                                </fieldset>
+
 
                                 <fieldset>
                                     <legend>Precio (*)</legend>
                                     <input
                                         type="number"
-                                        value={nuevoPrecio}
-                                        onChange={(e) => setNuevoPrecio(e.target.value)}
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Precio anterior </legend>
-                                    <input
-                                        type="number"
-                                        value={nuevoPrecioAnterior}
-                                        onChange={(e) => setNuevoPrecioAnterior(e.target.value)}
+                                        id="precio"
+                                        name="precio"
+                                        min="0"
+                                        step="0.01"
+                                        required
+                                        value={precio}
+                                        onChange={(e) => setPrecio(e.target.value)}
                                     />
                                 </fieldset>
 
+
+
                                 <fieldset>
-                                    <legend>Más vendido (*)</legend>
+                                    <legend>Estado (*)</legend>
                                     <select
-                                        value={nuevoMasVendido !== '' ? nuevoMasVendido : priceList.masVendido}
-                                        onChange={(e) => setNuevoMasVendido(e.target.value)}
+                                        id="stock"
+                                        name="stock"
+                                        value={stock}
+                                        onChange={handleStock}
                                     >
-                                        <option value={priceList.masVendido}>{priceList.masVendido}</option>
-                                        <option value="si">Si</option>
-                                        <option value="no">No</option>
+                                        <option value="">Selecciona opción</option>
+                                        <option value={1}>Anterior</option>
+                                        <option value={0}>Actual</option>
+                                        
                                     </select>
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Stock (*)</legend>
-                                    <select
-                                        value={nuevoStock}
-                                        onChange={(e) => {
-                                            const value = e.target.value;
-                                            setNuevoStock(value);
-                                            if (value === 'elegir') {
-                                                setCantidadStock(priceList.stock); // Asigna el stock actual al campo cantidadStock
-                                            }
-                                        }}
-                                    >
-                                        <option value="">Selecciona opcion</option>
-                                        <option value={1}>Disponible</option>
-                                        <option value={0}>Agotado</option>
-                                        <option value="elegir">Ingrese cantidad</option>
-                                    </select>
-                                    {nuevoStock === 'elegir' && (
+                                    {stock === 'elegir' && (
                                         <input
                                             type="number"
                                             min="0"
                                             placeholder="Ingrese cantidad"
-                                            value={cantidadStock} // Muestra el valor inicial del stock o el nuevo valor ingresado
+                                            value={cantidadStock}
                                             onChange={(e) => setCantidadStock(e.target.value)}
                                             required
                                         />
                                     )}
                                 </fieldset>
 
-                                <fieldset id='descripcion'>
-                                    <legend>Descripcion </legend>
-                                    <textarea
-                                        type="text"
-                                        value={nuevaDescripcion}
-                                        onChange={(e) => setNuevaDescripcion(e.target.value)}
-                                    />
-                                </fieldset>
-                                <div id='textLabel'>
-                                    <label>Variaciones (opcionales)</label>
-                                    <div id='flexLabel'>
-                                        Dar a elegir a los clientes
-                                        <input
-                                            type="checkbox"
-                                            value={verItems}
-                                            checked={verItems === "Si"}
-                                            onChange={handleCheckboxChange}
-                                        />
-                                    </div>
-                                </div>
 
-
-                                {verItems === 'Si' && (
-                                    <div className='items'>
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item1"
-                                                name="item1"
-                                                required
-                                                value={item1}
-                                                onChange={(e) => setItem1(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item2"
-                                                name="item2"
-                                                required
-                                                value={item2}
-                                                onChange={(e) => setItem2(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item3"
-                                                name="item3"
-                                                required
-                                                value={item3}
-                                                onChange={(e) => setItem3(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item4"
-                                                name="item4"
-                                                required
-                                                value={item4}
-                                                onChange={(e) => setItem4(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item5"
-                                                name="item5"
-                                                required
-                                                value={item5}
-                                                onChange={(e) => setItem5(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item6"
-                                                name="item6"
-                                                required
-                                                value={item6}
-                                                onChange={(e) => setItem6(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item7"
-                                                name="item7"
-                                                required
-                                                value={item7}
-                                                onChange={(e) => setItem7(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item8"
-                                                name="item8"
-                                                required
-                                                value={item8}
-                                                onChange={(e) => setItem8(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item9"
-                                                name="item9"
-                                                required
-                                                value={item9}
-                                                onChange={(e) => setItem9(e.target.value)}
-                                            />
-                                        </fieldset>
-
-                                        <fieldset>
-                                            <legend>Variación</legend>
-                                            <input
-                                                type="text"
-                                                id="item10"
-                                                name="item10"
-                                                required
-                                                value={item10}
-                                                onChange={(e) => setItem10(e.target.value)}
-                                            />
-                                        </fieldset>
-
-
-                                    </div>
+                                {autoFill && (
+                                    <button
+                                        type="button"
+                                        className="btnReset"
+                                        style={{ marginTop: '10px' }}
+                                        onClick={() => {
+                                            setProductoSeleccionado('');
+                                            setSku('');
+                                            setIdCategoria('');
+                                            setIdSubCategoria('');
+                                            setAutoFill(false);
+                                        }}
+                                    >
+                                        Limpiar selección
+                                    </button>
                                 )}
+
 
                             </div>
-                            <label id='textLabel'>Imagenes</label>
-                            <div className='previevProduct'>
 
-                                {imagenPreview ? (
-                                    <img src={imagenPreview} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(priceList.imagen1)} />
-                                ) : (
-                                    <>
-                                        {priceList.imagen1 ? (
-                                            <img src={priceList.imagen1} alt="imagen" onClick={() => abrirModalImagenSeleccionada(priceList.imagen1)} />
-
-                                        ) : (
-                                            <span className='imgNone'>
-                                                No hay imagen
-
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-
-                                {imagenPreview2 ? (
-                                    <img src={imagenPreview2} alt="Vista previa de la imagen" />
-                                ) : (
-                                    <>
-                                        {priceList.imagen2 ? (
-                                            <img src={priceList.imagen2} alt="imagen" onClick={() => abrirModalImagenSeleccionada(priceList.imagen2)} />
-
-                                        ) : (
-                                            <span className='imgNone'>
-                                                No hay imagen
-
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-                                {imagenPreview3 ? (
-                                    <img src={imagenPreview3} alt="Vista previa de la imagen" />
-                                ) : (
-                                    <>
-                                        {priceList.imagen3 ? (
-                                            <img src={priceList.imagen3} alt="imagen" onClick={() => abrirModalImagenSeleccionada(priceList.imagen3)} />
-
-                                        ) : (
-                                            <span className='imgNone'>
-                                                No hay imagen
-
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-                                {imagenPreview4 ? (
-                                    <img src={imagenPreview4} alt="Vista previa de la imagen" />
-                                ) : (
-                                    <>
-                                        {priceList.imagen4 ? (
-                                            <img src={priceList.imagen4} alt="imagen" onClick={() => abrirModalImagenSeleccionada(priceList.imagen4)} />
-
-                                        ) : (
-                                            <span className='imgNone'>
-                                                No hay imagen
-
-                                            </span>
-                                        )}
-                                    </>
-                                )}
-                            </div>
-
-                            <div className='image-container'>
-                                <div className='image-input'>
-                                    <img
-                                        src={imageIcon}
-                                        alt="Imagen de ejemplo"
-                                        className='image-icon'
-                                        onClick={() => document.getElementById('fileInput1').click()} // Al hacer clic, simula un clic en el input
-                                    />
-                                    <input
-                                        id="fileInput1"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }} // Oculta el input
-                                        onChange={(e) => handleFileChange(e, setNuevaImagen, setImagenPreview)}
-                                    />
-                                </div>
-
-                                <div className='image-input'>
-                                    <img
-                                        src={imageIcon}
-                                        alt="Imagen de ejemplo"
-                                        className='image-icon'
-                                        onClick={() => document.getElementById('fileInput2').click()}
-                                    />
-                                    <input
-                                        id="fileInput2"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileChange(e, setNuevaImagen2, setImagenPreview2)}
-                                    />
-                                </div>
-
-                                <div className='image-input'>
-                                    <img
-                                        src={imageIcon}
-                                        alt="Imagen de ejemplo"
-                                        className='image-icon'
-                                        onClick={() => document.getElementById('fileInput3').click()}
-                                    />
-                                    <input
-                                        id="fileInput3"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileChange(e, setNuevaImagen3, setImagenPreview3)}
-                                    />
-                                </div>
-
-                                <div className='image-input'>
-                                    <img
-                                        src={imageIcon}
-                                        alt="Imagen de ejemplo"
-                                        className='image-icon'
-                                        onClick={() => document.getElementById('fileInput4').click()}
-
-                                    />
-                                    <input
-                                        id="fileInput4"
-                                        type="file"
-                                        accept="image/*"
-                                        style={{ display: 'none' }}
-                                        onChange={(e) => handleFileChange(e, setNuevaImagen4, setImagenPreview4)}
-                                    />
-                                </div>
-
-                            </div>
                             <button className='btnPost' onClick={() => guardarCambios(priceList.idProducto)} >Guardar </button>
 
                         </div>
