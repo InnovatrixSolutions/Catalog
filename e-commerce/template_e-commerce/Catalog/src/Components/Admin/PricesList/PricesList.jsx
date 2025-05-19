@@ -115,7 +115,42 @@ export default function PricesList(idProducto =null) {
 
 
     const [productos, setProductos] = useState([]);
+
+        const [searchTerm, setSearchTerm] = useState('');
+        const [filteredProductos, setFilteredProductos] = useState([]);
     
+        useEffect(() => {
+            const term = searchTerm.toLowerCase();
+            const filtered = productos.filter((producto) =>
+                producto.id?.toString().includes(term) ||
+                producto.sku?.toLowerCase().includes(term) ||
+                producto.titulo?.toLowerCase().includes(term)
+            );
+            setFilteredProductos(filtered);
+        }, [searchTerm, productos]);
+    
+
+            useEffect(() => {
+                if (productoSeleccionado) {
+                    
+                    //const producto = productos.find(p => p.titulo === parseInt(productoSeleccionado));
+                    const producto = productos.find(p => p.titulo === productoSeleccionado);
+                    console.log("PRODUCTO SELECCIONADO:", producto); // 👈
+                    if (producto) {
+                        setSku(producto.sku || ''); // <-- Update these based on log
+                        setTitulo(producto.titulo || '');
+                        setIdCategoria(producto.idCategoria || '');
+                        setIdSubCategoria(producto.idSubCategoria || '');
+                        setAutoFill(true);
+                    }
+                } else {
+                    setSku('');
+                    setTitulo('');
+                    setIdCategoria('');
+                    setIdSubCategoria('');
+                    setAutoFill(false);
+                }
+            }, [productoSeleccionado, productos]);
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -648,6 +683,17 @@ export default function PricesList(idProducto =null) {
                             <div className='flexGrap'>
 
 
+<fieldset>
+                                <legend>Buscar Producto (ID, SKU o Nombre)</legend>
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Buscar por ID, SKU o nombre"
+                                />
+                            </fieldset>
+
+                                
                                 <fieldset>
                                     <legend>Seleccionar Producto</legend>
                                     <select
@@ -660,14 +706,15 @@ export default function PricesList(idProducto =null) {
                                     >
                                         <option value="">Selecciona un producto</option>
                                         
-                                        {productos.map((producto) => (
+                                        {filteredProductos.map((producto) => (
                                             <option key={producto.id} value={producto.id}>
-                                                {producto.titulo}
+                                                {producto.titulo} 
                                             </option>
+                                            
                                         ))}
                                     </select>
 
-                                    {productoSeleccionado && (
+                                    {filteredProductos && (
                                         <div style={{ marginTop: '10px' }}>
                                             <img
                                                 src={productos.find(p => 

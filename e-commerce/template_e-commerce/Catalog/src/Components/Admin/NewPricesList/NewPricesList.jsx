@@ -43,6 +43,20 @@ export default function NewPricesList() {
     const [addingProduct, setAddingProduct] = useState(false);
 
 
+    const [searchTerm, setSearchTerm] = useState('');
+    const [filteredProductos, setFilteredProductos] = useState([]);
+    const [productos, setProductos] = useState([]);
+
+    useEffect(() => {
+        const term = searchTerm.toLowerCase();
+        const filtered = productos.filter((producto) =>
+            producto.id?.toString().includes(term) ||
+            producto.sku?.toLowerCase().includes(term) ||
+            producto.titulo?.toLowerCase().includes(term)
+        );
+        setFilteredProductos(filtered);
+    }, [searchTerm, productos]);
+    
     useEffect(() => {
         cargarCategoriasYSubcategorias();
     }, []);
@@ -256,7 +270,7 @@ export default function NewPricesList() {
     const plan = planes[0]?.plan
     const limitePlan = planes[0]?.limiteProducto
     const mensagePlan = `¡Alcanzaste el límite del plan ${plan}! <br/>Tu límite son ${limitePlan} productos`
-    const [productos, setProductos] = useState([]);
+    
     const alertPlan = () => {
         cargarProductos();
         Swal.fire(
@@ -374,6 +388,15 @@ export default function NewPricesList() {
 
                             <div className='flexGrap'>
                                 
+                            <fieldset>
+                                <legend>Buscar Producto (ID, SKU o Nombre)</legend>
+                                <input
+                                    type="text"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    placeholder="Buscar por ID, SKU o nombre"
+                                />
+                            </fieldset>
 
                                 
                                 <fieldset>
@@ -388,14 +411,15 @@ export default function NewPricesList() {
                                     >
                                         <option value="">Selecciona un producto</option>
                                         
-                                        {productos.map((producto) => (
+                                        {filteredProductos.map((producto) => (
                                             <option key={producto.id} value={producto.id}>
-                                                {producto.titulo}
+                                                {producto.titulo} 
                                             </option>
+                                            
                                         ))}
                                     </select>
 
-                                    {productoSeleccionado && (
+                                    {filteredProductos && (
                                         <div style={{ marginTop: '10px' }}>
                                             <img
                                                 src={productos.find(p => 
