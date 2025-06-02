@@ -381,7 +381,7 @@ export default function NewPricesList() {
                 <div className="modal">
                     <div className="modal-content">
                         <div className='deFlexBtnsModal'>
-                            <button className='selected'>Agregar Producto</button>
+                            <button className='selected'>Agregar Lista de precio por producto</button>
                             <span className="close" onClick={toggleModal}>&times;</span>
                         </div>
                         <form id="crearForm">

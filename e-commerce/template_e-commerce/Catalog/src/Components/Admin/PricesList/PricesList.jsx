@@ -903,7 +903,7 @@ export default function PricesList(idProducto =null) {
 
                                 <td>{item.tipoLista}</td>
 
-                                {categorias
+                                {/* {categorias
                                     ?.filter(categoriaFiltrada => categoriaFiltrada.idCategoria === item.idCategoria)
                                     ?.map(categoriaFiltrada => (
                                         <td
@@ -912,9 +912,13 @@ export default function PricesList(idProducto =null) {
                                         >
                                             {categoriaFiltrada.categoria}
                                         </td>
+                                       
+
                                     ))
-                                }
-                                <td>
+                                } */}
+
+                                <td>{item.idCategoria}</td>
+                                {/* <td>
                                     {item.idSubCategoria === 0
                                         ? 'sin seleccionar'
                                         :
@@ -929,7 +933,8 @@ export default function PricesList(idProducto =null) {
                                             }
                                         </>
                                     }
-                                </td>
+                                </td> */}
+                                <td>{item.idSubCategoria}</td>
                                 <td>{item.estado}</td>
 
 

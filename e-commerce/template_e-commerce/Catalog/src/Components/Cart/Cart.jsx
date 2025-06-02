@@ -9,7 +9,8 @@ import { Link as Anchor } from "react-router-dom";
 import moneda from '../moneda';
 import Swal from 'sweetalert2';
 import { ToastContainer, toast } from 'react-toastify';
-import MiPedido from '../MiPedido/MiPedido'
+import MiPedido from './FormularioPedido';
+import { Button } from 'primereact/button';
 export default function Cart() {
     const [cartItems, setCartItems] = useState([]);
     const [productos, setProductos] = useState([]);
@@ -39,6 +40,11 @@ export default function Cart() {
     let argentinaTime = new Date(now.getTime() + offset * 60 * 1000);
     // Formatear la fecha a 'YYYY-MM-DD HH:MM:SS'
     let createdAt = argentinaTime.toISOString().slice(0, 19).replace('T', ' ');
+
+
+
+    const [modalStep, setModalStep] = useState('summary'); // 'summary' or 'form'
+
 
     const [address, setAddress] = useState('');
     useEffect(() => {
@@ -148,14 +154,22 @@ export default function Cart() {
         setIsFocused(true);
     };
 
+    
     const closeModal = () => {
         setModalIsOpen(false);
         setIsFocused(false);
     };
 
+    // const openModal2 = () => {
+    //     setModalIsOpen2(true);
+    // };
+
+
     const openModal2 = () => {
-        setModalIsOpen2(true);
+    setModalStep('form');
+    setModalIsOpen2(true);
     };
+
 
     const closeModal2 = () => {
         setModalIsOpen2(false);
@@ -365,7 +379,7 @@ export default function Cart() {
             >
                 <div className='deFLex'>
                     <button onClick={closeModal} ><FontAwesomeIcon icon={faArrowLeft} />  </button>
-                    <MiPedido />
+                    
                 </div>
 
 
@@ -416,10 +430,10 @@ export default function Cart() {
                                         <button className='btn' onClick={openModal2}>
                                             Finalizar pedido
                                         </button>
-
+                                        
                                     </div>
 
-                                    <Modal
+                                    {/* <Modal
                                         isOpen={modalIsOpen2}
                                         onRequestClose={closeModal2}
                                         className="modal-cart"
@@ -596,6 +610,25 @@ export default function Cart() {
                                                 Finalizar pedido
                                             </button>
                                         )}
+                                    </Modal> */}
+                                     <Modal
+                                        isOpen={modalIsOpen2}
+                                        onRequestClose={closeModal2}
+                                        className="modal-cart"
+                                        overlayClassName="overlay-cart"
+                                    >
+                                                                                <div className='deFLex'>
+                                            <button onClick={closeModal2} ><FontAwesomeIcon icon={faArrowLeft} />  </button>
+                                            <h4>(*) Campos obligatorios</h4>
+                                        </div>
+
+                                         <MiPedido/>
+                                        
+                                        {/* <MiPedido /> */}
+                   
+
+
+                                        
                                     </Modal>
 
                                 </>)}

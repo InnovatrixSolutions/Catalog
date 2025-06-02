@@ -365,3 +365,55 @@
    
 }
 }
+
+
+
+/* === Estilos personalizados para PrimeReact === */
+
+.p-inputtext {
+    background-color: var(--gris2);
+    border-radius: 6px;
+    border: none;
+    padding: 13px;
+    width: 100%;
+}
+
+.p-dropdown {
+    background-color: var(--gris2);
+    border-radius: 6px;
+    border: none;
+    width: 100%;
+}
+
+.p-calendar {
+    width: 100%;
+}
+
+.p-button {
+    background-color: var(--color1);
+    border: none;
+    border-radius: 60px;
+    padding: 0.75rem 2rem;
+}
+
+.p-button:hover {
+    background-color: #003f8a; /* más oscuro que color1 si quieres */
+}
+
+.p-error {
+    color: red;
+    font-size: 0.75rem;
+}
+
+/* Radio buttons en columnas */
+.p-radiobutton {
+    margin-right: 0.5rem;
+}
+
+.p-stepper-panels {
+    padding: 1rem 0.5rem;
+}
+
+.p-stepper-panel {
+    margin-top: 1rem;
+}

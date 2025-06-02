@@ -386,7 +386,7 @@ export default function Detail() {
                 </SwiperSlide>
                 <div className="textDetail">
                     <h2 className="title">{producto.titulo}</h2>
-                    <h4 style={{ color: 'white', backgroundColor: '#000000', padding: '0px 10px', borderRadius: '5px' }}>Código de producto: {producto.sku}</h4>
+                    <h4 style={{ color: 'white', backgroundColor: '#000000', padding: '0px 10px', borderRadius: '5px' }}>SKU: {producto.sku}</h4>
                     <hr />
                     <div className="deFLexBuet">
                         {

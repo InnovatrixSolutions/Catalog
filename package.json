@@ -1,5 +1,8 @@
 {
   "dependencies": {
-    "chartjs-plugin-datalabels": "^2.2.0"
+    "@hookform/resolvers": "^5.0.1",
+    "chartjs-plugin-datalabels": "^2.2.0",
+    "react-hook-form": "^7.56.4",
+    "zod": "^3.25.42"
   }
 }

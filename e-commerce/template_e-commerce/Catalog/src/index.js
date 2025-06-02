@@ -4,6 +4,25 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
+
+// PrimeReact theme (choose one)
+import 'primereact/resources/themes/saga-blue/theme.css';
+
+
+
+// Core PrimeReact CSS
+import 'primereact/resources/primereact.min.css';
+
+// PrimeIcons for components like Dropdown, Calendar, etc.
+import 'primeicons/primeicons.css';
+
+// Optional: your own global styles
+import './index.css';
+
+import 'primeflex/primeflex.css';
+
+
+
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
