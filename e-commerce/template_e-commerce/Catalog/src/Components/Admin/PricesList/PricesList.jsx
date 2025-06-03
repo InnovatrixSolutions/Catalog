@@ -111,6 +111,7 @@ export default function PricesList(idProducto =null) {
     const [cantidadStock, setCantidadStock] = useState(''); // Nuevo estado para cantidad de stock manual
         
     const [addingProduct, setAddingProduct] = useState(false);
+    const [tipoLista, setTipoLista] = useState('');
 
 
 
@@ -485,6 +486,8 @@ export default function PricesList(idProducto =null) {
         if (nuevaImagen4) {
             formData.append('imagen4', nuevaImagen4);
         }
+        formData.append('tipoLista', tipoLista);
+
 
         fetch(`${baseURL}/productoImagePut.php`, {
             method: 'POST',  // Cambiado a POST
@@ -770,6 +773,21 @@ export default function PricesList(idProducto =null) {
 
 
                                 <fieldset>
+                                <legend>Tipo de lista (*)</legend>
+                                <select
+                                    id="tipoLista"
+                                    name="tipoLista"
+                                    value={tipoLista}
+                                    onChange={(e) => setTipoLista(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Seleccione tipo</option>
+                                    <option value="Catalogo">catalogo</option>
+                                    <option value="Dropshipper">dropshipper</option>
+                                </select>
+                                </fieldset>
+
+                                <fieldset>
                                     <legend>SKU (*)</legend>
                                     {autoFill ? (
                                         <label style={{ padding: '8px', display: 'block' }}>{sku}</label>
@@ -827,6 +845,10 @@ export default function PricesList(idProducto =null) {
                                         />
                                     )}
                                 </fieldset>
+
+
+
+
 
 
                                 {autoFill && (

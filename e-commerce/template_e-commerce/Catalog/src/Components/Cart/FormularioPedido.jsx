@@ -7,6 +7,7 @@ import { Calendar } from 'primereact/calendar';
 import { Stepper } from 'primereact/stepper';
 import { StepperPanel } from 'primereact/stepperpanel';
 import { z } from 'zod';
+import Banners from '../Banners/Banners';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from 'primereact/button';
 import 'primeflex/primeflex.css';
@@ -15,6 +16,11 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+
+
+import { Card } from 'primereact/card';
+        
+        
 
 
 const medioPagoLista = [
@@ -33,7 +39,7 @@ const schema = z.object({
   otroMedio: z.string().optional(),
 
   clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
-  clienteCedula: z.string().min(1, "Cédula requerida"),
+  clienteDocumento: z.string().min(1, "Documento requerida"),
   clienteCelular: z.string().min(7, "Celular inválido"),
   clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
 
@@ -62,28 +68,61 @@ export default function FormularioAsesorZod( ) {
     defaultValues: {
       documento: '', email: '', nombre: '', telefono: '', valor: '',
       incluyeEnvio: 'No', medioComision: '', otroMedio: '',
-      clienteNombre: '', clienteCedula: '', clienteCelular: '', clienteTransportadora: '',
+      clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
       fechaDespacho: null, franjaEntrega: '', departamento: '', ciudad: '', direccion: '', barrio: '',
       contraentrega: 'Sí', metodoPago: '', otroMetodoPago: ''
     }
   });
-
+const booleanFlag= true;
   const medioComisionSeleccionado = watch('medioComision');
 
   const onSubmit = (data) => {
     console.log("Formulario válido:", data);
   };
 
+      const header = (
+        <></>
+        // <img alt="Card" src="https://primefaces.org/cdn/primereact/images/usercard.png" />
+    );
+    const footer = (
+        <>
+        <h5>OJO: estamos en plena temporada, pedidos a nivel nacional se
+enviarán hasta el 15 de diciembre de 2024 debido al alto flujo de las
+transportadoras, asegúrate de hacer tus pedidos con tiempo </h5>
+            {/* <Button label="Save" icon="pi pi-check" />
+            <Button label="Cancel" severity="secondary" icon="pi pi-times" style={{ marginLeft: '0.5em' }} /> */}
+        </>
+    );
+
+
   return (
     
-    <div className="card p-4 surface-50" style={{ maxWidth: '900px', margin: 'auto' }}>
+    // <div className="card p-4 surface-50" style={{ maxWidth: '900px', margin: 'auto' }}>
+    <div className="card p-4 surface-50" style={{ maxWidth: '900px' }}>
+
+{/* <Banners/> */}
+
+        <div className="card flex justify-content-center">
+            <Card title="Pedidos Mercado Yepes" subTitle="Card subtitle" footer={footer} header={header} className="md:w-25rem">
+                <p className="m-0">
+                    Asegúrate de tener toda la información, buen cierre de ventas,
+tener certeza absoluta de que va a recibir el producto TU CLIENTE,
+de esa manera no tendrás que pagar los envíos por pedidos devueltos.
+
+Escribe Con Calma, Asegúrate de que los datos estén
+correctos para evitar devoluciones 
 
 
+                </p>
+            </Card>
+        </div>
+ 
+         
       <form onSubmit={handleSubmit(onSubmit)}>
-        <Stepper activeStep={activeIndex} onStepChange={(e) => setActiveIndex(e.index)} linear>
-<StepperPanel header="Datos del Asesor">
+        <Stepper orientation="vertical"  headerPosition="left" activeStep={activeIndex} onStepChange={(e) => setActiveIndex(e.index)} linear>
+{booleanFlag? <StepperPanel header="Datos del Asesor">
   <div className="formgrid grid">
-
+    
     {/* Campos generales */}
     {[
       ['documento', 'Documento'],
@@ -153,13 +192,16 @@ export default function FormularioAsesorZod( ) {
     </div>
   </div>
 </StepperPanel>
+:
+<></>
+}
 
 
           <StepperPanel header="Cliente">
             <div className="formgrid grid">
               {[
                 ['clienteNombre', 'Nombre'],
-                ['clienteCedula', 'Cédula'],
+                ['clienteDocumento', 'Documento'],
                 ['clienteCelular', 'Celular'],
                 ['clienteTransportadora', 'Cel. Transportadora']
               ].map(([field, label]) => (
@@ -206,6 +248,47 @@ export default function FormularioAsesorZod( ) {
               </div>
             </div>
           </StepperPanel>
+
+          <StepperPanel header="Formas de Pago">
+  <div className="formgrid grid">
+    <div className="col-12 md:col-6">
+      <label>Pago Contraentrega</label>
+      <Controller name="contraentrega" control={control} render={({ field }) => (
+        <div className="flex gap-3">
+          <RadioButton inputId="contraentregaSi" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="contraentregaSi">Sí</label>
+          <RadioButton inputId="contraentregaNo" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="contraentregaNo">No</label>
+        </div>
+      )} />
+      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+    </div>
+
+    {watch("contraentrega") === 'No' && (
+      <>
+        <div className="col-12 md:col-6">
+          <label>Medio de pago</label>
+          <Controller name="metodoPago" control={control} render={({ field }) => (
+            <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione medio" className="w-full" />
+          )} />
+          {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
+        </div>
+
+        {watch("metodoPago") === 'Otro' && (
+          <div className="col-12 md:col-6">
+            <label>Otro medio de pago</label>
+            <InputText {...register("otroMetodoPago")} className="w-full" />
+          </div>
+        )}
+      </>
+    )}
+
+    <div className="col-12 flex justify-content-between">
+      <Button label="Atrás" onClick={() => setActiveIndex(2)} />
+      <Button type="submit" label="Guardar" className="p-button-success" />
+    </div>
+  </div>
+</StepperPanel>
         </Stepper>
       </form>
     </div>

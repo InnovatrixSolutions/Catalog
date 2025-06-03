@@ -34,6 +34,7 @@ export default function NewPricesList() {
     const [sku, setSku] = useState('');
     const [autoFill, setAutoFill] = useState(false); // controls disabled state
 
+    const [tipoLista, setTipoLista] = useState('');
 
     //Producto seleccionado
     const [productoSeleccionado, setProductoSeleccionado] = useState('');
@@ -204,6 +205,9 @@ export default function NewPricesList() {
 
         formData.append('sku', sku);
         formData.append('productoSeleccionado', productoSeleccionado);
+        
+        formData.append('tipoLista', tipoLista);
+
 
 
 
@@ -434,6 +438,7 @@ export default function NewPricesList() {
                                 </fieldset>
 
 
+
                                 <fieldset>
                                     <legend>Categoría / Subcategoría (*)</legend>
                                     {autoFill ? (
@@ -473,6 +478,21 @@ export default function NewPricesList() {
                                     )}
                                 </fieldset>
 
+
+                                <fieldset>
+                                <legend>Tipo de lista (*)</legend>
+                                <select
+                                    id="tipoLista"
+                                    name="tipoLista"
+                                    value={tipoLista}
+                                    onChange={(e) => setTipoLista(e.target.value)}
+                                    required
+                                >
+                                    <option value="">Seleccione tipo</option>
+                                    <option value="Catalogo">catalogo</option>
+                                    <option value="Dropshipper">dropshipper</option>
+                                </select>
+                                </fieldset>
 
                                 <fieldset>
                                     <legend>SKU (*)</legend>
