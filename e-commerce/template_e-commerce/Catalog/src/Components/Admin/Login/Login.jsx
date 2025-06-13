@@ -44,6 +44,7 @@ export default function Login() {
                     setTimeout(() => {
                         //window.location.reload();
                         //window.location.hrf== '/dashboard';
+                        console.log('Redirigiendo a /dashboard');
                         navigate('/dashboard');
 
                     }, 500);

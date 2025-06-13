@@ -217,8 +217,15 @@ export default function NewCodigo() {
         fetch(`${baseURL}/codigosGet.php`, {
             method: 'GET',
         })
-            .then(response => response.json())
+            .then(
+                
+                async response => {
+                    response.json()
+                   const data = await response.json();
+        console.log('codigos', data)}
+        )
             .then(data => {
+                console.log('data', data);
                 setCodigos(data.codigos || []);
             })
             .catch(error => console.error('Error al cargar códigos:', error));

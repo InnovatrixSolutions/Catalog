@@ -48,6 +48,7 @@ export const fetchUsuario = async () => {
         const response = await fetch(`${baseURL}userLogued.php`, {
             credentials: 'include', // Importante para mantener sesión PHP
         });
+        console.log('response', response);
 
         if (!response.ok) throw new Error('Network response was not ok');
 
