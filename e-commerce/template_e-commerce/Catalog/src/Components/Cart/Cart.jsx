@@ -358,6 +358,13 @@ export default function Cart() {
     const handlePagoRecibirChange = (value) => {
         setPagoRecibir(value);
     };
+
+    const clearCartAll = () => {
+  setCartItems([]);
+  localStorage.removeItem('cart');
+  setModalIsOpen2(false); // Optional: close the modal
+};
+
     return (
         <div>
             <ToastContainer />
@@ -622,7 +629,14 @@ export default function Cart() {
                                             <h4>(*) Campos obligatorios</h4>
                                         </div>
 
-                                         <MiPedido/>
+                                    <MiPedido 
+                                    onPedidoSuccess={clearCartAll} 
+                                    cartItems={cartItems} 
+                                    totalPrice={totalPrice}
+                                    />
+                                    {/* <div className="modal-send-form">                                    
+
+
                                         
                                         {/* <MiPedido /> */}
                    

@@ -417,3 +417,38 @@
 .p-stepper-panel {
     margin-top: 1rem;
 }
+
+.p-multiselect {
+    background-color: var(--gris2);
+    border-radius: 6px;
+    border: none;
+    padding: 13px;
+    width: 100%;
+    font-family: inherit;
+}
+
+.p-multiselect .p-multiselect-label {
+    padding: 0;
+}
+
+.p-multiselect-panel {
+    border-radius: 10px;
+    font-size: 0.9em;
+}
+
+.p-multiselect-items-wrapper {
+    max-height: 200px;
+}
+
+.p-multiselect-item {
+    padding: 0.75rem 1rem;
+}
+
+.p-multiselect-token {
+    background-color: var(--color1);
+    color: var(--blanco);
+    border-radius: 12px;
+    padding: 4px 8px;
+    margin: 3px 4px;
+    font-size: 0.75rem;
+}

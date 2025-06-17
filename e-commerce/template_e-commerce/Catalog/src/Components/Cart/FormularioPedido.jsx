@@ -18,6 +18,11 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 import { Dialog } from 'primereact/dialog';
 
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import { MultiSelect } from 'primereact/multiselect';
+
+
 import { useEffect } from 'react';
 
 
@@ -34,6 +39,13 @@ const medioPagoLista = [
   'Nequi', 'Bancolombia', 'Bold (Tarjeta)', 'Daviplata',
   'Mercadopago', 'Addi', 'Sistecredito', 'Otro'
 ];
+const franjasHorarias = [
+  { label: "05:00-10:00 AM", value: "05:00-10:00 AM" },
+  { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
+  { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
+];
+
+
 
 
 
@@ -46,6 +58,8 @@ const schema = z.object({
   incluyeEnvio: z.enum(["Sí", "No"]),
   medioComision: z.string().min(1, "Seleccione un medio"),
   otroMedio: z.string().optional(),
+  pin_asesor: z.string().optional(),
+
 
   clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
   clienteDocumento: z.string().min(1, "Documento requerida"),
@@ -53,16 +67,21 @@ const schema = z.object({
   clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
 
   fechaDespacho: z.date({ required_error: "Fecha requerida" }),
-  franjaEntrega: z.string().min(1, "Franja requerida"),
-  departamento: z.string().min(1, "Departamento requerido"),
-  ciudad: z.string().min(1, "Ciudad requerida"),
+  // franjaEntrega: z.string().min(1, "Franja requerida"),
+  franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+
+  departamento: z.number().min(1, "Departamento requerido"),
+  ciudad: z.number().min(1, "Ciudad requerida"),
   direccion: z.string().min(1, "Dirección requerida"),
   barrio: z.string().min(1, "Barrio requerido"),
+  notas: z.string().max(1000).optional(),
 
   contraentrega: z.enum(["Sí", "No"]),
   metodoPago: z.string().optional(),
   otroMetodoPago: z.string().optional(),
   transferencia: z.enum(["Sí", "No"]),
+  
+
 
 }).refine((data) => {
   if (data.transferencia === "Sí") return true;
@@ -76,7 +95,12 @@ const schema = z.object({
 
 
 
-export default function FormularioAsesorZod() {
+export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
+
+
+  console.log("Productos seleccionados:", cartItems);
+  console.log("Valor total:", totalPrice);
+
   const [activeIndex, setActiveIndex] = useState(0);
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
@@ -84,8 +108,9 @@ export default function FormularioAsesorZod() {
       documento: '', email: '', nombre: '', telefono: '', valor: '',
       incluyeEnvio: 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: null, franjaEntrega: '', departamento: '', ciudad: '', direccion: '', barrio: '',
-      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'No',
+      fechaDespacho: null, franjaEntrega: [], departamento: '', ciudad: '', direccion: '', barrio: '',
+      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'No', notas: '',pin_asesor: ''
+
 
     }
   });
@@ -98,44 +123,101 @@ export default function FormularioAsesorZod() {
 
 
 
-  const onSubmit = (data) => {
+  const onSubmit = async (data) => {
+    setIsFinalSubmit(false); // reset state after successful submit
+    setShowErrorsDialog(false); // just in case
     const resumenPedido = {
-      asesor: {
-        documento: data.documento,
-        email: data.email,
-        nombre: data.nombre,
-        telefono: data.telefono,
-        valor: data.valor,
-        incluyeEnvio: data.incluyeEnvio,
-        medioComision: data.medioComision,
-        otroMedio: data.otroMedio || null,
-      },
-      cliente: {
-        nombre: data.clienteNombre,
-        documento: data.clienteDocumento,
-        celular: data.clienteCelular,
-        transportadora: data.clienteTransportadora,
-      },
-      entrega: {
-        fecha: data.fechaDespacho?.toISOString().split('T')[0] || null,
-        franja: data.franjaEntrega,
-        departamento: data.departamento,
-        ciudad: data.ciudad,
-        direccion: data.direccion,
-        barrio: data.barrio,
-      },
-      pago: {
-        transferencia: data.transferencia,
-        contraentrega: data.contraentrega,
-        metodoPago: data.metodoPago || null,
-        otroMetodoPago: data.otroMetodoPago || null,
-      }
+      tipo_pedido: "dropshipper",
+      doc_asesor: data.documento,
+      // pin_asesor: "4896ABCD",
+      pin_asesor: data.pin_asesor,
+
+      nombre_asesor: data.nombre,
+      telefono_asesor: data.telefono,
+      telefono_whatsapp: data.telefono,
+      medio_pago_asesor: data.medioComision,
+      email: data.email,
+      productos: cartItems.map(item => ({
+        idProducto: item.idProducto,
+        idCategoria: item.idCategoria,
+        titulo: item.titulo,
+        cantidad: item.cantidad,
+        items: item.items || [],
+        precio: item.precio,
+        imagen: item.imagen1 || item.imagen2 || item.imagen3 || item.imagen4 || ''
+      })),
+
+      // productos: [{ "items": [], "imagen": "", "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17 }, { "items": [], "imagen": "", "precio": 167900, "titulo": "Roku Express Hd Convertidor Tv En Smart A Tv Streaming", "cantidad": 1, "idProducto": 3, "idCategoria": 14 }, { "items": [], "imagen": "", "precio": 119900, "titulo": "Marcadores Doble Punta Set 168 Colores Dibujo Base De Alcohol", "cantidad": 1, "idProducto": 40, "idCategoria": 12 }],
+      total_pedido: data.valor,
+      nombre_cliente: data.clienteNombre,
+      telefono_cliente: data.clienteCelular,
+      telefono_tran: data.clienteTransportadora,
+      direccion_entrega: data.direccion,
+      country_id: 48, // Colombia
+      state_id: data.departamento,
+      city_id: data.ciudad,
+      // fecha_despacho: data.fechaDespacho?.toISOString().split('T')[0] || null,
+      //fecha_despacho: "2025-06-05 21:01:00",
+      
+      //fecha_despacho: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      // franja_horario: data.franjaEntrega,
+      // franja_horario: "05:00-10:00 AM,03:00-07:00 pm",
+      franja_horario: data.franjaEntrega.join(','),
+
+
+     // nota: `Pedido realizado por el asesor ${data.nombre} con documento ${data.documento}`,
+     notas: data.notas || '',
+      pago_recibir: data.valor,
+
+
+
+
     };
 
     console.log("Objeto listo para enviar:", resumenPedido);
 
-    // Aquí puedes hacer un POST o lo que necesites
-    // await fetch('/endpoint', { method: 'POST', body: JSON.stringify(resumenPedido), headers: { 'Content-Type': 'application/json' } })
+    try {
+
+
+      const formData = new FormData();
+
+      for (const key in resumenPedido) {
+        const value = resumenPedido[key];
+
+        // ⚠️ Campo productos debe ser enviado como JSON.string
+        if (key === 'productos') {
+          formData.append(key, JSON.stringify(value));
+        } else {
+          // ✅ Asegura que todos los valores sean string
+          formData.append(key, String(value));
+        }
+      }
+
+
+      for (const pair of formData.entries()) {
+        console.log(`${pair[0]}: ${pair[1]}`);
+      }
+
+      const response = await fetch(`${baseURL}/pedidosPost.php`, {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+      console.log("Respuesta del servidor:", result);
+
+      if (result.success) {
+  toast.success("Pedido enviado correctamente.");
+  if (typeof onPedidoSuccess === 'function') {
+    onPedidoSuccess(); // ✅ Clear cart from parent
+  }
+} else {
+  toast.error("Error en el envío del pedido.");
+}
+
+    } catch (error) {
+      console.error("Error en la peticion:", error);
+    }
   };
 
 
@@ -156,8 +238,11 @@ export default function FormularioAsesorZod() {
 
   // Dentro de tu componente FormularioAsesorZod:
   const documento = watch('documento');
-  const tipoAsesor = "dropshipper"
-  const pinAsesor = "4896ABCD";
+  const tipoAsesor = process.env.REACT_APP_TIPO_ASESOR;
+
+
+  //const tipoAsesor = "dropshipper"
+  //const pinAsesor = "4896ABCD";
 
 
   useEffect(() => {
@@ -166,7 +251,9 @@ export default function FormularioAsesorZod() {
         const formData = new FormData();
         formData.append('doc_asesor', documento);
         formData.append('tipo_asesor', tipoAsesor);
-        formData.append('pin_asesor', pinAsesor);
+        //formData.append('pin_asesor', pinAsesor);
+        formData.append('pin_asesor', watch('pin_asesor'));
+
 
         try {
           const response = await fetch(`${baseURL}/asesorDocGet.php`, {
@@ -219,6 +306,8 @@ export default function FormularioAsesorZod() {
           body: formData
         });
 
+        console.log("formData", formData);
+
         const data = await response.json();
         console.log("Departamentos obtenidos:", data.data.states);
         const opciones = data.data.states.map((dep) => ({
@@ -269,27 +358,66 @@ export default function FormularioAsesorZod() {
     obtenerCiudades();
   }, [departamentoSeleccionado, setValue]);
 
-  const [submitted, setSubmitted] = useState(false);
+
   const [showErrorsDialog, setShowErrorsDialog] = useState(false);
-  const franjasHorarias = [
-  { label: "Mañana (8am - 11am)", value: "Mañana" },
-  { label: "Medio día (11am - 2pm)", value: "Medio día" },
-  { label: "Tarde-Noche (2pm - 7pm)", value: "Tarde-Noche" },
-];
+  
 
 
+  // const onError = (formErrors) => {
+  //   if (Object.keys(formErrors).length > 0) {
+  //     setShowErrorsDialog(true); // Show the dialog ONLY if there are errors
+  //   }
+  // };
 
-  useEffect(() => {
-    if (submitted && Object.keys(errors).length > 0) {
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  }, [submitted, errors]);
+  // const onError = (formErrors) => {
+  //   if (Object.keys(formErrors).length > 0) {
+  //     setShowErrorsDialog(true);
+  //     window.scrollTo({ top: 0, behavior: 'smooth' });
+  //   }
+  // };
+
+  const [isFinalSubmit, setIsFinalSubmit] = useState(false);
+
 
   const onError = (formErrors) => {
-    setSubmitted(true); // Mostrar errores
-    setShowErrorsDialog(true);
-
+    if (isFinalSubmit && Object.keys(formErrors).length > 0) {
+      setShowErrorsDialog(true);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
+
+useEffect(() => {
+  // Solo se ejecuta en desarrollo
+  const isDev = process.env.NODE_ENV !== 'production';
+
+  if (isDev) {
+    inicializarFormularioDePrueba();
+  }
+}, []);
+
+const inicializarFormularioDePrueba = () => {
+  setValue('documento', '123456789');
+  setValue('pin_asesor', 'ABC123');
+  setValue('email', 'asesor@correo.com');
+  setValue('nombre', 'Juan Pérez');
+  setValue('telefono', '3001234567');
+  setValue('medioComision', 'Nequi');
+  setValue('valor', 100000);
+  setValue('incluyeEnvio', 'Sí');
+  setValue('clienteNombre', 'Cliente Ejemplo');
+  setValue('clienteDocumento', '987654321');
+  setValue('clienteCelular', '3107654321');
+  setValue('clienteTransportadora', '3107654321');
+  setValue('fechaDespacho', new Date());
+  setValue('franjaEntrega', ['05:00-10:00 AM']);
+  setValue('departamento', 1); // Asegúrate que sea un ID válido en tu sistema
+  setValue('ciudad', 10);      // Igual aquí
+  setValue('direccion', 'Cra 123 #45-67');
+  setValue('barrio', 'El Prado');
+  setValue('transferencia', 'Sí');
+  setValue('contraentrega', 'No');
+  setValue('notas', 'Esto es una prueba automatizada');
+};
 
 
 
@@ -316,7 +444,7 @@ export default function FormularioAsesorZod() {
               <h5 className="text-red-600"> Por favor corrige los siguientes errores:</h5>
               <ul className="text-red-500 ml-4 list-disc">
                 {Object.entries(errors).map(([fieldName, errorObj]) => (
-                  <li key={fieldName}>{errorObj.message}</li>
+                  <li key={fieldName}>:{errorObj.message}</li>
                 ))}
               </ul>
             </div>
@@ -340,6 +468,22 @@ export default function FormularioAsesorZod() {
               {/* Campos generales */}
               {[
                 ['documento', 'Documento'],
+                ['pin_asesor', 'PIN del Asesor'],
+                
+                
+              ].map(([field, label]) => (
+                <div key={field} className="col-12 md:col-6">
+                  <label>{label}</label>
+                  <InputText {...register(field)} className="w-full" />
+                  {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
+                  
+                </div>
+                
+                
+              ))}
+
+                            {[
+
                 ['email', 'Email'],
                 ['nombre', 'Nombre'],
                 ['telefono', 'Teléfono']
@@ -352,13 +496,7 @@ export default function FormularioAsesorZod() {
               ))}
 
 
-
-              <div className="col-12 flex justify-content-end">
-                <Button label="Siguiente" onClick={() => setActiveIndex(1)} />
-              </div>
-            </div>
-
-                          {/* Medio comisión */}
+              {/* Medio comisión */}
               <div className="col-12 md:col-6">
                 <label>¿En dónde recibes tus comisiones?</label>
                 <Controller
@@ -370,11 +508,24 @@ export default function FormularioAsesorZod() {
                 />
                 {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
               </div>
+
+              <div className="col-12 flex justify-content-end">
+                {/* <Button label="Siguiente" onClick={() => setActiveIndex(1)} /> */}
+                <Button
+                  label="Siguiente"
+                  type="button"
+                  onClick={() => setActiveIndex(1)} // donde X es el paso siguiente
+                />
+
+              </div>
+            </div>
+
+
           </StepperPanel>
             :
             <></>
           }
-          
+
 
 
           <StepperPanel header="Cliente">
@@ -394,7 +545,13 @@ export default function FormularioAsesorZod() {
                 ))}
                 <div className="col-12 flex justify-content-between">
                   <Button label="Atrás" onClick={() => setActiveIndex(0)} />
-                  <Button label="Siguiente" onClick={() => setActiveIndex(2)} />
+                  {/* <Button label="Siguiente" onClick={() => setActiveIndex(2)} /> */}
+                  <Button
+                    label="Siguiente"
+                    type="button"
+                    onClick={() => setActiveIndex(2)} // donde X es el paso siguiente
+                  />
+
                 </div>
               </div>
             </Card>
@@ -406,11 +563,17 @@ export default function FormularioAsesorZod() {
               <div className="formgrid grid">
                 <div className="col-12 md:col-6">
                   <label>Fecha Despacho</label>
+                  
+
+
                   <Controller name="fechaDespacho" control={control} render={({ field }) => (
                     <Calendar {...field} showIcon dateFormat="dd/mm/yy" className="w-full" />
+                    
                   )} />
                   {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
+                  
                 </div>
+                
 
                 {/* {[
                   ['franjaEntrega', 'Franja'],
@@ -426,22 +589,40 @@ export default function FormularioAsesorZod() {
                   </div>
                 ))} */}
 
-<div className="col-12 md:col-6">
-  <label>Franja de Entrega</label>
-  <Controller
-    name="franjaEntrega"
-    control={control}
-    render={({ field }) => (
-      <Dropdown
-        {...field}
-        options={franjasHorarias}
-        placeholder="Seleccione una franja"
-        className="w-full"
-      />
-    )}
-  />
-  {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
-</div>
+                {/* <div className="col-12 md:col-6">
+                  <label>Franja de Entrega</label>
+                  <Controller
+                    name="franjaEntrega"
+                    control={control}
+                    render={({ field }) => (
+                      <Dropdown
+                        {...field}
+                        options={franjasHorarias}
+                        placeholder="Seleccione una franja"
+                        className="w-full"
+                      />
+                    )}
+                  />
+                  {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
+                </div> */}
+                <div className="col-12 md:col-6">
+                  <label>Franja de Entrega</label>
+                  <Controller
+                    name="franjaEntrega"
+                    control={control}
+                    render={({ field }) => (
+                      <MultiSelect
+                        {...field}
+                        options={franjasHorarias}
+                        placeholder="Seleccione una o varias franjas"
+                        className="w-full"
+                        display="chip"
+                      />
+                    )}
+                  />
+                  {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
+                </div>
+
 
 
 
@@ -480,10 +661,47 @@ export default function FormularioAsesorZod() {
                   {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
                 </div>
 
+                <div className="col-12 md:col-6">
+                  <label>Dirección</label>
+                  <InputText {...register("direccion")} className="w-full" />
+                  {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
+                </div>
+
+                <div className="col-12 md:col-6">
+                  <label>Barrio</label>
+                  <InputText {...register("barrio")} className="w-full" />
+                  {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
+                </div>
+
+                                <div className="col-12">
+                  <label htmlFor="notas">Notas del pedido</label>
+                  <Controller
+                    name="notas"
+                    control={control}
+                    render={({ field }) => (
+                      <textarea
+                        {...field}
+                        id="notas"
+                        rows={4}
+                        placeholder="Escriba alguna indicación especial o comentario"
+                        className="w-full p-inputtext"
+                      />
+                    )}
+                  />
+                  {errors.notas && <small className="p-error">{errors.notas.message}</small>}
+                </div>
+
+
 
                 <div className="col-12 flex justify-content-between">
                   <Button label="Atrás" onClick={() => setActiveIndex(1)} />
-                  <Button label="Siguiente" onClick={() => setActiveIndex(3)} />
+                  {/* <Button label="Siguiente" onClick={() => setActiveIndex(3)} /> */}
+                  <Button
+                    label="Siguiente"
+                    type="button"
+                    onClick={() => setActiveIndex(3)} // donde X es el paso siguiente
+                  />
+
                 </div>
               </div>
             </Card>
@@ -502,12 +720,12 @@ export default function FormularioAsesorZod() {
                 <InputText
                   {...register("valor")}
                   className="w-full"
-                  disabled={watch("incluyeEnvio") !== 'Sí'}
+                // disabled={watch("incluyeEnvio") !== 'Sí'}
                 />
                 {errors.valor && <small className="p-error">{errors.valor.message}</small>}
               </div>
 
-                            {/* Radio Buttons: ¿Incluye Envío? */}
+              {/* Radio Buttons: ¿Incluye Envío? */}
               <div className="col-12">
                 <label>¿Incluye Envío?</label>
                 <Controller
@@ -597,7 +815,13 @@ export default function FormularioAsesorZod() {
 
                 <div className="col-12 flex justify-content-between">
                   <Button label="Atrás" onClick={() => setActiveIndex(2)} />
-                  <Button label="Siguiente" onClick={() => setActiveIndex(4)} />
+                  {/* <Button label="Siguiente" onClick={() => setActiveIndex(4)} /> */}
+                  <Button
+                    label="Siguiente"
+                    type="button"
+                    onClick={() => setActiveIndex(4)} // donde X es el paso siguiente
+                  />
+
                 </div>
 
               </div>
@@ -632,12 +856,15 @@ export default function FormularioAsesorZod() {
                       <div className="mb-2"><strong>Cel. Transportadora:</strong> {watch('clienteTransportadora')}</div>
 
                       <h3 className="mt-4 mb-3">Datos de Entrega</h3>
-                      <div className="mb-2"><strong>Fecha:</strong> {watch('fechaDespacho')?.toLocaleDateString()}</div>
-                      <div className="mb-2"><strong>Franja:</strong> {watch('franjaEntrega')}</div>
+                      <div className="mb-2"><strong>Fecha de despacho:</strong> {watch('fechaDespacho')?.toLocaleDateString()}</div>
+                      {/* <div className="mb-2"><strong>Franja:</strong> {watch('franjaEntrega')}</div> */}
+                      <div className="mb-2"><strong>Franja:</strong> {watch('franjaEntrega').join(', ')}</div>
+
                       <div className="mb-2"><strong>Departamento:</strong> {watch('departamento')}</div>
                       <div className="mb-2"><strong>Ciudad:</strong> {watch('ciudad')}</div>
                       <div className="mb-2"><strong>Dirección:</strong> {watch('direccion')}</div>
                       <div className="mb-2"><strong>Barrio:</strong> {watch('barrio')}</div>
+                      <div className="mb-2"><strong>Notas:</strong> {watch("notas")}</div>
 
                       <h3 className="mt-4 mb-3">Forma de Pago</h3>
                       <div className="mb-2"><strong>Transferencia:</strong> {watch('transferencia')}</div>
@@ -665,7 +892,14 @@ export default function FormularioAsesorZod() {
             </div>
             <div className="col-12 flex justify-content-between">
               <Button label="Atrás" onClick={() => setActiveIndex(3)} />
-              <Button type="submit" label="Guardar" className="p-button-success" />
+              {/* <Button type="submit" label="Guardar" className="p-button-success" /> */}
+              <Button
+                type="submit"
+                label="Guardar"
+                className="p-button-success"
+                onClick={() => setIsFinalSubmit(true)}
+              />
+
             </div>
           </StepperPanel>
         </Stepper>

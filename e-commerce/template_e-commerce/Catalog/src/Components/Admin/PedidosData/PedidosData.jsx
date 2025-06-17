@@ -38,7 +38,8 @@ export default function PedidosData() {
     const [metodos, setMetodos] = useState([]);
     const location = useLocation();
     const [visibleCount, setVisibleCount] = useState(20);
-    const [filtroListaPrecio, setFiltroListaPrecio] = useState('');
+    //const [filtroListaPrecio, setFiltroListaPrecio] = useState('');
+    const [filtroTipoPedido, setFiltroTipoPedido] = useState('');
     
     
 
@@ -203,12 +204,13 @@ export default function PedidosData() {
                 ? item?.entrega !== "Sucursal" && item?.entrega !== "Retiro en Sucursal"
                 : item.entrega?.includes(filtroEntrega));
 
-        const listaPrecioMatch = !filtroListaPrecio || item.listaPrecio?.toLowerCase().includes(filtroListaPrecio.toLowerCase());
+        //const listaPrecioMatch = !filtroListaPrecio || item.listaPrecio?.toLowerCase().includes(filtroListaPrecio.toLowerCase());
+        const tipoPedidoMatch = !filtroTipoPedido || item.tipo_pedido?.toLowerCase().includes(filtroTipoPedido.toLowerCase());
 
 
 
         //return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch;
-        return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch && listaPrecioMatch;
+        return idMatch && estadoMatch && desdeMatch && hastaMatch && nombreMatch && pagoMatch && entregaMatch && pagadoMatch && tipoPedidoMatch;
     });
 
 
@@ -736,12 +738,12 @@ export default function PedidosData() {
                         </select>
                     </div>
                     <div className='inputsColumn'>
-                    <select value={filtroListaPrecio} onChange={(e) => setFiltroListaPrecio(e.target.value)}>
+                    <select value={filtroTipoPedido} onChange={(e) => setFiltroTipoPedido(e.target.value)}>
                         
-                            <option value="">Lista de precio</option>
-                            {userType !== 'Dropshipper' && <option value="Catalogo">Catalogo</option>}
+                            <option value="">Tipo Pedido</option>
+                            {userType !== 'catalogo' && <option value="Catalogo">catalogo</option>}
 
-                            <option value="Dropshipper">Dropshipper</option>
+                            <option value="dropshipper">dropshipper</option>
                         </select>
 
                         </div>
@@ -797,9 +799,12 @@ export default function PedidosData() {
                                                             '#3366FF '
                                         }}>
                                             {item.estado}
+                                            
                                         </span>
+                                        <span style={{ color: '#008000' }}> {item.tipo_pedido}</span>
 
                                         <div className='card-actions'>
+                                            <span style={{ color: '#008000' }}>{moneda} {item.total}</span>
                                             <span>{new Date(item?.createdAt)?.toLocaleString('es-ES', {
                                                 hour: '2-digit',
                                                 minute: '2-digit',
@@ -844,6 +849,7 @@ export default function PedidosData() {
                         <thead>
                             <tr>
                                 <th>Id Pedido</th>
+                                <th>Tipo Pedido</th>
                                 <th>Pagado</th>
                                 <th>Nombre</th>
                                 <th>Telefono</th>
@@ -863,6 +869,7 @@ export default function PedidosData() {
                             {filtrados?.slice(0, visibleCount)?.map(item => (
                                 <tr key={item.idPedido}>
                                     <td>{item.idPedido}</td>
+                                    <td>{item.tipo_pedido}</td>
 
 
 
