@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import './index.css';
+// import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
@@ -17,7 +17,7 @@ import 'primereact/resources/primereact.min.css';
 import 'primeicons/primeicons.css';
 
 // Optional: your own global styles
-import './index.css';
+// import './index.css';
 
 import 'primeflex/primeflex.css';
 

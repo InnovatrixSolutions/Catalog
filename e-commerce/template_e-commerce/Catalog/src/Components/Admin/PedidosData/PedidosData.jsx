@@ -14,10 +14,30 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useLocation } from 'react-router-dom';
 import { Link as Anchor } from 'react-router-dom';
-import NewPedido from '../NewPedido/NewPedido'
+import NewPedido from '../NewPedido/NewPedido';
 import contador from '../../contador'
+import 'primereact/resources/themes/lara-light-blue/theme.css';
+import { DataTable } from 'primereact/datatable';
+import { Column } from 'primereact/column'
+import { Button } from 'primereact/button';
+import { Card } from 'primereact/card';
+import { FilterMatchMode, FilterOperator } from 'primereact/api';
+import { z } from "zod";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { InputText } from 'primereact/inputtext';
+import { Dropdown } from 'primereact/dropdown';
+import { Dialog } from 'primereact/dialog';
+import { Divider } from 'primereact/divider';
+
+
 export default function PedidosData() {
     const userType = process.env.REACT_APP_USER_TYPE;
+    const [filters, setFilters] = useState(null);
+    const [loading, setLoading] = useState(false);
+    const [globalFilterValue, setGlobalFilterValue] = useState('');
+
+
     const [pedidos, setPedidos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [nuevoEstado, setNuevoEstado] = useState('');
@@ -40,8 +60,45 @@ export default function PedidosData() {
     const [visibleCount, setVisibleCount] = useState(20);
     //const [filtroListaPrecio, setFiltroListaPrecio] = useState('');
     const [filtroTipoPedido, setFiltroTipoPedido] = useState('');
+    const [transportadora, setTransportadora] = useState(pedido.transportadora || '');
+    const [numeroGuia, setNumeroGuia] = useState(pedido.numeroGuia || '');
+    const [valorFlete, setValorFlete] = useState(pedido.valorFlete || '');
+
     
-    
+
+
+const scaleFactor = 2; // rems to add
+ const dynamicColumns = [
+  { field: 'idPedido', header: 'ID Pedido', minWidth: '16vw' },
+  { field: 'tipo_pedido', header: 'Tipo Pedido', minWidth: '16vw' },
+  { field: 'estado', header: 'Estado', minWidth: '16vw' },
+  { field: 'createdAt', header: 'Fecha Creación', minWidth: '16vw' },
+  { field: 'fecha_despacho', header: 'Fecha Despacho', minWidth: '16vw' },
+  { field: 'pagado', header: 'Pagado', minWidth: '16vw' },
+  { field: 'pagoRecibir', header: 'Pago al Recibir', minWidth: '16vw' },
+  
+  { field: 'nombre', header: 'Nombre', minWidth: '16vw' },
+  { field: 'telefono', header: 'Teléfono', minWidth: '16vw' },
+  { field: 'telefono_tran', header: 'Tel. Transportador', minWidth: '16vw' },
+  { field: 'entrega', header: 'Entrega', minWidth: '16vw' },
+  { field: 'country_id', header: 'País', minWidth: '16vw' },
+  { field: 'state_id', header: 'Departamento', minWidth: '16vw' },
+  { field: 'city_id', header: 'Ciudad', minWidth: '16vw' },
+  { field: 'franja_horario', header: 'Franja Horaria', minWidth: '16vw' },
+  { field: 'nota', header: 'Nota', minWidth: '16vw' },
+
+  
+  { field: 'pago', header: 'Pago', minWidth: '16vw' },
+  { field: 'forma_pago', header: 'Forma de Pago', minWidth: '16vw' },
+  { field: 'valor_cupon', header: 'Valor Cupón', minWidth: '16vw' },
+  { field: 'tipo_cupon', header: 'Tipo Cupón', minWidth: '16vw' },
+  { field: 'total_cupon', header: 'Total Cupón', minWidth: '16vw' },
+//   { field: 'comision', header: 'Comisión', minWidth: '10rem' },
+//   { field: 'envio', header: 'Envío', minWidth: '8rem' },
+//   { field: 'valorEnvio', header: 'Valor Envío', minWidth: '10rem' },
+  { field: 'total', header: 'Total', minWidth: '16vw' },
+  { field: 'total_productos', header: 'Total Productos', minWidth: '16vw' },
+];
 
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
@@ -148,7 +205,11 @@ export default function PedidosData() {
         const payload = {
             estado: estadoFinal,
             pagado: pagado !== '' ? pagado : pedido.pagado,
-        };
+             transportadora,
+            numeroGuia,
+            valorFlete,
+            nota: pedido.nota, // 🔄 Asegúrate de enviar la nota
+            };
         fetch(`${baseURL}/pedidoPut.php?idPedido=${idPedido}`, {
             method: 'PUT',
             headers: {
@@ -222,160 +283,338 @@ export default function PedidosData() {
         setPedidos([...pedidos].reverse());
         setOrdenInvertido(!ordenInvertido);
     };
-    const descargarExcel = () => {
-        let totalGeneral = 0;
-        let totalComision = 0;
-        let totalValorEnvio = 0;
+    // const descargarExcel = () => {
+    //     let totalGeneral = 0;
+    //     let totalComision = 0;
+    //     let totalValorEnvio = 0;
         
-        const data = filtrados.map(item => {
-            const total = parseFloat(item.total);
-            const comision = parseFloat(item.comision) || 0;
-            const valorEnvio = parseFloat(item.valorEnvio) || 0;
+    //     const data = filtrados.map(item => {
+    //         const total = parseFloat(item.total);
+    //         const comision = parseFloat(item.comision) || 0;
+    //         const valorEnvio = parseFloat(item.valorEnvio) || 0;
         
-            totalGeneral += total;
-            totalComision += comision;
-            totalValorEnvio += valorEnvio;
+    //         totalGeneral += total;
+    //         totalComision += comision;
+    //         totalValorEnvio += valorEnvio;
         
-            const productos = JSON.parse(item.productos);
-            const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}`);
+    //         const productos = JSON.parse(item.productos);
+    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}`);
         
-            return {
-                'ID Pedido': item.idPedido,
-                'Estado': item.estado,
-                'Pagado': item.pagado,
-                'Nombre': item.nombre,
-                'Telefono': item.telefono,
-                'Pago': item.pago,
-                'Nota': item.nota,
-                'Pago al recibirlo': item.pagoRecibir || '',
-                'Entrega': item.entrega,
-                'Lista Precio': item.listaPrecio,
-                'Comisión': comision.toFixed(2),
-                'Método de Pago': item.metodoPago,
-                'Envio': item.envio,
-                'Valor Envío': valorEnvio.toFixed(2),
-                'Productos': infoProductos.join('\n'),
-                'Código': item.codigo,
-                'Total': `${moneda} ${total.toFixed(2)}`,
-                'Fecha': item.createdAt,
-            };
-        });
-        
-        
-
-        // Formatear el total general
-        const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
-
-        // Agregar fila con el total general
-        const totalRow = {
-            'ID Pedido': '',
-            'Estado': '',
-            'Pagado': '',
-            'Nombre': '',
-            'Telefono': '',
-            'Pago': '',
-            'Nota': '',
-            'Pago al recibirlo': '',
-            'Entrega': '',
-            'Lista Precio': '',
-            'Comisión': totalComision.toFixed(2),
-            'Método de Pago': '',
-            'Envio': '',
-            'Valor Envío': totalValorEnvio.toFixed(2),
-            'Productos': '',
-            'Código': 'Total General:',
-            'Total': `${moneda} ${totalGeneral.toFixed(2)}`,
-            'Fecha': '',
-        };
-        
-
-        data.push(totalRow);
-
-        const ws = XLSX.utils.json_to_sheet(data);
-        const wb = XLSX.utils.book_new();
-        XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
-        XLSX.writeFile(wb, 'pedidos.xlsx');
-    };
-
-
-    const descargarPDF = () => {
-        const pdf = new jsPDF('landscape'); // Orientación horizontal
-        pdf.text('Lista de Pedidos', 10, 10);
-
-        const columns = [
-            { title: 'ID Pedido', dataKey: 'idPedido' },
-            { title: 'Estado', dataKey: 'estado' },
-            { title: 'Pagado', dataKey: 'pagado' },
-            { title: 'Nombre', dataKey: 'nombre' },
-            { title: 'Telefono', dataKey: 'telefono' },
-            { title: 'Pago', dataKey: 'pago' },
-            { title: 'Entrega', dataKey: 'entrega' },
-            { title: 'Lista Precio', dataKey: 'listaPrecio' },
-            { title: 'Comisión', dataKey: 'comision' },
-            { title: 'Envío', dataKey: 'envio' },
-            { title: 'Valor Envío', dataKey: 'valorEnvio' },
-            { title: 'Productos', dataKey: 'productos' },
-            { title: 'Código', dataKey: 'codigo' },
-            { title: 'Total', dataKey: 'total' },
-            { title: 'Fecha', dataKey: 'createdAt' },
-        ];
+    //         return {
+    //             'ID Pedido': item.idPedido,
+    //             'Estado': item.estado,
+    //             'Pagado': item.pagado,
+    //             'Nombre': item.nombre,
+    //             'Telefono': item.telefono,
+    //             'Pago': item.pago,
+    //             'Nota': item.nota,
+    //             'Pago al recibirlo': item.pagoRecibir || '',
+    //             'Entrega': item.entrega,
+    //             'Lista Precio': item.listaPrecio,
+    //             'Comisión': comision.toFixed(2),
+    //             'Método de Pago': item.metodoPago,
+    //             'Envio': item.envio,
+    //             'Valor Envío': valorEnvio.toFixed(2),
+    //             'Productos': infoProductos.join('\n'),
+    //             'Código': item.codigo,
+    //             'Total': `${moneda} ${total.toFixed(2)}`,
+    //             'Fecha': item.createdAt,
+    //         };
+    //     });
         
         
 
-        let totalGeneral = 0;
+    //     // Formatear el total general
+    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
 
-        const data = filtrados.map(item => {
-            const total = parseFloat(item.total); // Convertir a número
-            totalGeneral += total;
-            const productos = JSON.parse(item.productos);
-            const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}  `);
-            return {
-                idPedido: item.idPedido,
-                estado: item.estado,
-                pagado: item.pagado,
-                nombre: item.nombre,
-                telefono: item.telefono,
-                pago: item.pago,
-                entrega: item.entrega,
-                listaPrecio: item.listaPrecio,
-                comision: item.comision,
-                envio: item.envio,
-                valorEnvio: item.valorEnvio,
-                productos: infoProductos.join('\n'),
-                codigo: item.codigo,
-                total: `${moneda} ${total.toFixed(2)}`,
-                createdAt: item.createdAt,
-            };
+    //     // Agregar fila con el total general
+    //     const totalRow = {
+    //         'ID Pedido': '',
+    //         'Estado': '',
+    //         'Pagado': '',
+    //         'Nombre': '',
+    //         'Telefono': '',
+    //         'Pago': '',
+    //         'Nota': '',
+    //         'Pago al recibirlo': '',
+    //         'Entrega': '',
+    //         'Lista Precio': '',
+    //         'Comisión': totalComision.toFixed(2),
+    //         'Método de Pago': '',
+    //         'Envio': '',
+    //         'Valor Envío': totalValorEnvio.toFixed(2),
+    //         'Productos': '',
+    //         'Código': 'Total General:',
+    //         'Total': `${moneda} ${totalGeneral.toFixed(2)}`,
+    //         'Fecha': '',
+    //     };
+        
+
+    //     data.push(totalRow);
+
+    //     const ws = XLSX.utils.json_to_sheet(data);
+    //     const wb = XLSX.utils.book_new();
+    //     XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
+    //     XLSX.writeFile(wb, 'pedidos.xlsx');
+    // };
+
+
+const schemaPedidoEdit = z.object({
+  estado: z.string().min(1, "Estado requerido"),
+  pagado: z.enum(["Si", "No"]),
+  transportadora: z.string().optional(),
+  numeroGuia: z.string().optional(),
+  valorFlete: z.string().optional(),
+  notaPedidoInterna: z.string().optional(),
+  // Add more fields as necessary
+});
+
+
+  // Edit handler
+  const onSubmitEdit = (data) => {
+    // Aquí haces tu fetch/PUT con data validada
+    // handleUpdateText con valores de data
+  };
+
+
+  const { control, handleSubmit, formState: { errors }, reset, watch } = useForm({
+    resolver: zodResolver(schemaPedidoEdit),
+    defaultValues: {
+      estado: pedido?.estado || "",
+      pagado: pedido?.pagado || "",
+      transportadora: pedido?.transportadora || "",
+      numeroGuia: pedido?.numeroGuia || "",
+      valorFlete: pedido?.valorFlete || "",
+      notaPedidoInterna: pedido?.notaPedidoInterna || "",
+    }
+  });
+
+   // Sync form with pedido when modal opens
+  useEffect(() => {
+    if (modalVisible) {
+      reset({
+        estado: pedido?.estado || "",
+        pagado: pedido?.pagado || "",
+        transportadora: pedido?.transportadora || "",
+        numeroGuia: pedido?.numeroGuia || "",
+        valorFlete: pedido?.valorFlete || "",
+        notaPedidoInterna: pedido?.notaPedidoInterna || "",
+      });
+    }
+  }, [modalVisible, pedido, reset]);
+
+
+  const pedidoPrettyHeaders = {
+  idPedido: 'ID Pedido',
+  tipo_pedido: 'Tipo Pedido',
+  estado: 'Estado',
+  createdAt: 'Fecha Creación',
+  fecha_despacho: 'Fecha Despacho',
+  pagado: 'Pagado',
+  pagoRecibir: 'Pago al Recibir',
+  nombre: 'Nombre',
+  telefono: 'Teléfono',
+  telefono_tran: 'Tel. Transportador',
+  entrega: 'Entrega',
+  country_id: 'País (ID)',
+  state_id: 'Departamento (ID)',
+  city_id: 'Ciudad (ID)',
+  franja_horario: 'Franja Horaria',
+  nota: 'Nota',
+  pago: 'Pago',
+  forma_pago: 'Forma de Pago',
+  valor_cupon: 'Valor Cupón',
+  tipo_cupon: 'Tipo Cupón',
+  total_cupon: 'Total Cupón',
+  total: 'Total',
+  total_productos: 'Total Productos',
+  codigo: 'Código Descuento',
+  productos: 'Productos',
+  // Add any new fields here if you want pretty names
+};
+const getPrettyHeader = (key) => pedidoPrettyHeaders[key] || key;
+
+
+const descargarExcel = (pedidosData = filtrados) => {
+
+    console.log("descargarExcel called", pedidosData); // Add this line
+  if (!Array.isArray(pedidosData) || !pedidosData.length) return;
+
+  // 1. Collect all unique keys across all pedidos
+  const allKeys = Array.from(
+    new Set(pedidosData.flatMap(item => Object.keys(item)))
+  );
+
+  // 2. Always include 'Productos' as a readable string
+  if (!allKeys.includes('Productos')) allKeys.push('Productos');
+
+  // 3. Format rows for Excel
+  const rows = pedidosData.map(item => {
+    const row = {};
+    allKeys.forEach(key => {
+      if (key === 'Productos') {
+        // Productos as string
+        try {
+          const productos = JSON.parse(item.productos || '[]');
+          row['Productos'] = productos.map(p => `${p.titulo} x${p.cantidad} - $${p.precio}`).join('; ');
+        } catch {
+          row['Productos'] = '';
+        }
+      } else {
+        row[key] = item[key] ?? '';
+      }
+    });
+    return row;
+  });
+
+  // 4. Use pretty headers for columns
+  const headers = allKeys.map(getPrettyHeader);
+  const ws = XLSX.utils.json_to_sheet(rows, { header: allKeys });
+  // Replace keys with pretty headers in first row
+  XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
+
+  // 5. Export file
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
+  XLSX.writeFile(wb, 'pedidos.xlsx');
+};
+
+
+
+
+    // const descargarPDF = () => {
+    //     const pdf = new jsPDF('landscape'); // Orientación horizontal
+    //     pdf.text('Lista de Pedidos', 10, 10);
+
+    //     const columns = [
+    //         { title: 'ID Pedido', dataKey: 'idPedido' },
+    //         { title: 'Estado', dataKey: 'estado' },
+    //         { title: 'Pagado', dataKey: 'pagado' },
+    //         { title: 'Nombre', dataKey: 'nombre' },
+    //         { title: 'Telefono', dataKey: 'telefono' },
+    //         { title: 'Pago', dataKey: 'pago' },
+    //         { title: 'Entrega', dataKey: 'entrega' },
+    //         { title: 'Lista Precio', dataKey: 'listaPrecio' },
+    //         { title: 'Comisión', dataKey: 'comision' },
+    //         { title: 'Envío', dataKey: 'envio' },
+    //         { title: 'Valor Envío', dataKey: 'valorEnvio' },
+    //         { title: 'Productos', dataKey: 'productos' },
+    //         { title: 'Código', dataKey: 'codigo' },
+    //         { title: 'Total', dataKey: 'total' },
+    //         { title: 'Fecha', dataKey: 'createdAt' },
+    //     ];
+        
+        
+
+    //     let totalGeneral = 0;
+
+    //     const data = filtrados.map(item => {
+    //         const total = parseFloat(item.total); // Convertir a número
+    //         totalGeneral += total;
+    //         const productos = JSON.parse(item.productos);
+    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}  `);
+    //         return {
+    //             idPedido: item.idPedido,
+    //             estado: item.estado,
+    //             pagado: item.pagado,
+    //             nombre: item.nombre,
+    //             telefono: item.telefono,
+    //             pago: item.pago,
+    //             entrega: item.entrega,
+    //             listaPrecio: item.listaPrecio,
+    //             comision: item.comision,
+    //             envio: item.envio,
+    //             valorEnvio: item.valorEnvio,
+    //             productos: infoProductos.join('\n'),
+    //             codigo: item.codigo,
+    //             total: `${moneda} ${total.toFixed(2)}`,
+    //             createdAt: item.createdAt,
+    //         };
             
-        });
+    //     });
 
-        // Formatear el total general
-        const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
+    //     // Formatear el total general
+    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
 
-        // Agregar fila con el total general
-        const totalRow = {
-            idPedido: '',
-            estado: '',
-            nombre: '',
-            telefono: '',
-            pago: '',
-            entrega: '',
-            nota: '',
-            productos: '',
-            codigo: 'Total General:',
-            total: formattedTotal,
-            createdAt: '',
-        };
+    //     // Agregar fila con el total general
+    //     const totalRow = {
+    //         idPedido: '',
+    //         estado: '',
+    //         nombre: '',
+    //         telefono: '',
+    //         pago: '',
+    //         entrega: '',
+    //         nota: '',
+    //         productos: '',
+    //         codigo: 'Total General:',
+    //         total: formattedTotal,
+    //         createdAt: '',
+    //     };
 
-        data.push(totalRow);
+    //     data.push(totalRow);
 
-        pdf.autoTable({
-            head: [columns.map(col => col.title)],
-            body: data.map(item => Object.values(item)),
-        });
+    //     pdf.autoTable({
+    //         head: [columns.map(col => col.title)],
+    //         body: data.map(item => Object.values(item)),
+    //     });
 
-        pdf.save('pedidos.pdf');
-    };
+    //     pdf.save('pedidos.pdf');
+    // };
+    
+const descargarPDF = (pedidosData = filtrados) => {
+      console.log("descargarPDF called", pedidosData); // Add this line
+  if (!Array.isArray(pedidosData) || !pedidosData.length) return;
+
+  // 1. Collect all unique keys across all pedidos
+  const allKeys = Array.from(
+    new Set(pedidosData.flatMap(item => Object.keys(item)))
+  );
+  if (!allKeys.includes('Productos')) allKeys.push('Productos');
+
+  // 2. Prepare data for autoTable
+  const data = pedidosData.map(item => {
+    const row = {};
+    allKeys.forEach(key => {
+      if (key === 'Productos') {
+        try {
+          const productos = JSON.parse(item.productos || '[]');
+          row['Productos'] = productos.map(p => `${p.titulo} x${p.cantidad} - $${p.precio}`).join('; ');
+        } catch {
+          row['Productos'] = '';
+        }
+      } else {
+        row[key] = item[key] ?? '';
+      }
+    });
+    return row;
+  });
+
+  // 3. Prepare pretty headers
+  const prettyHeaders = allKeys.map(getPrettyHeader);
+
+  // 4. Prepare rows (ordered by allKeys)
+  const rows = data.map(row =>
+    allKeys.map(key => row[key])
+  );
+
+  // 5. Generate PDF
+  const pdf = new jsPDF('landscape', 'pt', 'a4');
+  pdf.setFontSize(12);
+  pdf.text('Lista de Pedidos', 40, 30);
+
+  pdf.autoTable({
+    startY: 50,
+    head: [prettyHeaders],
+    body: rows,
+    styles: { fontSize: 9, cellWidth: 'wrap' },
+    theme: 'grid',
+    headStyles: { fillColor: [22, 160, 133] }
+  });
+
+  pdf.save('pedidos.pdf');
+};
+
+
     const handleDownloadPDF = () => {
         const pdf = new jsPDF('p', 'mm', 'a4');
         const pageWidth = pdf.internal.pageSize.getWidth();
@@ -550,6 +789,7 @@ export default function PedidosData() {
     };
 
 
+    
 
 
     const imprimirTicket2 = (pedido) => {
@@ -700,6 +940,53 @@ export default function PedidosData() {
 
         return () => clearInterval(interval);
     }, [isPaused]);
+
+        const clearFilter = () => {
+        initFilters();
+    };
+
+    const onGlobalFilterChange = (e) => {
+        const value = e.target.value;
+        let _filters = { ...filters };
+
+        _filters['global'].value = value;
+
+        setFilters(_filters);
+        setGlobalFilterValue(value);
+    };
+
+    useEffect(() => {
+  initFilters();
+}, []);
+
+
+const initFilters = () => {
+    setFilters({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        idPedido: { value: null, matchMode: FilterMatchMode.EQUALS },
+        tipo_pedido: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        estado: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        pagado: { value: null, matchMode: FilterMatchMode.EQUALS },
+        nombre: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        telefono: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        entrega: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        pago: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        // ...add more fields as needed
+    });
+};
+
+const renderHeader = () => (
+    <div className="flex justify-content-between">
+        <Button type="button" icon="pi pi-filter-slash" label="Limpiar filtros"  onClick={clearFilter} />
+        <span className="p-input-icon-left">
+            <i className="pi pi-search" />
+            <input type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="  Buscar..." className="p-inputtext p-component" />
+        </span>
+    </div>
+);
+
+const header = renderHeader();
+
     return (
         <div>
 
@@ -718,7 +1005,7 @@ export default function PedidosData() {
 
                         <Anchor to={`/dashboard/pedidos/view`} className={location.pathname === '/dashboard/pedidos/view' ? 'activeLin' : ''}> Lista</Anchor>
                     </div>
-                    <div className='inputsColumn'>
+                    {/* <div className='inputsColumn'>
                         <button className='length'>{String(filtrados?.length)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} / {String(pedidos?.length)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")} </button>
                     </div>
                     <div className='inputsColumn'>
@@ -777,7 +1064,7 @@ export default function PedidosData() {
                     <button className='reload' onClick={recargar}><FontAwesomeIcon icon={faSync} /></button>
                     <button className='reverse' onClick={invertirOrden}>
                         {ordenInvertido ? <FontAwesomeIcon icon={faArrowUp} /> : <FontAwesomeIcon icon={faArrowDown} />}
-                    </button>
+                    </button> */}
 
                 </div>
 
@@ -846,99 +1133,90 @@ export default function PedidosData() {
                 </div>
             ) : (
                 <div className='table-container'>
-                    <table className='table'>
-                        <thead>
-                            <tr>
-                                <th>Id Pedido</th>
-                                <th>Tipo Pedido</th>
-                                <th>Pagado</th>
-                                <th>Nombre</th>
-                                <th>Telefono</th>
-                                <th>Entrega</th>
-                                <th>Lista Precio</th>
-                                <th>Estado</th>
-                                <th>Pago</th>
-                                <th>Comisión</th>
-                                <th>Envio</th>
-                                <th>Valor envío</th>
-                                <th>Total</th>
-                                <th>Fecha</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {filtrados?.slice(0, visibleCount)?.map(item => (
-                                <tr key={item.idPedido}>
-                                    <td>{item.idPedido}</td>
-                                    <td>{item.tipo_pedido}</td>
+                    
+                                        <DataTable 
+                                            value={pedidos}
+                                            filters={filters}
+                                            filterDisplay="row"
+                                            globalFilterFields={[
+                                            'idPedido',
+                                            'tipo_pedido',  
+                                            'estado',
+                                            'pagado',
+                                            'nombre',
+                                            'telefono',
+                                            'entrega',
+                                            'pago',
+                                            
+                                            ]}
+                                            header={header}
+                                            onFilter={(e) => setFilters(e.filters)}
+                                            scrollable
+                                            scrollHeight="400px"
+                                            stripedRows
+                                            
+                                            paginator 
+                                            rows={5} 
+                                            // rowsPerPageOptions={[5, 10, 25, 50]}
+                                            tableStyle={{ minWidth: '50rem'}}
+                                            
+                                        
+                                        >
+  {dynamicColumns.map((col) => (
+    <Column
+    
+    frozen={col.frozen}
+      key={col.field}
+      field={col.field}
+      header={col.header}
+      style={{ minWidth: col.minWidth }}
+      sortable
+      filter 
+      filterPlaceholder="Search by column"
+      
+      
+    />
+  ))}
 
+  {/* Columna estática para Acciones */}
+<Column
+  header="Acciones"
+  frozenRight
+  sortMode="multiple"
+  body={(rowData) => (
+    <div className="flex gap-2">
+      <Button
+        className='editar'
+        onClick={() => abrirModal(rowData)}
+        icon="pi pi-eye"
+        aria-label="Ver"
+      />
+      <Button
+        className='eliminar'
+        onClick={() => eliminar(rowData.idPedido)}
+        icon="pi pi-trash"
+        aria-label="Eliminar"
+      />
+      <Button
+        className='imprimir'
+        onClick={() => imprimirTicket2(rowData)}
+        icon="pi pi-print"
+        aria-label="Imprimir"
+      />
+    </div>
+  )}
+  style={{ minWidth: '12rem' }}
+/>
 
-
-                                    <td style={{
-                                        color: item?.pagado === 'Si' ? '#008000' : item?.pagado === 'No' ? '#FF0000' : ''
-                                    }}>
-                                        {item?.pagado}
-                                    </td>
-
-                                    <td>{item.nombre}</td>
-                                    <td>{item.telefono}</td>
-                                    <td>{item.entrega}</td>
-                                    <td>{item.listaPrecio}</td>
-                                    <td style={{
-                                        color: item.estado === 'Pendiente' ? '#DAA520' :
-                                            item.estado === 'Preparacion' ? '#0000FF' :
-                                                item.estado === 'Rechazado' ? '#FF0000' :
-                                                    item.estado === 'Entregado' ? '#008000' :
-                                                        '#3366FF'
-                                    }}>
-                                        {item?.estado}
-                                    </td>
-                                    <td>{item.pago}</td>
-                                    <td>{item.comision}</td>
-                                    <td>{item.envio}</td>
-                                    <td>{item.valorEnvio}</td>
-                                    <td style={{ color: '#008000', }}>{moneda} {item.total}</td>
-                                    <td> {new Date(item?.createdAt)?.toLocaleString('es-ES', {
-                                        hour: '2-digit',
-                                        minute: '2-digit',
-                                        day: '2-digit',
-                                        month: '2-digit',
-                                        year: 'numeric'
-                                    })}</td>
-                                    <td>
-                                        <button className='eliminar' onClick={() => eliminar(item.idPedido)}>
-                                            <FontAwesomeIcon icon={faTrash} />
-                                        </button>
-                                        <button className='editar' onClick={() => abrirModal(item)}>
-
-                                            <FontAwesomeIcon icon={faEye} />
-                                        </button>
-                                        <button onClick={() => imprimirTicket2(item)} className='editar' >
-                                            <FontAwesomeIcon icon={faPrint} />
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-
-                    </table>
+</DataTable>
 
                 </div>
+
+
             )}
 
 
-            {location?.pathname === '/dashboard/pedidos' ? (
-                <div> </div>
-            ) : (
-                <div>
-                    {filtrados?.length > visibleCount && (
-                        <button onClick={handleShowMore} id="show-more-btn">
-                            Mostrar  más </button>
-                    )}
-                </div>
-            )}
-
-            {modalVisible && (
+            {/* {modalVisible && (
                 <div className="modal">
                     <div className="modal-content" id='modal-content'>
                         <div className='deFlexBtnsModal'>
@@ -1082,47 +1360,76 @@ export default function PedidosData() {
 
                                     />
                                 </fieldset>
-                                <fieldset>
-                                    <legend>Estado</legend>
-                                    <div className='deFlexBtnsFilset'>
-                                        <button
-                                            type="button"
-                                            className={nuevoEstado === 'Pendiente' || (nuevoEstado === '' && pedido.estado === 'Pendiente') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setNuevoEstado('Pendiente')}
-                                        >
-                                            Pendiente
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={nuevoEstado === 'Preparacion' || (nuevoEstado === '' && pedido.estado === 'Preparacion') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setNuevoEstado('Preparacion')}
-                                        >
-                                            Preparación
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={nuevoEstado === 'Terminado' || (nuevoEstado === '' && pedido.estado === 'Terminado') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setNuevoEstado('Terminado')}
-                                        >
-                                            Terminado
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={nuevoEstado === 'Entregado' || (nuevoEstado === '' && pedido.estado === 'Entregado') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setNuevoEstado('Entregado')}
-                                        >
-                                            Entregado
-                                        </button>
 
-                                        <button
-                                            type="button"
-                                            className={nuevoEstado === 'Rechazado' || (nuevoEstado === '' && pedido.estado === 'Rechazado') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setNuevoEstado('Rechazado')}
-                                        >
-                                            Rechazado
-                                        </button>
-                                    </div>
-                                </fieldset>
+
+                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+    <fieldset style={{ flex: 1, minWidth: '200px' }}>
+        <legend>Transportadora</legend>
+        <input
+            value={transportadora}
+            onChange={(e) => setTransportadora(e.target.value)}
+        />
+    </fieldset>
+
+    <fieldset style={{ flex: 1, minWidth: '200px' }}>
+        <legend>Número de Guía</legend>
+        <input
+            value={numeroGuia}
+            onChange={(e) => setNumeroGuia(e.target.value)}
+        />
+    </fieldset>
+
+    <fieldset style={{ flex: 1, minWidth: '200px' }}>
+        <legend>Valor del Flete</legend>
+        <input
+            value={valorFlete}
+            onChange={(e) => setValorFlete(e.target.value)}
+        />
+    </fieldset>
+</div>
+
+         
+
+
+
+
+<fieldset>
+  <legend>Estado</legend>
+  <div className='deFlexBtnsFilset'>
+    {['Pendiente', 'Entregado', 'Devolución', 'Cancelado'].map((estado) => (
+      <button
+        key={estado}
+        type="button"
+        className={
+          nuevoEstado === estado ||
+          (nuevoEstado === '' && pedido.estado === estado)
+            ? 'activo'
+            : 'Noactivo'
+        }
+        onClick={() => setNuevoEstado(estado)}
+      >
+        {estado}
+      </button>
+    ))}
+  </div>
+</fieldset>
+
+{(nuevoEstado === 'Devolución' || nuevoEstado === 'Cancelado') && (
+  <fieldset>
+    <legend>Motivo</legend>
+    <input
+      type="text"
+      value={pedido.notaPedidoInterna || ''}
+      onChange={(e) =>
+        setPedido((prev) => ({ ...prev, notaPedidoInterna: e.target.value }))
+      }
+      placeholder="Especifique el motivo de la devolución o cancelación"
+    />
+  </fieldset>
+)}
+
+
+
 
                                 <fieldset id="fieldsetAuto">
                                     <legend>Pagado</legend>
@@ -1154,7 +1461,244 @@ export default function PedidosData() {
                         </div>
                     </div>
                 </div>
-            )}
+            )} */}
+
+
+{modalVisible && (
+
+    <Dialog
+  header="Detalle del Pedido"
+  visible={modalVisible}
+  onHide={cerrarModal}
+  style={{ width: '95vw', maxWidth: '700px' }}
+  contentStyle={{ maxHeight: '85vh', overflowY: 'auto' }}
+  modal
+  draggable={false}
+  dismissableMask
+>
+  
+      {/* Productos */}
+      <Card title="Productos del pedido" className="mb-4">
+        <div className="p-grid p-nogutter" style={{ rowGap: '1rem' }}>
+          {Array.isArray(JSON.parse(pedido?.productos || '[]')) &&
+            JSON.parse(pedido.productos).map(producto => (
+              <div className="p-col-12 p-md-6" key={producto.titulo}>
+                <Card>
+                  <img src={producto.imagen} alt="imagen" style={{ maxHeight: 70, marginBottom: 8 }} />
+                  <div><strong>{producto.titulo}</strong></div>
+                  <div>{moneda} {producto.precio} x{producto.cantidad}</div>
+                  <div>{producto?.items?.join(', ')}</div>
+                </Card>
+              </div>
+            ))}
+        </div>
+      </Card>
+
+<Card title="Información completa del Pedido" className="mb-3">
+  <div className="p-grid">
+    <div className="p-col-12 p-md-6">
+      <label>ID Pedido</label>
+      <InputText value={pedido.idPedido ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Fecha de creación</label>
+      <InputText value={pedido.createdAt ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Nombre</label>
+      <InputText value={pedido.nombre ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Teléfono</label>
+      <InputText value={pedido.telefono ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Entrega</label>
+      <InputText value={pedido.entrega ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Estado</label>
+      <InputText value={pedido.estado ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Tipo de Pedido</label>
+      <InputText value={pedido.tipo_pedido ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Pago</label>
+      <InputText value={pedido.pago ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>¿Pagado?</label>
+      <InputText value={pedido.pagado ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Pago al Recibir</label>
+      <InputText value={pedido.pagoRecibir ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Total</label>
+      <InputText value={pedido.total ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Total Productos</label>
+      <InputText value={pedido.total_productos ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Código Descuento</label>
+      <InputText value={pedido.codigo ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Nota</label>
+      <InputText value={pedido.nota ?? ''} disabled className="w-full mb-2" />
+    </div>
+    {/* Nuevos campos */}
+    <div className="p-col-12 p-md-6">
+      <label>Forma de Pago</label>
+      <InputText value={pedido.forma_pago ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Tipo de Cupón</label>
+      <InputText value={pedido.tipo_cupon ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Valor del Cupón</label>
+      <InputText value={pedido.valor_cupon ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Total Cupón</label>
+      <InputText value={pedido.total_cupon ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Franja Horaria</label>
+      <InputText value={pedido.franja_horario ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Fecha Despacho</label>
+      <InputText value={pedido.fecha_despacho ?? ''} disabled className="w-full mb-2" />
+    </div>
+    {/* Campos de ubicación */}
+    <div className="p-col-12 p-md-6">
+      <label>País (ID)</label>
+      <InputText value={pedido.country_id ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Departamento (ID)</label>
+      <InputText value={pedido.state_id ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Ciudad (ID)</label>
+      <InputText value={pedido.city_id ?? ''} disabled className="w-full mb-2" />
+    </div>
+    <div className="p-col-12 p-md-6">
+      <label>Teléfono Transportador</label>
+      <InputText value={pedido.telefono_tran ?? ''} disabled className="w-full mb-2" />
+    </div>
+  </div>
+</Card>
+
+
+      <Divider />
+
+      {/* Sección editable */}
+      <form onSubmit={handleSubmit(onSubmitEdit)}>
+        <div className="p-grid">
+          <div className="p-col-12 p-md-4">
+            <Controller
+              name="transportadora"
+              control={control}
+              render={({ field }) => (
+                <InputText {...field} placeholder="Transportadora" className="w-full mb-2" />
+              )}
+            />
+          </div>
+          <div className="p-col-12 p-md-4">
+            <Controller
+              name="numeroGuia"
+              control={control}
+              render={({ field }) => (
+                <InputText {...field} placeholder="Número de Guía" className="w-full mb-2" />
+              )}
+            />
+          </div>
+          <div className="p-col-12 p-md-4">
+            <Controller
+              name="valorFlete"
+              control={control}
+              render={({ field }) => (
+                <InputText {...field} placeholder="Valor del Flete" className="w-full mb-2" />
+              )}
+            />
+          </div>
+        </div>
+        <div className="p-grid">
+          <div className="p-col-12 p-md-6">
+            <Controller
+              name="estado"
+              control={control}
+              render={({ field }) => (
+                <Dropdown
+                  {...field}
+                  options={[
+                    { label: "Pendiente", value: "Pendiente" },
+                    { label: "Entregado", value: "Entregado" },
+                    { label: "Devolución", value: "Devolución" },
+                    { label: "Cancelado", value: "Cancelado" }
+                  ]}
+                  placeholder="Estado"
+                  className="w-full mb-2"
+                />
+              )}
+            />
+            {errors.estado && <small className="p-error">{errors.estado.message}</small>}
+          </div>
+          <div className="p-col-12 p-md-6">
+            <Controller
+              name="pagado"
+              control={control}
+              render={({ field }) => (
+                <Dropdown
+                  {...field}
+                  options={[
+                    { label: "Sí", value: "Si" },
+                    { label: "No", value: "No" }
+                  ]}
+                  placeholder="¿Pagado?"
+                  className="w-full mb-2"
+                />
+              )}
+            />
+            {errors.pagado && <small className="p-error">{errors.pagado.message}</small>}
+          </div>
+        </div>
+        {(watch('estado') === "Devolución" || watch('estado') === "Cancelado") && (
+          <div className="p-grid">
+            <div className="p-col-12">
+              <Controller
+                name="notaPedidoInterna"
+                control={control}
+                render={({ field }) => (
+                  <InputText {...field} placeholder="Motivo" className="w-full mb-2" />
+                )}
+              />
+              {errors.notaPedidoInterna && <small className="p-error">{errors.notaPedidoInterna.message}</small>}
+            </div>
+          </div>
+        )}
+        <div className="p-grid">
+          <div className="p-col-12" style={{ textAlign: 'right' }}>
+            <Button type="submit" label="Guardar" className="p-button-success" />
+          </div>
+        </div>
+      </form>
+
+
+    
+
+  </Dialog>
+)}
+            
+            
         </div>
     );
 };
