@@ -49,9 +49,10 @@ const medioPagoLista = [
 ];
 
 const franjasHorarias = [
-  { label: "05:00-10:00 AM", value: "05:00-10:00 AM" },
-  { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
-  { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
+  // { label: "05:00-10:00 AM", value: "05:00-10:00 AM" },
+  // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
+  // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
+  { label: "08:00-20:00 PM", value: "08:00-20:00 PM" },
 ];
 
 
@@ -161,7 +162,7 @@ const schemaCatalogo = z.object({
       clienteCelular: "",
       clienteTransportadora: "",
       fechaDespacho: "",
-      franjaEntrega: [],
+      franjaEntrega: ["08:00-20:00 PM"], // Valor por defecto
       departamento: "",
       ciudad: "",
       direccion: "",
@@ -731,7 +732,7 @@ const schemaCatalogo = z.object({
                     name="franjaEntrega"
                     control={control}
                     render={({ field }) => (
-                      <MultiSelect {...field} options={franjasHorarias} placeholder="Selecciona una o más" display="chip" />
+                      <MultiSelect {...field} options={franjasHorarias} disabled="true" placeholder="Selecciona una o más" display="chip" />
                     )}
                   />
                   {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
