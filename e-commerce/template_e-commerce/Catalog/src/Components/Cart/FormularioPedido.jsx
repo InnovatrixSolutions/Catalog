@@ -40,16 +40,28 @@ const medioPagoLista = [
   'Mercadopago', 'Addi', 'Sistecredito', 'Otro'
 ];
 const franjasHorarias = [
-  // { label: "05:00-10:00 AM", value: "05:00-10:00 AM" },
+  { label: "08:00-80:00 PM", value: "08:00-08:00 PM" },
   // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
   // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
-  { label: "08:00-20:00 PM", value: "08:00-20:00 PM" },
+  // { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
 ];
 
 
 
 
 
+
+
+export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
+  const hostname = window.location.hostname;
+  //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
+  const tipoAsesor = hostname.includes("xxxxx") ? "catalog" : "dropshipper";
+  console.log('hostname:', hostname);
+  console.log("Hostname tipo asesor:", tipoAsesor)
+  console.log("Productos seleccionados:", cartItems);
+  console.log("Valor total:", totalPrice);
+
+  const [activeIndex, setActiveIndex] = useState(0);
 const schema = z.object({
   documento: z.string().min(1, "Documento requerido"),
   email: z.string().email("Email inválido"),
@@ -92,20 +104,16 @@ const schema = z.object({
 }, {
   message: "Debe seleccionar el medio de pago",
   path: ["metodoPago"]
-})
+}).refine(
+  (data) => data.valor >= totalPrice,
+  {
+    message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+    path: ['valor'],
+  }
+);
 
 
 
-export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
-  const hostname = window.location.hostname;
-  //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
-  const tipoAsesor = hostname.includes("xxxxx") ? "catalog" : "dropshipper";
-  console.log('hostname:', hostname);
-  console.log("Hostname tipo asesor:", tipoAsesor)
-  console.log("Productos seleccionados:", cartItems);
-  console.log("Valor total:", totalPrice);
-
-  const [activeIndex, setActiveIndex] = useState(0);
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
@@ -351,7 +359,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
     setValue('clienteCelular', '3107654321');
     setValue('clienteTransportadora', '3107654321');
     setValue('fechaDespacho', new Date());
-    setValue('franjaEntrega', ['08:00-20:00 PM']);
+    setValue('franjaEntrega', []);
     setValue('departamento', 1); // Asegúrate que sea un ID válido en tu sistema
     setValue('ciudad', 10);      // Igual aquí
     setValue('direccion', 'Cra 123 #45-67');
@@ -470,8 +478,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
 
         <Dialog
-          header="⚠️ Errores en e
-          l formulario⚠️ "
+          header="⚠️ Errores en el formulario⚠️ "
           visible={showErrorsDialog}
           onHide={() => setShowErrorsDialog(false)}
           style={{ width: '50vw' }}
@@ -638,7 +645,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                           placeholder="Seleccione una o varias franjas"
                           className="w-full"
                           display="chip"
-                          disabled="true"
+                          // disabled="true"
                           
                         />
                       )}

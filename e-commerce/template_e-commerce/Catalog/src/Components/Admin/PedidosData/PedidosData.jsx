@@ -994,7 +994,10 @@ const header = renderHeader();
             <h1 className='titles-text-heading'>Pedidos</h1>
             <div className='deFlexContent2'>
                 <div className='deFlex2'>
-                    <NewPedido />
+                    <NewPedido onPedidoCreado={() => {
+                        toast.success("Pedido creado correctamente.");
+                        cargarPedidos(); // O el nombre de tu función para recargar la lista
+                      }} />
                     <button className='pdf' onClick={() => imprimirTicket(pedido)}>  <FontAwesomeIcon icon={faPrint} /> Tickets</button>
                     <button className='excel' onClick={descargarExcel}><FontAwesomeIcon icon={faArrowDown} /> Excel</button>
                     <button className='pdf' onClick={descargarPDF}><FontAwesomeIcon icon={faArrowDown} /> PDF</button>

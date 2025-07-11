@@ -49,17 +49,17 @@ const medioPagoLista = [
 ];
 
 const franjasHorarias = [
-  // { label: "05:00-10:00 AM", value: "05:00-10:00 AM" },
+  { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
   // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
   // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
-  { label: "08:00-20:00 PM", value: "08:00-20:00 PM" },
+  // { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
 ];
 
 
 
 
 
-export default function NewPedido() {
+export default function NewPedido({onPedidoCreado}) {
 
 
   // Opciones de ejemplo. Puedes traerlas de API si prefieres.
@@ -108,16 +108,35 @@ const schemaDropshipper = z.object({
       cantidad: z.number(),
     })
   ).min(1, "Debes seleccionar al menos un producto"),
-});
+}).refine(
+  (data) => {
+    // Asegúrate de parsear a number aquí también, por si acaso
+    const valor = Number(data.valor);
+    const total = Array.isArray(data.productosSeleccionados)
+      ? data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0)
+      : 0;
+    return typeof valor === "number" && !isNaN(valor) && valor >= total;
+  },
+  {
+    message: "El valor a cobrar no puede ser menor al total de productos.",
+    path: ["valor"],
+  }
+)
+
+
 
 const schemaCatalogo = z.object({
   // NO asesor
+
   clienteNombre: z.string().min(1, "Nombre requerido"),
   clienteDocumento: z.string().min(1, "Documento requerido"),
   clienteCelular: z.string().min(7, "Celular inválido"),
   clienteTransportadora: z.string().min(7, "Celular inválido"),
   fechaDespacho: z.string().min(1, "Fecha requerida"),
   franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+  valor: z.coerce.number()
+    .min(1, "Debe ingresar un valor válido"),
+
   departamento: z.number().min(1, "Departamento requerido"),
   ciudad: z.number().min(1, "Ciudad requerida"),
   direccion: z.string().min(1, "Dirección requerida"),
@@ -136,16 +155,28 @@ const schemaCatalogo = z.object({
       cantidad: z.number(),
     })
   ).min(1, "Debes seleccionar al menos un producto"),
-});
+}).refine(
+  (data) => {
+    const total = data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0);
+    return Number(data.valor) >= total;
+  },
+  {
+    message: "El valor a cobrar no puede ser menor al total de productos.",
+    path: ["valor"], // El error se muestra en el campo valor
+  }
+);
 
   const {
     control,
     register,
     handleSubmit,
     watch,
+    trigger,  // <-- AGREGA ESTO AQUÍ
     setValue,
-    formState: { errors },
+    formState: { errors,isValid },
     reset,
+
+    
   } = useForm({
     resolver: zodResolver(esDropshipper ? schemaDropshipper : schemaCatalogo),
     defaultValues: {
@@ -156,15 +187,16 @@ const schemaCatalogo = z.object({
       telefono: "",
       medioComision: "",
       otroMedio: "",
-      valor: "",
+      valor: 0,
       clienteNombre: "",
       clienteDocumento: "",
       clienteCelular: "",
       clienteTransportadora: "",
       fechaDespacho: "",
-      franjaEntrega: ["08:00-20:00 PM"], // Valor por defecto
-      departamento: "",
-      ciudad: "",
+      // franjaEntrega: ["08:00-08:00 PM"], // Valor por defecto
+      franjaEntrega: [],
+      departamento: null,
+      ciudad: null,
       direccion: "",
       barrio: "",
       notas: "",
@@ -175,7 +207,25 @@ const schemaCatalogo = z.object({
       otroMetodoPago: "",
       productosSeleccionados: [],
     },
+    mode: 'onChange', // I
+    shouldUnregister: false,
   });
+
+    // TOTAL
+
+  const valor = watch("valor");
+const productosSeleccionados = watch("productosSeleccionados");
+  const total = productosSeleccionados.reduce(
+    (acc, p) => acc + p.precio * p.cantidad,
+    0
+  );
+  useEffect(() => {
+  // Trigger validation for "valor" every time total or valor changes
+  trigger("valor");
+}, [total, valor, trigger]);
+
+
+
 
   const [departamentos, setDepartamentos] = useState([]);
   const [ciudades, setCiudades] = useState([]);
@@ -183,10 +233,6 @@ const schemaCatalogo = z.object({
   // Obtén el país y departamento seleccionados del formulario
   const country_id = "48";
   const departamentoSeleccionado = watch("departamento");
-
-  const [errorModalOpen, setErrorModalOpen] = useState(false);
-  const [errorModalMsg, setErrorModalMsg] = useState('');
-
 
   // Demo: listado de productos (sustituye esto por tu API)
   const catalogoProductos = [
@@ -196,7 +242,7 @@ const schemaCatalogo = z.object({
   ];
 
   // Demo: selecciona productos y cantidades
-  const productosSeleccionados = watch("productosSeleccionados");
+  
   const actualizarCantidad = (idx, incremento) => {
     const nuevos = [...productosSeleccionados];
     const actual = { ...nuevos[idx] };
@@ -224,122 +270,12 @@ const schemaCatalogo = z.object({
     setValue("productosSeleccionados", nuevos);
   };
 
-  // TOTAL
-  const total = productosSeleccionados.reduce(
-    (acc, p) => acc + p.precio * p.cantidad,
-    0
-  );
 
-  // SUBMIT
-  // const onSubmit = async (data) => {
-  //   console.log("onSubmit fired!", data);
-
-  //   try {
-  //     // Prepare products array for backend
-  //     const productosPedido = data.productosSeleccionados.map(item => ({
-  //         idProducto: item.idProducto,
-  //         idCategoria: item.idCategoria,
-  //         titulo: item.titulo,
-  //         cantidad: item.cantidad,
-  //         items: item.items || [],
-  //         precio: item.precio,
-  //         imagen: item.imagen1 || item.imagen2 || item.imagen3 || item.imagen4 || ''
-  //     }));
-
-  //     // Armamos el objeto plano para depuración
-  // const pedidoObj = {
-  //   tipo_pedido: "dropshipper",
-
-  //   doc_asesor: data.documento,
-  //   pin_asesor: data.pin_asesor || '',
-  //   nombre_asesor: data.nombre,
-  //   telefono_asesor: data.telefono,
-  //   telefono_whatsapp:data.telefono,
-  //   medio_pago_asesor: data.medioComision,
-  //   email: data.email,
-
-  //   productos: productosPedido,
-  //   //productos: [{ "items": [], "imagen": "", "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17 }, { "items": [], "imagen": "", "precio": 167900, "titulo": "Roku Express Hd Convertidor Tv En Smart A Tv Streaming", "cantidad": 1, "idProducto": 3, "idCategoria": 14 }, { "items": [], "imagen": "", "precio": 119900, "titulo": "Marcadores Doble Punta Set 168 Colores Dibujo Base De Alcohol", "cantidad": 1, "idProducto": 40, "idCategoria": 12 }],
-
-  //   total_pedido: data.valor,
-  //   nombre_cliente: data.clienteNombre,
-  //   telefono_cliente: data.clienteCelular,
-  //   telefono_tran: data.clienteTransportadora,
-
-
-  //   direccion_entrega: data.direccion,
-
-  //   country_id: 48, // o data.country_id si fuera editable
-  //   state_id: data.departamento,
-  //   city_id: data.ciudad,
-
-  //   //fecha_despacho: data.fechaDespacho,
-  //   fecha_despacho: "2025-06-05 21:01:00",
-  //   franja_horario: data.franjaEntrega.join(','),
-
-  //   nota: data.notas || '',
-
-  //   pago_recibir: data.valor,
-  //   medio_pago:'efectivo',
-  //   forma_pago:"Nequi",
-
-
-  //   //otroMedio: data.otroMedio || '',
-  //   //clienteDocumento: data.clienteDocumento,
-  //   // barrio: data.barrio,
-  //   // incluyeEnvio: data.incluyeEnvio,
-  //   // transferencia: data.transferencia,
-  //   // contraentrega: data.contraentrega,
-  //   // metodoPago: data.metodoPago || '',
-  //   // otroMetodoPago: data.otroMetodoPago || '',
-
-
-  // };
-
-  // console.log("Objeto que será enviado al backend:", pedidoObj);
-
-  //     // Build FormData for PHP backend
-
-  //     const formData = new FormData();
-  // for (const key in pedidoObj) {
-  //   // Si es el campo de productos (un array), mándalo como string
-  //   if (key === 'productos') {
-  //     formData.append(key, JSON.stringify(pedidoObj[key]));
-  //   } else {
-  //     formData.append(key, pedidoObj[key] !== null ? String(pedidoObj[key]) : '');
-  //   }
-  // }
-
-
-  //    const response = await fetch(`${baseURL}/pedidosPost.php`, {
-  //   method: 'POST',
-  //   body: formData
-  // });
-  // const result = await response.json();
-  // if (result.success) {
-  //   toast.success("Pedido enviado correctamente.");
-  // } else {
-  //   toast.error(result.error || "Error en el envío del pedido.");
-  // }
-
-
-  //   } catch (error) {
-  //     toast.error("Error en la petición. Intenta de nuevo.");
-  //         setErrorModalMsg(error.message || JSON.stringify(error));
-  //     setErrorModalOpen(true);
-  //     console.error("Error enviando pedido:", error);
-  //     console.error("Error enviando pedido:", error);
-  //   }
-  // };
-
+  
 
   const onSubmit = async (data) => {
     let pedidoObj;
-      if (esDropshipper && data.valor < total) {
-    setErrorModalMsg(`El valor debe ser igual o mayor al total de productos: $${total}`);
-    setErrorModalOpen(true);
-    return;
-  }
+
 
     if (tipoPedido === 'dropshipper') {
       pedidoObj = {
@@ -426,15 +362,22 @@ const schemaCatalogo = z.object({
         body: formData
       });
       const result = await response.json();
-      if (result.success) {
-        toast.success("Pedido enviado correctamente.");
-      } else {
-        toast.error(result.error || "Error en el envío del pedido.");
-      }
+      console.log("Respuesta del backend:", result);
+if (result.success) {
+  toast.success("Pedido enviado correctamente.");
+  if (typeof onPedidoCreado === "function") {
+    onPedidoCreado();
+  }
+  setModalOpen(false);   // <-- CIERRA EL MODAL
+  reset();               // <-- LIMPIA EL FORMULARIO
+} else {
+  toast.error(result?.error || "Error en el envío del pedido.");
+}
+
     } catch (error) {
       toast.error("Error en la petición. Intenta de nuevo.");
-      setErrorModalMsg(error.message || JSON.stringify(error));
-      setErrorModalOpen(true);
+    toast.error("Hay errores en el formulario. Revisa los campos obligatorios.");
+
       console.error("Error enviando pedido:", error);
     }
   };
@@ -600,11 +543,17 @@ const schemaCatalogo = z.object({
       .filter(Boolean)
       .join("\n");
 
-    setErrorModalMsg(errorMsgs || "Hay errores en el formulario. Revisa los campos obligatorios.");
-    setErrorModalOpen(true);
+    toast.error(errorMsgs || "Hay errores en el formulario. Revisa los campos obligatorios.");
+
+    
+   
+
   };
 
 
+
+
+ const [debugMode, setDebugMode] = useState(true); 
 
   return (
     <div className='NewPedido'>
@@ -613,22 +562,9 @@ const schemaCatalogo = z.object({
         <span>+</span> Agregar
       </button>
 
-      {errorModalOpen && (
-        <div className="modal" style={{ zIndex: 9999 }}>
-          <div className="modal-content" style={{ maxWidth: 420, margin: "10vh auto", padding: 30 }}>
-            <h3 style={{ color: "#d32f2f", marginBottom: 18 }}>¡Error!</h3>
-            <div style={{ color: "#111", marginBottom: 18, wordBreak: "break-all" }}>
-              {errorModalMsg}
-            </div>
-            <Button onClick={() => setErrorModalOpen(false)} className="p-button-danger">
-              Cerrar
-            </Button>
-          </div>
-        </div>
-      )}
-
 
       {modalOpen && (
+        
         <div className='modal'>
           <div className='modal-content'>
             <div className='deFlexBtnsModal'>
@@ -647,10 +583,18 @@ const schemaCatalogo = z.object({
                 ¿El Pedido es de Dropshipper? Marca la casilla si es así.
               </label>
             </div>
-
-
-            <ToastContainer />
+<Button
+  type="button"
+  onClick={() => setDebugMode(d => !d)}
+  label={debugMode ? "Ocultar Debug" : "Mostrar Debug"}
+  severity={debugMode ? "danger" : "info"}
+  style={{ margin: "8px 0" }}
+/>
+            {/* <ToastContainer /> */}
             <form onSubmit={handleSubmit(onSubmit, onFormError)}>
+
+
+
               <TabView>
 
                 {esDropshipper && (
@@ -732,7 +676,9 @@ const schemaCatalogo = z.object({
                     name="franjaEntrega"
                     control={control}
                     render={({ field }) => (
-                      <MultiSelect {...field} options={franjasHorarias} disabled="true" placeholder="Selecciona una o más" display="chip" />
+                      <MultiSelect {...field} options={franjasHorarias} 
+                      // disabled="true" 
+                      placeholder="Selecciona una o más" display="chip" />
                     )}
                   />
                   {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
@@ -793,102 +739,11 @@ const schemaCatalogo = z.object({
                   <InputTextarea {...register("notas")} rows={3} autoResize />
                   </Card>
 
-                </TabPanel>
-                {/* 4. Pago */}
-                <TabPanel header="Pago">
-                  <div className="field">
-                    <label>Valor a cobrar al cliente</label>
-                    <Controller
-                      name="valor"
-                      control={control}
-                      render={({ field }) => (
-                        <InputNumber
-                          inputRef={field.ref}
-                          value={field.value}
-                          onValueChange={e => field.onChange(e.value)}
-                          onBlur={field.onBlur}
-                          mode="decimal"
-                          min={0}
-                          useGrouping={false}
-                        />
-                      )}
-                    />
-                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
-                  </div>
 
-                  <div className="field">
-                    <label>Incluye Envío</label>
-                    <Controller
-                      name="incluyeEnvio"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={[
-                          { label: "Sí", value: "Sí" },
-                          { label: "No", value: "No" }
-                        ]} placeholder="Seleccione" />
-                      )}
-                    />
-                    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
-                  </div>
-
-                  <div className="field">
-                    <label>Transferencia</label>
-                    <Controller
-                      name="transferencia"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={[
-                          { label: "Sí", value: "Sí" },
-                          { label: "No", value: "No" }
-                        ]} placeholder="Seleccione" />
-                      )}
-                    />
-                    {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
-                  </div>
-
-                  {watch("transferencia") === "No" && (
-                    <div className="field">
-                      <label>Contraentrega</label>
-                      <Controller
-                        name="contraentrega"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown {...field} options={[
-                            { label: "Sí", value: "Sí" },
-                            { label: "No", value: "No" }
-                          ]} placeholder="Seleccione" />
-                        )}
-                      />
-                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
-
-                      {watch("contraentrega") === "No" && (
-                        <>
-                          <div className="field">
-                            <label>Método de Pago</label>
-                            <Controller
-                              name="metodoPago"
-                              control={control}
-                              render={({ field }) => (
-                                <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
-                              )}
-                            />
-                            {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
-                          </div>
-
-                          {watch("metodoPago") === "Otro" && (
-                            <div className="field">
-                              <label>¿Cuál?</label>
-                              <InputText {...register("otroMetodoPago")} />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
-                  )}
-                  
                 </TabPanel>
 
-                {/* 5. Productos */}
+
+              {/* 4. Productos */}
                 <TabPanel header="Productos">
                   <Card title="Lista de productos" style={{ marginBottom: 20 }}>
                   {/* Filtro de búsqueda de PrimeReact */}
@@ -975,6 +830,115 @@ const schemaCatalogo = z.object({
                </Card>
                 </TabPanel>
 
+                {/* 5. Pago */}
+                <TabPanel header="Pago">
+                  <div className="field">
+                    <label>Valor a cobrar al cliente</label>
+                    
+<Controller
+  name="valor"
+  control={control}
+  render={({ field }) => (
+    <InputNumber
+      inputRef={field.ref}
+      value={typeof field.value === "number" && !isNaN(field.value) ? field.value : 0}
+      onValueChange={e => field.onChange(e.value ?? 0)}
+      onBlur={field.onBlur}
+      mode="decimal"
+      min={0}
+      useGrouping={false}
+    />
+  )}
+/>
+
+                    <br></br>
+                    
+                    <label className="p-sr-only">(*Debe ser mayor o igual a ${total})</label>
+                    <div>
+                      
+                      <pre>typeof valor: {typeof valor}</pre>
+                      <pre>valor: {String(valor)}</pre>
+                      <pre>typeof total: {typeof total}</pre>
+                      <pre>total: {total}</pre>
+                    </div>
+                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
+                    
+                  </div>
+                  
+
+                  <div className="field">
+                    <label>Incluye Envío</label>
+                    <Controller
+                      name="incluyeEnvio"
+                      control={control}
+                      render={({ field }) => (
+                        <Dropdown {...field} options={[
+                          { label: "Sí", value: "Sí" },
+                          { label: "No", value: "No" }
+                        ]} placeholder="Seleccione" />
+                      )}
+                    />
+                    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
+                  </div>
+
+                  <div className="field">
+                    <label>Transferencia</label>
+                    <Controller
+                      name="transferencia"
+                      control={control}
+                      render={({ field }) => (
+                        <Dropdown {...field} options={[
+                          { label: "Sí", value: "Sí" },
+                          { label: "No", value: "No" }
+                        ]} placeholder="Seleccione" />
+                      )}
+                    />
+                    {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
+                  </div>
+
+                  {watch("transferencia") === "No" && (
+                    <div className="field">
+                      <label>Contraentrega</label>
+                      <Controller
+                        name="contraentrega"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown {...field} options={[
+                            { label: "Sí", value: "Sí" },
+                            { label: "No", value: "No" }
+                          ]} placeholder="Seleccione" />
+                        )}
+                      />
+                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+
+                      {watch("contraentrega") === "No" && (
+                        <>
+                          <div className="field">
+                            <label>Método de Pago</label>
+                            <Controller
+                              name="metodoPago"
+                              control={control}
+                              render={({ field }) => (
+                                <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
+                              )}
+                            />
+                            {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
+                          </div>
+
+                          {watch("metodoPago") === "Otro" && (
+                            <div className="field">
+                              <label>¿Cuál?</label>
+                              <InputText {...register("otroMetodoPago")} />
+                            </div>
+                          )}
+                        </>
+                      )}
+                    </div>
+                  )}
+                  
+                </TabPanel>
+
+
 
                 {/* 6. Resumen */}
                 <TabPanel header="Resumen">
@@ -1001,14 +965,43 @@ const schemaCatalogo = z.object({
 
                     </div>
                   </Card>
-                  <Button type="submit" className="p-button-success">
+                  <Button type="submit" className="p-button-success" >
                     Guardar Pedido
                   </Button>
+
+
                 </TabPanel>
               </TabView>
               <h1>Total: ${total}</h1>
             </form>
 
+{debugMode && (
+  <div style={{
+    background: "#2b2b2b",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 6,
+    margin: "10px 0",
+    fontFamily: "monospace",
+  }}>
+    <b>Debug:</b>
+    <div>Total de productos (total): <span style={{ color: "#0f0" }}>${total}</span></div>
+    <div>Valor ingresado (valor): <span style={{ color: "#0af" }}>{watch("valor")}</span></div>
+    <div>
+      Diferencia (valor - total):{" "}
+      <span style={{ color: Number(watch("valor")) >= total ? "#0f0" : "#f00" }}>
+        {Number(watch("valor")) - total}
+      </span>
+    </div>
+
+    <pre style={{background: "#222", color: "#0f0", padding: 8, borderRadius: 4}}>
+  {JSON.stringify(errors, null, 2)}
+</pre>
+
+  </div>
+
+  
+)}
 
 
             {modalOpen2 && (
