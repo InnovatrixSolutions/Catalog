@@ -90,10 +90,7 @@
 #modal-content fieldset{
         width: 32%;
 }
-#modal-content{
-    width: 150vh;
-    height: 90vh;
-}
+
 .deFlexBtnsFilset{
     display: flex;
     gap: 10px;
