@@ -29,7 +29,8 @@ export default function Profile() {
             {tienda?.imagen1 ? (
                 <img src={tienda?.imagen1} alt="logo" />
             ) : (
-                <img src={Nologo} alt="logo" />
+                // <img src={Nologo} alt="logo" />
+                <img src={tienda?.imagen1} alt="logo" />
             )}
             <h2>{tienda.nombre}</h2>
             

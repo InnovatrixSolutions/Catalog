@@ -428,7 +428,8 @@ export default function NewPricesList() {
                                             <img
                                                 src={productos.find(p => 
                                                     
-                                                     p.titulo === productoSeleccionado)?.imagen1 || Nologo}
+                                                    //  p.titulo === productoSeleccionado)?.imagen1 || Nologo}
+                                                     p.titulo === productoSeleccionado)?.imagen1 || productoSeleccionado.imagen1}
                                                    
                                                 alt="Vista previa"
                                                 style={{ width: '40px', height: '40px', objectFit: 'cover', marginTop: '10px', borderRadius: '8px' }}

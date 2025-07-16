@@ -46,9 +46,12 @@ export default function Footer() {
             <div className='footerText' id='footerText'>
                 <Anchor to='/'>
                     {tienda?.imagen1 ? (
-                        <img src={tienda?.imagen1} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                     ) : (
-                        <img src={Nologo} alt="logo" />
+                        // <img src={Nologo} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                     )}
                 </Anchor>
 

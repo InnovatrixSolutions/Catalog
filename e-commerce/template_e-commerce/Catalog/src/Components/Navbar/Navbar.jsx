@@ -58,9 +58,12 @@ export default function Navbar() {
             <nav>
                 <Anchor to={`/`} className='logo'>
                     {tienda?.imagen1 ? (
-                        <img src={tienda?.imagen1} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                     ) : (
-                        <img src={Nologo} alt="logo" />
+                        // <img src={Nologo} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                         
                     )}
 
