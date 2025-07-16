@@ -32,6 +32,7 @@ export default function Profile() {
                 <img src={Nologo} alt="logo" />
             )}
             <h2>{tienda.nombre}</h2>
+            
             <div className='profileText'>
                 <p>{tienda.eslogan}</p>
                 <Anchor to={`https://www.google.com/maps?q=${encodeURIComponent(tienda.direccion)}`} target="_blank">{tienda.direccion}</Anchor>

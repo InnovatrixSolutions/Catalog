@@ -84,12 +84,15 @@
     object-fit: cover;
     border-radius: 15px;
 }
-.cardText{
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 7px;
-    justify-content: space-between;
+.cardText {
+  display: flex;
+  flex-direction: column;
+  /* elimina o sobreescribe el space-between: */
+  justify-content: flex-start;
+  /* para asegurarnos de que ocupe todo el alto del .cardProdcut */
+  height: 100%;
+  padding: 10px;
+  box-sizing: border-box;
 }
 .cardText h4{
     white-space: nowrap;
@@ -410,10 +413,8 @@
     color: var(--text-color2);
    
 }
-.deFLexPrice{
-    display: flex;
-    gap: 20px;
-    
+.deFLexPrice {
+  margin-top: auto;
 }
 .precioTachado {
     text-decoration: line-through;
@@ -619,4 +620,37 @@
     
       }
     
+}
+
+/* Products.css */
+
+.carousel-card {
+  width: 18rem;       /* fixed card width */
+  height: 24rem;      /* fixed card height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  box-sizing: border-box;
+}
+.carousel-card .mb-3 {
+  flex-shrink: 0;     /* keep image area from stretching */
+}
+.carousel-card h4,
+.carousel-card h6,
+.carousel-card .mt-5 {
+  flex-shrink: 0;     /* prevent text sections from pushing layout */
+}
+
+
+/* en tu Products.css */
+@media (max-width: 575px) {
+  /* Oculta los puntos */
+  .p-carousel .p-carousel-indicators {
+    display: none !important;
+  }
+  /* Oculta las flechas prev/next */
+  .p-carousel .p-carousel-prev,
+  .p-carousel .p-carousel-next {
+    display: none !important;
+  }
 }
