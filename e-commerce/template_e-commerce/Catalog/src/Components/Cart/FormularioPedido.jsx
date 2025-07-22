@@ -39,8 +39,10 @@ const medioPagoLista = [
   'Nequi', 'Bancolombia', 'Bold (Tarjeta)', 'Daviplata',
   'Mercadopago', 'Addi', 'Sistecredito', 'Otro'
 ];
+
+
 const franjasHorarias = [
-  { label: "08:00-80:00 PM", value: "08:00-08:00 PM" },
+  { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
   // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
   // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
   // { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
@@ -120,7 +122,7 @@ const schema = z.object({
       documento: '', email: '', nombre: '', telefono: '', valor: '',
       incluyeEnvio: 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: null, franjaEntrega: [], departamento: '', ciudad: '', direccion: '', barrio: '',
+      fechaDespacho: null, franjaEntrega: [ "08:00-08:00 PM" ], departamento: '', ciudad: '', direccion: '', barrio: '',
       contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'No', notas: '', pin_asesor: ''
 
 
@@ -229,7 +231,7 @@ const schema = z.object({
           onPedidoSuccess();
         }
       } else {
-        toast.error("Error en el envío del pedido.");
+        toast.error("Error en el envío del pedido. Revisa todos los campos");
       }
 
     } catch (error) {
@@ -359,7 +361,7 @@ const schema = z.object({
     setValue('clienteCelular', '3107654321');
     setValue('clienteTransportadora', '3107654321');
     setValue('fechaDespacho', new Date());
-    setValue('franjaEntrega', []);
+    //setValue('franjaEntrega', []);
     setValue('departamento', 1); // Asegúrate que sea un ID válido en tu sistema
     setValue('ciudad', 10);      // Igual aquí
     setValue('direccion', 'Cra 123 #45-67');
@@ -452,7 +454,14 @@ const schema = z.object({
   ];
 // At the top of your file or in a useEffect/useMemo
 const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
-
+const numericFields = [
+  'documento',
+  'telefono',
+  'clienteDocumento',
+  'clienteCelular',
+  'clienteTransportadora'
+];
+// const numericFields = ['clienteDocumento', 'clienteCelular', 'clienteTransportadora'];
 
   return (
 
@@ -521,12 +530,12 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
             {tipoAsesor !== 'catalog' && (
               <StepperPanel header="Datos del Asesor">
                 <Card title="Datos del asesor" className="w-full border border-gray-400 shadow-md rounded-xl">
-                {/* <StepperPanel header={<span className="font-bold">Forma de pago</span>}> */}
+                
 
                 <div className="formgrid grid">
 
-                  {/* Campos generales */}
-                  {[
+                  
+                  {/* {[
                     ['documento', 'Tu Documento'],
                     ['pin_asesor', 'Tu PIN (* alfanumérico)'],
 
@@ -540,9 +549,36 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                     </div>
 
 
-                  ))}
+                  ))} */}
 
                   {[
+  ['documento', 'Tu Documento'],
+  ['pin_asesor', 'Tu PIN (* alfanumérico)'],
+].map(([field, label]) => {
+  const onlyNumbers = numericFields.includes(field);
+  return (
+    <div key={field} className="col-12 md:col-6">
+      <label>{label}</label>
+      <InputText
+        {...register(field)}
+        className="w-full"
+        onKeyPress={onlyNumbers
+          ? e => {
+              if (!/[0-9]/.test(e.key)) {
+                e.preventDefault();
+              }
+            }
+          : undefined
+        }
+      />
+      {errors[field] && (
+        <small className="p-error">{errors[field]?.message}</small>
+      )}
+    </div>
+  );
+})}
+
+                  {/* {[
 
                     ['email', 'Tu email'],
                     ['nombre', 'Tu Nombre'],
@@ -553,10 +589,35 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                       <InputText {...register(field)} className="w-full" />
                       {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
                     </div>
-                  ))}
+                  ))} */}
+{[
+  ['email', 'Tu email'],
+  ['nombre', 'Tu Nombre'],
+  ['telefono', 'Tu Teléfono']
+].map(([field, label]) => {
+  const onlyNumbers = numericFields.includes(field);
+  return (
+    <div key={field} className="col-12 md:col-6">
+      <label>{label}</label>
+      <InputText
+        {...register(field)}
+        className="w-full"
+        onKeyPress={onlyNumbers
+          ? e => {
+              if (!/[0-9]/.test(e.key)) e.preventDefault();
+            }
+          : undefined
+        }
+      />
+      {errors[field] && (
+        <small className="p-error">{errors[field]?.message}</small>
+      )}
+    </div>
+  );
+})}
 
 
-                  {/* Medio comisión */}
+                  
                   <div className="col-12 md:col-6">
                     <label>¿Dónde recibes comisiones?</label>
                     <Controller
@@ -570,13 +631,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                   </div>
 
                   <div className="col-12 flex justify-content-end">
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(1)} /> */}
-                    {/* <Button
-                  label="Siguiente"
-                  type="button"
-                  onClick={() => setActiveIndex(activeIndex + 1)}
-                    disabled={activeIndex === totalSteps - 1}
-                /> */}
+
 
                   </div>
                 </div>
@@ -589,7 +644,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
             <StepperPanel header="Datos del Cliente">
               <Card title="Datos de tu cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
-                <div className="formgrid grid">
+                {/* <div className="formgrid grid">
                   {[
                     ['clienteNombre', 'Nombre de tu cliente'],
                     ['clienteDocumento', 'Documento de tu cliente'],
@@ -603,22 +658,40 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                     </div>
                   ))}
                   <div className="col-12 flex justify-content-between">
-                    {/* <Button 
-                  label="Atrás" 
-                  onClick={() => setActiveIndex(activeIndex - 1)}
-                    disabled={activeIndex === 0} 
-                  /> */}
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(2)} /> */}
-                    {/* <Button
-                    label="Siguiente"
-                    type="button"
-                    onClick={() => setActiveIndex(activeIndex + 1)}
-                    disabled={activeIndex === totalSteps - 1}
-
-                  /> */}
 
                   </div>
-                </div>
+                </div> */}
+
+                <div className="formgrid grid">
+  {[
+    ['clienteNombre', 'Nombre de tu cliente'],
+    ['clienteDocumento', 'Documento de tu cliente'],
+    ['clienteCelular', 'Celular Llamadas de tu cliente'],
+    ['clienteTransportadora', 'Celular WhatsApp de tu cliente'],
+  ].map(([field, label]) => {
+    const onlyNumbers = numericFields.includes(field);
+    return (
+      <div key={field} className="col-12 md:col-6">
+        <label>{label}</label>
+        <InputText
+          {...register(field)}
+          className="w-full"
+          // si es campo numérico, bloquear cualquier tecla que no sea dígito
+          onKeyPress={onlyNumbers
+            ? e => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }
+            : undefined
+          }
+        />
+        {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
+      </div>
+    );
+  })}
+  <div className="col-12 flex justify-content-between" />
+</div>
               </Card>
             </StepperPanel>
 
@@ -641,21 +714,53 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
                   <div className="col-12 md:col-6">
                     <label>Franja de Entrega</label>
-                    <Controller
+                    {/* <Controller
                       name="franjaEntrega"
                       control={control}
                       render={({ field }) => (
                         <MultiSelect
                           {...field}
+                          value={field.value}           // pasa el valor inicial
                           options={franjasHorarias}
                           placeholder="Seleccione una o varias franjas"
                           className="w-full"
                           display="chip"
-                          // disabled="true"
+                          disabled
                           
                         />
                       )}
-                    />
+                    /> */}
+
+                    {/* <Controller
+                      name="franjaEntrega"
+                      control={control}
+                      defaultValue={["08:00-08:00 PM"]}  // asegúrate de que el valor por defecto está aquí
+                      render={({ field }) => (
+                        <MultiSelect
+                          value={field.value}
+                          options={franjasHorarias}
+                          onChange={e => field.onChange(e.value)}   // extrae el array de `e.value`
+                          placeholder="08:00-08:00 PM"
+                          disabled={true}          // booleano
+                          appendTo="self"                            // booleano, no cadena
+                          display="chip"
+                          className="w-full"
+                        />
+                      )}
+                    /> */}
+
+                    <Controller
+                        name="franjaEntrega"
+                        control={control}
+                        defaultValue={["08:00-08:00 PM"]}
+                        render={({ field }) => (
+                          <InputText
+                            value={(field.value || []).join(', ')}
+                            readOnly
+                            className="w-full"
+                          />
+                        )}
+                      />
                     {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
                   </div>
 
@@ -931,17 +1036,17 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
         disabled={activeIndex === 0}
               /> */}
                 {/* <Button type="submit" label="Guardar" className="p-button-success" /> */}
+
+
+              </div>
+            </StepperPanel>
+          </Stepper>
                 <Button
                   type="submit"
                   label="Guardar"
                   className="p-button-success"
                   onClick={() => setIsFinalSubmit(true)}
                 />
-
-              </div>
-            </StepperPanel>
-          </Stepper>
-
         </form>
 </div>
       {/* </ScrollPanel> */}

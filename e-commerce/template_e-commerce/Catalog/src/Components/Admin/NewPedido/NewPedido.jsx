@@ -553,7 +553,7 @@ export default function NewPedido({ onPedidoCreado }) {
 
 
 
-  const [debugMode, setDebugMode] = useState(true);
+  const [debugMode, setDebugMode] = useState(false);
 
   return (
     <div className='NewPedido'>
@@ -585,13 +585,13 @@ export default function NewPedido({ onPedidoCreado }) {
                 ¿El Pedido es de Dropshipper? Marca la casilla si es así.
               </label>
             </div>
-            <Button
+            {/* <Button
               type="button"
               onClick={() => setDebugMode(d => !d)}
               label={debugMode ? "Ocultar Debug" : "Mostrar Debug"}
               severity={debugMode ? "danger" : "info"}
               style={{ margin: "8px 0" }}
-            />
+            /> */}
             {/* <ToastContainer /> */}
 
             <div className="modal-body">
