@@ -24,7 +24,7 @@
 
   /*Arreglado por sebas*/
   
-  --input: #ffffff;
+  /* --input: #ffffff; */
   /* --loading:#f8004f60; */
   --loading:#83e79e;
 }
@@ -108,62 +108,3 @@ a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSli
   }
 }
  
-.p-inputtext {
-  background: #fff !important;  /* or your preferred color */
-  border: 1.5px solid var(--color1) !important;
-}
-
-.p-dropdown, .p-multiselect {
-  background: #fff !important;
-  border: 1.5px solid var(--color1) !important;
-}
-
-.modal {
-  position: fixed;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.2);
-  z-index: 99999 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  width: 90vw;
-  max-width: 900px;
-  min-width: 340px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px 24px;
-  box-sizing: border-box;
-  overflow: visible !important;
-  z-index: 100000 !important;
-  position: relative;
-}
-
-.cardProductData, .cardProductDataText {
-  /* ... */
-}
-/* PRIME REACT OVERLAYS */
-.p-dropdown-panel,
-.p-multiselect-panel,
-.p-calendar-panel,
-.p-autocomplete-panel,
-.p-column-filter-overlay {
-  z-index: 1100 !important;
-}
-.p-tabview-nav {
-  gap: 1rem !important;
-}
-
-
-/* Ensure PrimeReact overlays are above all custom modals */
-.p-dropdown-panel,
-.p-multiselect-panel,
-.p-calendar-panel,
-.p-autocomplete-panel,
-.p-column-filter-overlay,
-.p-dialog-mask,
-.p-overlaypanel {
-  z-index: 110001 !important; /* Above your .modal-content (100000) */
-}

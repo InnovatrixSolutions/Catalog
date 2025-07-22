@@ -16,24 +16,35 @@
     width: 100%;
 }
 .cardProdcut{
+
     display: flex;
     overflow: hidden;
     width: 23rem;
-    height: 8rem;
-    border-radius: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.073);
-    background-color: var(--blanco);
-   
-}
-.cardProdcutSelected{
-    display: flex;
-    width: 23rem;
-    height: 8rem;
+    height: 10rem;
     border-radius: 20px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.073);
     background-color: var(--blanco);
+
     padding: 10px;
+    position: relative;
+
+    align-items: flex-start; 
+   
+}
+.cardProdcutSelected{
+  
+    display: flex;
     overflow: hidden;
+    width: 23rem;
+    height: 10rem;
+    border-radius: 20px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.073);
+    background-color: var(--blanco);
+
+    padding: 10px;
+    position: relative;
+    
+    align-items: flex-start; 
    
 }
 .cardProdcutmasVendido{
@@ -41,7 +52,7 @@
     flex-direction: column;
     overflow: hidden;
     width: 13rem;
-    height: 15rem;
+    height: 18rem;
     border-radius: 10px;
     box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.073);
     background-color: var(--blanco);
@@ -75,17 +86,17 @@
 }
 .cardProdcut  img{
     width: 8rem;
-    height: 8rem;
+    height: 10rem;
     object-fit: cover;
 }
 .cardProdcutSelected  img{
     width: 7rem;
-    height: 7rem;
+    height: 10rem;
     object-fit: cover;
     border-radius: 15px;
 }
 .cardText {
-  display: flex;
+  /* display: flex; */
   flex-direction: column;
   /* elimina o sobreescribe el space-between: */
   justify-content: flex-start;
@@ -95,6 +106,7 @@
   box-sizing: border-box;
 }
 .cardText h4{
+    
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -361,11 +373,13 @@
     padding-top: 2rem;
 }
 .cardTextSelected{
-    padding: 10px;
-    display: flex;
+    /* padding: 10px; */
+    /* display: flex; */
     flex-direction: column;
     gap: 6px;
-    justify-content: space-between;
+    /* justify-content: space-between;
+     */
+      justify-content: flex-start;
 }
 .cardTextSelected h4{
     white-space: nowrap;
@@ -414,7 +428,9 @@
    
 }
 .deFLexPrice {
-  margin-top: auto;
+    display: flex;
+    gap: 20px;
+    
 }
 .precioTachado {
     text-decoration: line-through;
@@ -505,203 +521,6 @@
         height: 20rem;
     }
 
-      .cardProdcutmasVendido{
-        width: 10rem;
-        height: 12rem;
-    }
-    .cardProdcutSelected  img{
-        width: 5rem;
-        height: 5rem;
-    }
-    .categoriSectionSelected{
-        gap: 1rem;
-        padding: 2%;
-        flex-wrap:initial;
-        flex-direction: column;
-        width: 100%;
-       
-    }
-    .cardProdcutSelected{
-        width: 100%;
-        height: 7.5rem;
-        background-color: transparent;
-        box-shadow: none;
-        border-radius: 0;
-        border-bottom: 1px solid var(--gris2);
-        align-items: center;
-}
-    .cardProdcutmasVendido img{
-        height: 6rem;
-        height: 6rem;
-    }
-    .ProductsContain{
-        padding: 10px 0%;
-    }
-    .cardProdcut{
-        flex-direction: row;
-        width: 19rem;
-        height: 6rem;
-    }
-
-    .cardProdcut img{
-        width: 6rem;
-        height: 6rem;
-        object-fit: cover;
-        
-    }
-    .cardTextSelected h4{
-        font-size: 16px;
-        max-width: 27ch;
-    }
-    .cardTextSelected span {
-        max-width: 30ch;
-    }
-    .cardText h4{
-        max-width: 20ch;
-        font-size: 16px;
-    }
-    .cardTextSelected h5{
-        font-size: .9em;
-    }
-    .cardText h5{
-      
-        max-width: 25ch;
-        font-size: .9em;
-
-    }
-    .cardText span{
-      
-        max-width: 24ch;
-    }
-    
-    .Products{
-        display: flex;
-        flex-wrap: wrap;
-        gap: 1rem;
-       padding: 0;
-       padding-top: 10px;
-    }
-    .categoriasInputs::-webkit-scrollbar{
- 
-        background-color: transparent;
-     
-    }
-     
-    .categoriasInputs::-webkit-scrollbar-thumb {
-        background-color: transparent;
-    }
-
-    .categoriasInputsFilter::-webkit-scrollbar{
- 
-        background-color: transparent;
-     
-    }
-     
-    .categoriasInputsFilter::-webkit-scrollbar-thumb {
-        background-color: transparent;
-    }
-    .categoriasInputsFilter{
-        padding: 0 3%;
-        margin: 0;
-        gap: 1rem;
-    }
- 
-    #subcategoriasInputs{
-        margin-top: 0!important;
-    
-      }
-      .fixed  .categoriasInputsFilter{
-        padding-top: 10px;
-        padding-bottom: 0;
-    
-      }
-      .fixed  #subcategoriasInputs{
-        padding-top: 0;
-    
-      }
-    
+          
 }
 
-/* Products.css */
-
-.carousel-card {
-  width: 18rem;       /* fixed card width */
-  height: 24rem;      /* fixed card height */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-}
-.carousel-card .mb-3 {
-  flex-shrink: 0;     /* keep image area from stretching */
-}
-.carousel-card h4,
-.carousel-card h6,
-.carousel-card .mt-5 {
-  flex-shrink: 0;     /* prevent text sections from pushing layout */
-}
-
-
-/* en tu Products.css */
-@media (max-width: 575px) {
-  /* Oculta los puntos */
-  .p-carousel .p-carousel-indicators {
-    display: none !important;
-  }
-  /* Oculta las flechas prev/next */
-  .p-carousel .p-carousel-prev,
-  .p-carousel .p-carousel-next {
-    display: none !important;
-  }
-}
-
-
-/* Sidebar “match” */
-.p-sidebar.p-sidebar-left {
-  background: var(--blanco);
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-}
-
-.p-sidebar .p-sidebar-header {
-  padding: 1rem 1.5rem;
-  font-size: 1.25rem;
-  color: var(--text-color2);
-  border-bottom: 1px solid var(--gris2);
-}
-
-.p-sidebar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0 1rem;
-}
-.p-sidebar ul li {
-  padding: .75rem 0;
-  cursor: pointer;
-  color: var(--text-color2);
-  border-bottom: 1px solid var(--gris2);
-  transition: background .2s;
-}
-.p-sidebar ul li:last-child {
-  border-bottom: none;
-}
-.p-sidebar ul li:hover {
-  background: var(--gris);
-}
-.p-sidebar ul li.selected {
-  background: var(--color1);
-  color: white;
-}
-
-/* Botón “ver categorías” */
-.btn-ver-cats {
-  background: var(--color);
-  color: var(--blanco);
-  border: none;
-  padding: .5rem 1rem;
-  border-radius: 20px;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.btn-ver-cats:hover {
-  opacity: .9;
-}
