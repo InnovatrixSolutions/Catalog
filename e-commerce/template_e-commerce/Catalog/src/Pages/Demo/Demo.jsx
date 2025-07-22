@@ -1,6 +1,6 @@
 import React from 'react'
 import Banners from '../../Components/Banners/Banners'
-import Products from '../../Components/Products/ProductsPrimeReact'
+import Products from '../../Components/Products/Products'
 import './Demo.css'
 import Footer from '../../Components/Footer/Footer'
 import BtnWhatsapp from '../../Components/BtnWhatsapp/BtnWhatsapp'
