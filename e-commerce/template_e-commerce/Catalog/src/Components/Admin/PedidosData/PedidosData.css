@@ -157,3 +157,14 @@
     padding: 7px;
 }
 }
+
+.p-dialog .p-dialog-content {
+  max-height: calc(100vh - 120px) !important;  /* deja espacio para header/footer */
+  overflow-y: auto        !important;           /* scroll interno */
+}
+
+/* Si prefieres targetear tu propio id o clase de contenedor */
+#modal-content {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+}

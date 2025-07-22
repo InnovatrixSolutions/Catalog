@@ -59,7 +59,7 @@ const franjasHorarias = [
 
 
 
-export default function NewPedido({onPedidoCreado}) {
+export default function NewPedido({ onPedidoCreado }) {
 
 
   // Opciones de ejemplo. Puedes traerlas de API si prefieres.
@@ -69,102 +69,102 @@ export default function NewPedido({onPedidoCreado}) {
   const tipoPedido = esDropshipper ? 'dropshipper' : 'catalogo';
 
 
-const schemaDropshipper = z.object({
-  // Asesor
-  documento: z.string().min(1, "Documento requerido"),
-  pin_asesor: z.string().optional(),
-  email: z.string().email("Email inválido"),
-  nombre: z.string().min(1, "Nombre requerido"),
-  telefono: z.string().min(7, "Teléfono inválido"),
-  medioComision: z.string().min(1, "Seleccione comisión"),
-  otroMedio: z.string().optional(),
-  valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+  const schemaDropshipper = z.object({
+    // Asesor
+    documento: z.string().min(1, "Documento requerido"),
+    pin_asesor: z.string().optional(),
+    email: z.string().email("Email inválido"),
+    nombre: z.string().min(1, "Nombre requerido"),
+    telefono: z.string().min(7, "Teléfono inválido"),
+    medioComision: z.string().min(1, "Seleccione comisión"),
+    otroMedio: z.string().optional(),
+    valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
 
-  // Cliente
-  clienteNombre: z.string().min(1, "Nombre requerido"),
-  clienteDocumento: z.string().min(1, "Documento requerido"),
-  clienteCelular: z.string().min(7, "Celular inválido"),
-  clienteTransportadora: z.string().min(7, "Celular inválido"),
-  // Entrega
-  fechaDespacho: z.string().min(1, "Fecha requerida"),
-  franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
-  departamento: z.number().min(1, "Departamento requerido"),
-  ciudad: z.number().min(1, "Ciudad requerida"),
-  direccion: z.string().min(1, "Dirección requerida"),
-  barrio: z.string().min(1, "Barrio requerido"),
-  notas: z.string().optional(),
-  // Pago
-  incluyeEnvio: z.enum(["Sí", "No"]),
-  transferencia: z.enum(["Sí", "No"]),
-  contraentrega: z.enum(["Sí", "No"]),
-  metodoPago: z.string().optional(),
-  otroMetodoPago: z.string().optional(),
-  // Productos
-  productosSeleccionados: z.array(
-    z.object({
-      idProducto: z.any(),
-      titulo: z.string(),
-      precio: z.any(),
-      cantidad: z.number(),
-    })
-  ).min(1, "Debes seleccionar al menos un producto"),
-}).refine(
-  (data) => {
-    // Asegúrate de parsear a number aquí también, por si acaso
-    const valor = Number(data.valor);
-    const total = Array.isArray(data.productosSeleccionados)
-      ? data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0)
-      : 0;
-    return typeof valor === "number" && !isNaN(valor) && valor >= total;
-  },
-  {
-    message: "El valor a cobrar no puede ser menor al total de productos.",
-    path: ["valor"],
-  }
-)
+    // Cliente
+    clienteNombre: z.string().min(1, "Nombre requerido"),
+    clienteDocumento: z.string().min(1, "Documento requerido"),
+    clienteCelular: z.string().min(7, "Celular inválido"),
+    clienteTransportadora: z.string().min(7, "Celular inválido"),
+    // Entrega
+    fechaDespacho: z.string().min(1, "Fecha requerida"),
+    franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+    departamento: z.number().min(1, "Departamento requerido"),
+    ciudad: z.number().min(1, "Ciudad requerida"),
+    direccion: z.string().min(1, "Dirección requerida"),
+    barrio: z.string().min(1, "Barrio requerido"),
+    notas: z.string().optional(),
+    // Pago
+    incluyeEnvio: z.enum(["Sí", "No"]),
+    transferencia: z.enum(["Sí", "No"]),
+    contraentrega: z.enum(["Sí", "No"]),
+    metodoPago: z.string().optional(),
+    otroMetodoPago: z.string().optional(),
+    // Productos
+    productosSeleccionados: z.array(
+      z.object({
+        idProducto: z.any(),
+        titulo: z.string(),
+        precio: z.any(),
+        cantidad: z.number(),
+      })
+    ).min(1, "Debes seleccionar al menos un producto"),
+  }).refine(
+    (data) => {
+      // Asegúrate de parsear a number aquí también, por si acaso
+      const valor = Number(data.valor);
+      const total = Array.isArray(data.productosSeleccionados)
+        ? data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0)
+        : 0;
+      return typeof valor === "number" && !isNaN(valor) && valor >= total;
+    },
+    {
+      message: "El valor a cobrar no puede ser menor al total de productos.",
+      path: ["valor"],
+    }
+  )
 
 
 
-const schemaCatalogo = z.object({
-  // NO asesor
+  const schemaCatalogo = z.object({
+    // NO asesor
 
-  clienteNombre: z.string().min(1, "Nombre requerido"),
-  clienteDocumento: z.string().min(1, "Documento requerido"),
-  clienteCelular: z.string().min(7, "Celular inválido"),
-  clienteTransportadora: z.string().min(7, "Celular inválido"),
-  fechaDespacho: z.string().min(1, "Fecha requerida"),
-  franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
-  valor: z.coerce.number()
-    .min(1, "Debe ingresar un valor válido"),
+    clienteNombre: z.string().min(1, "Nombre requerido"),
+    clienteDocumento: z.string().min(1, "Documento requerido"),
+    clienteCelular: z.string().min(7, "Celular inválido"),
+    clienteTransportadora: z.string().min(7, "Celular inválido"),
+    fechaDespacho: z.string().min(1, "Fecha requerida"),
+    franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+    valor: z.coerce.number()
+      .min(1, "Debe ingresar un valor válido"),
 
-  departamento: z.number().min(1, "Departamento requerido"),
-  ciudad: z.number().min(1, "Ciudad requerida"),
-  direccion: z.string().min(1, "Dirección requerida"),
-  barrio: z.string().min(1, "Barrio requerido"),
-  notas: z.string().optional(),
-  incluyeEnvio: z.enum(["Sí", "No"]),
-  transferencia: z.enum(["Sí", "No"]),
-  contraentrega: z.enum(["Sí", "No"]),
-  metodoPago: z.string().optional(),
-  otroMetodoPago: z.string().optional(),
-  productosSeleccionados: z.array(
-    z.object({
-      idProducto: z.any(),
-      titulo: z.string(),
-      precio: z.any(),
-      cantidad: z.number(),
-    })
-  ).min(1, "Debes seleccionar al menos un producto"),
-}).refine(
-  (data) => {
-    const total = data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0);
-    return Number(data.valor) >= total;
-  },
-  {
-    message: "El valor a cobrar no puede ser menor al total de productos.",
-    path: ["valor"], // El error se muestra en el campo valor
-  }
-);
+    departamento: z.number().min(1, "Departamento requerido"),
+    ciudad: z.number().min(1, "Ciudad requerida"),
+    direccion: z.string().min(1, "Dirección requerida"),
+    barrio: z.string().min(1, "Barrio requerido"),
+    notas: z.string().optional(),
+    incluyeEnvio: z.enum(["Sí", "No"]),
+    transferencia: z.enum(["Sí", "No"]),
+    contraentrega: z.enum(["Sí", "No"]),
+    metodoPago: z.string().optional(),
+    otroMetodoPago: z.string().optional(),
+    productosSeleccionados: z.array(
+      z.object({
+        idProducto: z.any(),
+        titulo: z.string(),
+        precio: z.any(),
+        cantidad: z.number(),
+      })
+    ).min(1, "Debes seleccionar al menos un producto"),
+  }).refine(
+    (data) => {
+      const total = data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0);
+      return Number(data.valor) >= total;
+    },
+    {
+      message: "El valor a cobrar no puede ser menor al total de productos.",
+      path: ["valor"], // El error se muestra en el campo valor
+    }
+  );
 
   const {
     control,
@@ -173,10 +173,10 @@ const schemaCatalogo = z.object({
     watch,
     trigger,  // <-- AGREGA ESTO AQUÍ
     setValue,
-    formState: { errors,isValid },
+    formState: { errors, isValid },
     reset,
 
-    
+
   } = useForm({
     resolver: zodResolver(esDropshipper ? schemaDropshipper : schemaCatalogo),
     defaultValues: {
@@ -211,18 +211,18 @@ const schemaCatalogo = z.object({
     shouldUnregister: false,
   });
 
-    // TOTAL
+  // TOTAL
 
   const valor = watch("valor");
-const productosSeleccionados = watch("productosSeleccionados");
+  const productosSeleccionados = watch("productosSeleccionados");
   const total = productosSeleccionados.reduce(
     (acc, p) => acc + p.precio * p.cantidad,
     0
   );
   useEffect(() => {
-  // Trigger validation for "valor" every time total or valor changes
-  trigger("valor");
-}, [total, valor, trigger]);
+    // Trigger validation for "valor" every time total or valor changes
+    trigger("valor");
+  }, [total, valor, trigger]);
 
 
 
@@ -242,7 +242,7 @@ const productosSeleccionados = watch("productosSeleccionados");
   ];
 
   // Demo: selecciona productos y cantidades
-  
+
   const actualizarCantidad = (idx, incremento) => {
     const nuevos = [...productosSeleccionados];
     const actual = { ...nuevos[idx] };
@@ -271,7 +271,7 @@ const productosSeleccionados = watch("productosSeleccionados");
   };
 
 
-  
+
 
   const onSubmit = async (data) => {
     let pedidoObj;
@@ -363,20 +363,20 @@ const productosSeleccionados = watch("productosSeleccionados");
       });
       const result = await response.json();
       console.log("Respuesta del backend:", result);
-if (result.success) {
-  toast.success("Pedido enviado correctamente.");
-  if (typeof onPedidoCreado === "function") {
-    onPedidoCreado();
-  }
-  setModalOpen(false);   // <-- CIERRA EL MODAL
-  reset();               // <-- LIMPIA EL FORMULARIO
-} else {
-  toast.error(result?.error || "Error en el envío del pedido.");
-}
+      if (result.success) {
+        toast.success("Pedido enviado correctamente.");
+        if (typeof onPedidoCreado === "function") {
+          onPedidoCreado();
+        }
+        setModalOpen(false);   // <-- CIERRA EL MODAL
+        reset();               // <-- LIMPIA EL FORMULARIO
+      } else {
+        toast.error(result?.error || "Error en el envío del pedido.");
+      }
 
     } catch (error) {
       toast.error("Error en la petición. Intenta de nuevo.");
-    toast.error("Hay errores en el formulario. Revisa los campos obligatorios.");
+      toast.error("Hay errores en el formulario. Revisa los campos obligatorios.");
 
       console.error("Error enviando pedido:", error);
     }
@@ -545,15 +545,15 @@ if (result.success) {
 
     toast.error(errorMsgs || "Hay errores en el formulario. Revisa los campos obligatorios.");
 
-    
-   
+
+
 
   };
 
 
 
 
- const [debugMode, setDebugMode] = useState(true); 
+  const [debugMode, setDebugMode] = useState(true);
 
   return (
     <div className='NewPedido'>
@@ -564,9 +564,11 @@ if (result.success) {
 
 
       {modalOpen && (
-        
+
         <div className='modal'>
           <div className='modal-content'>
+
+
             <div className='deFlexBtnsModal'>
               <button className='selected'>Agregar Pedido Sucursal</button>
               <span className="close" onClick={toggleModal}>&times;</span>
@@ -583,14 +585,16 @@ if (result.success) {
                 ¿El Pedido es de Dropshipper? Marca la casilla si es así.
               </label>
             </div>
-<Button
-  type="button"
-  onClick={() => setDebugMode(d => !d)}
-  label={debugMode ? "Ocultar Debug" : "Mostrar Debug"}
-  severity={debugMode ? "danger" : "info"}
-  style={{ margin: "8px 0" }}
-/>
+            <Button
+              type="button"
+              onClick={() => setDebugMode(d => !d)}
+              label={debugMode ? "Ocultar Debug" : "Mostrar Debug"}
+              severity={debugMode ? "danger" : "info"}
+              style={{ margin: "8px 0" }}
+            />
             {/* <ToastContainer /> */}
+
+            <div className="modal-body">
             <form onSubmit={handleSubmit(onSubmit, onFormError)}>
 
 
@@ -602,43 +606,43 @@ if (result.success) {
 
                   <TabPanel header="Asesor" >
 
-                  <Card title="Datos de tu asesor" style={{ marginBottom: 20 }}>
-                    <label>Documento</label>
-                    <InputText {...register("documento")} />
-                    {errors.documento && <small className="p-error">{errors.documento.message}</small>}
+                    <Card title="Datos de tu asesor" style={{ marginBottom: 20 }}>
+                      <label>Documento</label>
+                      <InputText {...register("documento")} />
+                      {errors.documento && <small className="p-error">{errors.documento.message}</small>}
 
-                    <label>PIN Asesor</label>
-                    <InputText {...register("pin_asesor")} />
+                      <label>PIN Asesor</label>
+                      <InputText {...register("pin_asesor")} />
 
-                    <label>Email</label>
-                    <InputText {...register("email")} />
-                    {errors.email && <small className="p-error">{errors.email.message}</small>}
+                      <label>Email</label>
+                      <InputText {...register("email")} />
+                      {errors.email && <small className="p-error">{errors.email.message}</small>}
 
-                    <label>Nombre</label>
-                    <InputText {...register("nombre")} />
-                    {errors.nombre && <small className="p-error">{errors.nombre.message}</small>}
+                      <label>Nombre</label>
+                      <InputText {...register("nombre")} />
+                      {errors.nombre && <small className="p-error">{errors.nombre.message}</small>}
 
-                    <label>Teléfono</label>
-                    <InputText {...register("telefono")} />
-                    {errors.telefono && <small className="p-error">{errors.telefono.message}</small>}
+                      <label>Teléfono</label>
+                      <InputText {...register("telefono")} />
+                      {errors.telefono && <small className="p-error">{errors.telefono.message}</small>}
 
-                    <label>¿Dónde recibe el dropshipper la comisión?</label>
-                    <Controller
-                      name="medioComision"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione comisión" />
+                      <label>¿Dónde recibe el dropshipper la comisión?</label>
+                      <Controller
+                        name="medioComision"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione comisión" />
+                        )}
+                      />
+                      {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+                      {watch("medioComision") === "Otro" && (
+                        <>
+                          <label>¿Cuál?</label>
+                          <InputText {...register("otroMedio")} />
+                        </>
                       )}
-                    />
-                    {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
-                    {watch("medioComision") === "Otro" && (
-                      <>
-                        <label>¿Cuál?</label>
-                        <InputText {...register("otroMedio")} />
-                      </>
-                    )}
 
-                  </Card>
+                    </Card>
 
                   </TabPanel>
                 )}
@@ -646,225 +650,225 @@ if (result.success) {
 
                 <TabPanel header="Cliente">
                   <Card title="Datos de tu cliente" style={{ marginBottom: 20 }}>
-                  <label>Nombre de tu cliente</label>
-                  <InputText {...register("clienteNombre")} />
-                  {errors.clienteNombre && <small className="p-error">{errors.clienteNombre.message}</small>}
+                    <label>Nombre de tu cliente</label>
+                    <InputText {...register("clienteNombre")} />
+                    {errors.clienteNombre && <small className="p-error">{errors.clienteNombre.message}</small>}
 
-                  <label>Documento de tu cliente</label>
-                  <InputText {...register("clienteDocumento")} />
-                  {errors.clienteDocumento && <small className="p-error">{errors.clienteDocumento.message}</small>}
+                    <label>Documento de tu cliente</label>
+                    <InputText {...register("clienteDocumento")} />
+                    {errors.clienteDocumento && <small className="p-error">{errors.clienteDocumento.message}</small>}
 
-                  <label>Celular Whatsapp de tu cliente</label>
-                  <InputText {...register("clienteCelular")} />
-                  {errors.clienteCelular && <small className="p-error">{errors.clienteCelular.message}</small>}
+                    <label>Celular Whatsapp de tu cliente</label>
+                    <InputText {...register("clienteCelular")} />
+                    {errors.clienteCelular && <small className="p-error">{errors.clienteCelular.message}</small>}
 
-                  <label>Celular Llamadas de tu cliente</label>
-                  <InputText {...register("clienteTransportadora")} />
-                  {errors.clienteTransportadora && <small className="p-error">{errors.clienteTransportadora.message}</small>}
+                    <label>Celular Llamadas de tu cliente</label>
+                    <InputText {...register("clienteTransportadora")} />
+                    {errors.clienteTransportadora && <small className="p-error">{errors.clienteTransportadora.message}</small>}
                   </Card>
                 </TabPanel>
                 {/* 3. Entrega */}
                 <TabPanel header="Entrega">
 
                   <Card title="Datos de la entrega" style={{ marginBottom: 20 }}>
-                  <label>Fecha Despacho</label>
-                  <InputText type="date" {...register("fechaDespacho")} />
-                  {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
+                    <label>Fecha Despacho</label>
+                    <InputText type="date" {...register("fechaDespacho")} />
+                    {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
 
-                  <label>Franja Horaria</label>
-                  <Controller
-                    name="franjaEntrega"
-                    control={control}
-                    render={({ field }) => (
-                      <MultiSelect {...field} options={franjasHorarias} 
-                      // disabled="true" 
-                      placeholder="Selecciona una o más" display="chip" />
-                    )}
-                  />
-                  {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
+                    <label>Franja Horaria</label>
+                    <Controller
+                      name="franjaEntrega"
+                      control={control}
+                      render={({ field }) => (
+                        <MultiSelect {...field} options={franjasHorarias}
+                          // disabled="true" 
+                          placeholder="Selecciona una o más" display="chip" />
+                      )}
+                    />
+                    {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
 
-                  <div className="formgrid grid">
-
-
+                    <div className="formgrid grid">
 
 
-                    <div className="col-12 md:col-6">
-                      <label>Departamento</label>
-                      <Controller
-                        name="departamento"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown
-                            {...field}
-                            options={departamentos}
-                            placeholder="Seleccione un departamento"
-                            className="w-full"
-                            disabled={!country_id}
-                          />
-                        )}
-                      />
-                      {errors.departamento && <small className="p-error">{errors.departamento.message}</small>}
+
+
+                      <div className="col-12 md:col-6">
+                        <label>Departamento</label>
+                        <Controller
+                          name="departamento"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown
+                              {...field}
+                              options={departamentos}
+                              placeholder="Seleccione un departamento"
+                              className="w-full"
+                              disabled={!country_id}
+                            />
+                          )}
+                        />
+                        {errors.departamento && <small className="p-error">{errors.departamento.message}</small>}
+                      </div>
+
+                      <div className="col-12 md:col-6">
+                        <label>Ciudad</label>
+                        <Controller
+                          name="ciudad"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown
+                              {...field}
+                              options={ciudades}
+                              placeholder="Seleccione una ciudad"
+                              className="w-full"
+                              disabled={!departamentoSeleccionado}
+                            />
+                          )}
+                        />
+                        {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
+                      </div>
+
+
                     </div>
 
-                    <div className="col-12 md:col-6">
-                      <label>Ciudad</label>
-                      <Controller
-                        name="ciudad"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown
-                            {...field}
-                            options={ciudades}
-                            placeholder="Seleccione una ciudad"
-                            className="w-full"
-                            disabled={!departamentoSeleccionado}
-                          />
-                        )}
-                      />
-                      {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
-                    </div>
+                    <label>Dirección</label>
+                    <InputText {...register("direccion")} />
+                    {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
 
+                    <label>Barrio</label>
+                    <InputText {...register("barrio")} />
+                    {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
 
-                  </div>
-
-                  <label>Dirección</label>
-                  <InputText {...register("direccion")} />
-                  {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
-
-                  <label>Barrio</label>
-                  <InputText {...register("barrio")} />
-                  {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
-
-                  <label>Notas</label>
-                  <InputTextarea {...register("notas")} rows={3} autoResize />
+                    <label>Notas</label>
+                    <InputTextarea {...register("notas")} rows={3} autoResize />
                   </Card>
 
 
                 </TabPanel>
 
 
-              {/* 4. Productos */}
+                {/* 4. Productos */}
                 <TabPanel header="Productos">
                   <Card title="Lista de productos" style={{ marginBottom: 20 }}>
-                  {/* Filtro de búsqueda de PrimeReact */}
-                  <div style={{ marginBottom: 12 }}>
-                    <InputText
-                      value={filtroTitulo}
-                      onChange={filtrarProductos}
-                      placeholder="Buscar producto..."
-                      className="w-full"
-                    />
-                  </div>
-                  {/* Lista con scroll */}
-                  <div style={{ maxHeight: 350, overflowY: 'auto', marginBottom: 12, paddingRight: 8 }}>
-                    {productosFiltrados.length === 0 && (
-                      <div style={{ padding: 16, color: '#888' }}>No se encontraron productos</div>
+                    {/* Filtro de búsqueda de PrimeReact */}
+                    <div style={{ marginBottom: 12 }}>
+                      <InputText
+                        value={filtroTitulo}
+                        onChange={filtrarProductos}
+                        placeholder="Buscar producto..."
+                        className="w-full"
+                      />
+                    </div>
+                    {/* Lista con scroll */}
+                    <div style={{ maxHeight: 350, overflowY: 'auto', marginBottom: 12, paddingRight: 8 }}>
+                      {productosFiltrados.length === 0 && (
+                        <div style={{ padding: 16, color: '#888' }}>No se encontraron productos</div>
+                      )}
+                      {productosFiltrados.map((producto) => {
+                        const checked = productosSeleccionados.some((p) => p.idProducto === producto.idProducto);
+                        const selectedProd = productosSeleccionados.find((p) => p.idProducto === producto.idProducto);
+                        return (
+
+                          <div
+                            key={producto.idProducto}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 10,
+                              marginBottom: 8,
+                              borderBottom: "1px solid #e0e0e0",
+                              paddingBottom: 6,
+                            }}
+                          >
+
+                            <img src={producto.imagen} alt="imagen" />
+
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => seleccionarProducto(producto)}
+                            />
+
+                            <span style={{ minWidth: 120, flex: 1 }}> {producto.titulo}</span>
+                            <span style={{ minWidth: 120, flex: 1 }}>  (${producto.precio})</span>
+                            {checked && (
+                              <>
+                                <Button
+                                  type="button"
+                                  icon="pi pi-minus"
+                                  onClick={() => {
+                                    const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
+                                    if (idx !== -1) actualizarCantidad(idx, -1);
+                                  }}
+                                  disabled={selectedProd?.cantidad <= 1}
+                                  size="small"
+                                  severity="secondary"
+                                  rounded
+                                  text
+                                />
+                                <span style={{ margin: "0 8px" }}>{selectedProd?.cantidad || 1}</span>
+                                <Button
+                                  type="button"
+                                  icon="pi pi-plus"
+                                  onClick={() => {
+                                    const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
+                                    if (idx !== -1) actualizarCantidad(idx, 1);
+                                  }}
+                                  size="small"
+                                  severity="success"
+                                  rounded
+                                  text
+                                />
+                              </>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ marginTop: 12, fontWeight: 600 }}>
+                      Total: ${total}
+                    </div>
+                    {errors.productosSeleccionados && (
+                      <small className="p-error">{errors.productosSeleccionados.message}</small>
                     )}
-                    {productosFiltrados.map((producto) => {
-                      const checked = productosSeleccionados.some((p) => p.idProducto === producto.idProducto);
-                      const selectedProd = productosSeleccionados.find((p) => p.idProducto === producto.idProducto);
-                      return (
-
-                        <div
-                          key={producto.idProducto}
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 10,
-                            marginBottom: 8,
-                            borderBottom: "1px solid #e0e0e0",
-                            paddingBottom: 6,
-                          }}
-                        >
-
-                          <img src={producto.imagen} alt="imagen" />
-
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => seleccionarProducto(producto)}
-                          />
-
-                          <span style={{ minWidth: 120, flex: 1 }}> {producto.titulo}</span>
-                          <span style={{ minWidth: 120, flex: 1 }}>  (${producto.precio})</span>
-                          {checked && (
-                            <>
-                              <Button
-                                type="button"
-                                icon="pi pi-minus"
-                                onClick={() => {
-                                  const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
-                                  if (idx !== -1) actualizarCantidad(idx, -1);
-                                }}
-                                disabled={selectedProd?.cantidad <= 1}
-                                size="small"
-                                severity="secondary"
-                                rounded
-                                text
-                              />
-                              <span style={{ margin: "0 8px" }}>{selectedProd?.cantidad || 1}</span>
-                              <Button
-                                type="button"
-                                icon="pi pi-plus"
-                                onClick={() => {
-                                  const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
-                                  if (idx !== -1) actualizarCantidad(idx, 1);
-                                }}
-                                size="small"
-                                severity="success"
-                                rounded
-                                text
-                              />
-                            </>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                  <div style={{ marginTop: 12, fontWeight: 600 }}>
-                    Total: ${total}
-                  </div>
-                  {errors.productosSeleccionados && (
-                    <small className="p-error">{errors.productosSeleccionados.message}</small>
-                  )}
-               </Card>
+                  </Card>
                 </TabPanel>
 
                 {/* 5. Pago */}
                 <TabPanel header="Pago">
                   <div className="field">
                     <label>Valor a cobrar al cliente</label>
-                    
-<Controller
-  name="valor"
-  control={control}
-  render={({ field }) => (
-    <InputNumber
-      inputRef={field.ref}
-      value={typeof field.value === "number" && !isNaN(field.value) ? field.value : 0}
-      onValueChange={e => field.onChange(e.value ?? 0)}
-      onBlur={field.onBlur}
-      mode="decimal"
-      min={0}
-      useGrouping={false}
-    />
-  )}
-/>
+
+                    <Controller
+                      name="valor"
+                      control={control}
+                      render={({ field }) => (
+                        <InputNumber
+                          inputRef={field.ref}
+                          value={typeof field.value === "number" && !isNaN(field.value) ? field.value : 0}
+                          onValueChange={e => field.onChange(e.value ?? 0)}
+                          onBlur={field.onBlur}
+                          mode="decimal"
+                          min={0}
+                          useGrouping={false}
+                        />
+                      )}
+                    />
 
                     <br></br>
-                    
+
                     <label className="p-sr-only">(*Debe ser mayor o igual a ${total})</label>
                     <div>
-                      
+
                       <pre>typeof valor: {typeof valor}</pre>
                       <pre>valor: {String(valor)}</pre>
                       <pre>typeof total: {typeof total}</pre>
                       <pre>total: {total}</pre>
                     </div>
                     {errors.valor && <small className="p-error">{errors.valor.message}</small>}
-                    
+
                   </div>
-                  
+
 
                   <div className="field">
                     <label>Incluye Envío</label>
@@ -935,7 +939,7 @@ if (result.success) {
                       )}
                     </div>
                   )}
-                  
+
                 </TabPanel>
 
 
@@ -974,34 +978,34 @@ if (result.success) {
               </TabView>
               <h1>Total: ${total}</h1>
             </form>
+          </div>
+            {debugMode && (
+              <div style={{
+                background: "#2b2b2b",
+                color: "#fff",
+                padding: 12,
+                borderRadius: 6,
+                margin: "10px 0",
+                fontFamily: "monospace",
+              }}>
+                <b>Debug:</b>
+                <div>Total de productos (total): <span style={{ color: "#0f0" }}>${total}</span></div>
+                <div>Valor ingresado (valor): <span style={{ color: "#0af" }}>{watch("valor")}</span></div>
+                <div>
+                  Diferencia (valor - total):{" "}
+                  <span style={{ color: Number(watch("valor")) >= total ? "#0f0" : "#f00" }}>
+                    {Number(watch("valor")) - total}
+                  </span>
+                </div>
 
-{debugMode && (
-  <div style={{
-    background: "#2b2b2b",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 6,
-    margin: "10px 0",
-    fontFamily: "monospace",
-  }}>
-    <b>Debug:</b>
-    <div>Total de productos (total): <span style={{ color: "#0f0" }}>${total}</span></div>
-    <div>Valor ingresado (valor): <span style={{ color: "#0af" }}>{watch("valor")}</span></div>
-    <div>
-      Diferencia (valor - total):{" "}
-      <span style={{ color: Number(watch("valor")) >= total ? "#0f0" : "#f00" }}>
-        {Number(watch("valor")) - total}
-      </span>
-    </div>
+                <pre style={{ background: "#222", color: "#0f0", padding: 8, borderRadius: 4 }}>
+                  {JSON.stringify(errors, null, 2)}
+                </pre>
 
-    <pre style={{background: "#222", color: "#0f0", padding: 8, borderRadius: 4}}>
-  {JSON.stringify(errors, null, 2)}
-</pre>
+              </div>
 
-  </div>
 
-  
-)}
+            )}
 
 
             {modalOpen2 && (

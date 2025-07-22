@@ -6,6 +6,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
+     
 }
 .productsGrap .deFlexCart {
     margin: 0;
@@ -46,7 +47,7 @@
    Modal Styles
    ================ */
 
-.modal {
+/* .modal {
   position: fixed;
   left: 0; top: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.2);
@@ -67,7 +68,32 @@
   overflow: visible !important;
   z-index: 100000 !important;
   position: relative;
+} */
+
+/* ---- modal semi‑genérico ---- */
+.modal {
+  position: fixed;
+  top: 0; right: 0; bottom: 0; left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  padding: 1rem;
+  background: rgba(0,0,0,0.4);
+  overflow-y: auto;               /* Scroll si la ventana es muy baja */
+  z-index: 1000;
 }
+
+.modal-content {
+  background: #fff;
+  border-radius: 8px;
+  width: 90vw;
+  max-width: 800px;               /* o lo ancho que necesites */
+  max-height: calc(100vh - 120px);/* deja espacio para el padding + header */
+  overflow: hidden;                /* clippea todo el contenido */
+  display: flex;
+  flex-direction: column;
+}
+
 
 
 .flexGrap {
@@ -120,5 +146,12 @@ form textarea {
 .p-tabview-nav {
     gap: 1rem !important;
 }
+
+.modal-body {
+  flex: 1;                     /* ocupa TODO lo que queda tras header/footer */
+  overflow-y: auto;            /* sólo el body hace scroll */
+  padding: 1rem;
+}
+
 
 
