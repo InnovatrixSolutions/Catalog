@@ -528,7 +528,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                   {/* Campos generales */}
                   {[
                     ['documento', 'Tu Documento'],
-                    ['pin_asesor', 'Tu PIN (* debe ser alfanumérico)'],
+                    ['pin_asesor', 'Tu PIN (* alfanumérico)'],
 
 
                   ].map(([field, label]) => (
@@ -558,7 +558,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
                   {/* Medio comisión */}
                   <div className="col-12 md:col-6">
-                    <label>¿En dónde recibes tus comisiones?</label>
+                    <label>¿Dónde recibes comisiones?</label>
                     <Controller
                       name="medioComision"
                       control={control}
