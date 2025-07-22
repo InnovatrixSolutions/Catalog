@@ -373,7 +373,7 @@
     padding-top: 2rem;
 }
 .cardTextSelected{
-    /* padding: 10px; */
+    padding: 10px;
     /* display: flex; */
     flex-direction: column;
     gap: 6px;
