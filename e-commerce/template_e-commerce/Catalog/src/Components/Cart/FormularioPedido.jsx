@@ -469,8 +469,14 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
 
 
-      <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}>
-
+      {/* <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}> */}
+<div
+  style={{
+    height: 'calc(100vh - 50px)',
+    overflowY: 'auto',
+    padding: '1rem'            /* opcional, para respirar */
+  }}
+>
         <div className="hide-on-mobile">
           <InfoCarroPedido pedido={null} />
         </div>
@@ -507,7 +513,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
         <form onSubmit={handleSubmit(onSubmit, onError)}>
 
           <Stepper 
-          
+          orientation="vertical"
           headerPosition="left" 
           activeStep={activeIndex} 
           onStepChange={(e) => setActiveIndex(e.index)} 
@@ -937,8 +943,8 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
           </Stepper>
 
         </form>
-
-      </ScrollPanel>
+</div>
+      {/* </ScrollPanel> */}
     </div>
   );
 }

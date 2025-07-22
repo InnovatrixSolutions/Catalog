@@ -628,6 +628,16 @@ export default function Cart() {
                                         onRequestClose={closeModal2}
                                         className="modal-cart"
                                         overlayClassName="overlay-cart"
+                                         style={{
+                                        content: {
+                                        top: '5%',            // leave a little “breathing room”
+                                        bottom: '5%',
+                                        left: '5%',
+                                        right: '5%',
+                                        overflowY: 'auto',    // <-- native scroll on the modal itself
+                                        padding: '1rem'
+                                        }
+                                    }}
                                     >
                                                                                 <div className='deFLex'>
                                             <button onClick={closeModal2} ><FontAwesomeIcon icon={faArrowLeft} />  </button>
