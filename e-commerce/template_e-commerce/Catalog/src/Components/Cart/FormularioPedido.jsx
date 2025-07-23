@@ -57,23 +57,34 @@ const franjasHorarias = [
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const hostname = window.location.hostname;
   //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
-  const tipoAsesor = hostname.includes("xxxxx") ? "catalog" : "dropshipper";
+  // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
+  const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
+  const isCatalog = hostname.includes("localhost");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
   console.log("Valor total:", totalPrice);
 
   const [activeIndex, setActiveIndex] = useState(0);
-const schema = z.object({
+
+  const dropshipperSchema = z.object({
   documento: z.string().min(1, "Documento requerido"),
-  email: z.string().email("Email inválido"),
-  nombre: z.string().min(1, "Nombre requerido"),
+  email:    z.string().email("Email inválido"),
+  nombre:   z.string().min(1, "Nombre requerido"),
   telefono: z.string().min(7, "Teléfono inválido"),
+  medioComision: z.string().min(1, "Seleccione un medio"),
+  pin_asesor:     z.string().optional(),
+});
+const baseSchema = z.object({
+  //documento: z.string().min(1, "Documento requerido"),
+  //email: z.string().email("Email inválido"),
+  //nombre: z.string().min(1, "Nombre requerido"),
+  //telefono: z.string().min(7, "Teléfono inválido"),
   valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
   incluyeEnvio: z.enum(["Sí", "No"]),
-  medioComision: z.string().min(1, "Seleccione un medio"),
+  //medioComision: z.string().min(1, "Seleccione un medio"),
   otroMedio: z.string().optional(),
-  pin_asesor: z.string().optional(),
+  //pin_asesor: z.string().optional(),
 
 
   clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
@@ -114,6 +125,10 @@ const schema = z.object({
   }
 );
 
+  // 3) El esquema FINAL, según sea catálogo o dropshipper
+  const schema = isCatalog
+    ? baseSchema
+    : baseSchema.merge(dropshipperSchema);
 
 
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
@@ -135,20 +150,20 @@ const schema = z.object({
 
   const medioComisionSeleccionado = watch('medioComision');
 
-
+const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const onSubmit = async (data) => {
     setIsFinalSubmit(false); // reset state after successful submit
     setShowErrorsDialog(false); // just in case
     const resumenPedido = {
-      tipo_pedido: "dropshipper",
-      doc_asesor: data.documento,
-      pin_asesor: data.pin_asesor,
-      nombre_asesor: data.nombre,
-      telefono_asesor: data.telefono,
-      telefono_whatsapp: data.telefono,
-      medio_pago_asesor: data.medioComision,
-      email: data.email,
+      tipo_pedido: "catalogo",
+      // doc_asesor: data.documento,
+      // pin_asesor: data.pin_asesor,
+      // nombre_asesor: data.nombre,
+      // telefono_asesor: data.telefono,
+      // telefono_whatsapp: data.telefono,
+      // medio_pago_asesor: data.medioComision,
+      // email: data.email,
 
       productos: cartItems.map(item => ({
         idProducto: item.idProducto,
@@ -179,11 +194,12 @@ const schema = z.object({
       //fecha_despacho: new Date().toISOString().replace('T', ' ').substring(0, 19),
       // franja_horario: data.franjaEntrega,
       // franja_horario: "05:00-10:00 AM,03:00-07:00 pm",
-      franja_horario: data.franjaEntrega.join(','),
+      // franja_horario: data.franjaEntrega.join(','),
+      franja_horario: "08:00-08:00 PM",
 
 
       // nota: `Pedido realizado por el asesor ${data.nombre} con documento ${data.documento}`,
-      nota: data.notas || '',
+      nota: data.notas || 'Esta es una nota automatizada del pedido',
       pago_recibir: data.valor,
       medio_pago: "efectivo",
       forma_pago: "Nequi"
@@ -226,12 +242,16 @@ const schema = z.object({
       console.log("Respuesta del servidor:", result);
 
       if (result.success) {
-        toast.success("Pedido enviado correctamente.");
-        if (typeof onPedidoSuccess === 'function') {
-          onPedidoSuccess();
-        }
+        //toast.success("Pedido enviado correctamente.");
+        console.log("Pedido enviado exitosamente:", result);
+        
+        // if (typeof onPedidoSuccess === 'function') {
+        //   onPedidoSuccess();
+        // }
+        setShowSuccessModal(true);
       } else {
         toast.error("Error en el envío del pedido. Revisa todos los campos");
+        toast.error("Error: " + result.error || "Error desconocido");
       }
 
     } catch (error) {
@@ -421,7 +441,8 @@ const schema = z.object({
     consultarAsesor();
   }, [documento, tipoAsesor]); // Se ejecuta al cambiar documento o tipo asesor
 
-  const isCatalog = tipoAsesor === 'catalog';
+  
+
 
   const resumenPedido = [
     { campo: "Documento Asesor", valor: watch("documento") },
@@ -516,6 +537,19 @@ const numericFields = [
 
 
 
+      <Dialog
+        header="¡Éxito!"
+        visible={showSuccessModal}
+         onHide={() => {
+               if (typeof onPedidoSuccess === 'function') {
+       onPedidoSuccess();
+     }
+   }}
+    style={{ width: '350px' }}
+    modal
+  >      
+        <p>Pedido enviado correctamente.</p>
+      </Dialog>
 
 
 
@@ -527,7 +561,9 @@ const numericFields = [
           activeStep={activeIndex} 
           onStepChange={(e) => setActiveIndex(e.index)} 
           >
-            {tipoAsesor !== 'catalog' && (
+
+
+            { !isCatalog && (
               <StepperPanel header="Datos del Asesor">
                 <Card title="Datos del asesor" className="w-full border border-gray-400 shadow-md rounded-xl">
                 
@@ -643,7 +679,7 @@ const numericFields = [
 
 
             <StepperPanel header="Datos del Cliente">
-              <Card title="Datos de tu cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
+              <Card title="Datos del cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
                 {/* <div className="formgrid grid">
                   {[
                     ['clienteNombre', 'Nombre de tu cliente'],
@@ -664,10 +700,10 @@ const numericFields = [
 
                 <div className="formgrid grid">
   {[
-    ['clienteNombre', 'Nombre de tu cliente'],
-    ['clienteDocumento', 'Documento de tu cliente'],
-    ['clienteCelular', 'Celular Llamadas de tu cliente'],
-    ['clienteTransportadora', 'Celular WhatsApp de tu cliente'],
+    ['clienteNombre', 'Nombrel del cliente'],
+    ['clienteDocumento', 'Documento del cliente'],
+    ['clienteCelular', 'Celular Llamadas del cliente'],
+    ['clienteTransportadora', 'Celular WhatsApp del cliente'],
   ].map(([field, label]) => {
     const onlyNumbers = numericFields.includes(field);
     return (
