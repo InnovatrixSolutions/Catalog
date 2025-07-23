@@ -59,7 +59,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
   // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
   const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
-  const isCatalog = hostname.includes("localhost");
+  const isCatalog = hostname.includes("catalogo");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
