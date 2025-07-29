@@ -59,7 +59,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
   // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
   const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
-  const isCatalog = hostname.includes("catalogo");
+  const isCatalog = hostname.includes("localhost");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
@@ -73,14 +73,20 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   nombre:   z.string().min(1, "Nombre requerido"),
   telefono: z.string().min(7, "Teléfono inválido"),
   medioComision: z.string().min(1, "Seleccione un medio"),
-  pin_asesor:     z.string().optional(),
-});
+  pin_asesor:     z.string().optional(),valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+}).refine(
+  (data) => data.valor == totalPrice,
+  {
+    message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+    path: ['valor'],
+  }
+);
 const baseSchema = z.object({
   //documento: z.string().min(1, "Documento requerido"),
   //email: z.string().email("Email inválido"),
   //nombre: z.string().min(1, "Nombre requerido"),
   //telefono: z.string().min(7, "Teléfono inválido"),
-  valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+  // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
   incluyeEnvio: z.enum(["Sí", "No"]),
   //medioComision: z.string().min(1, "Seleccione un medio"),
   otroMedio: z.string().optional(),
@@ -117,13 +123,14 @@ const baseSchema = z.object({
 }, {
   message: "Debe seleccionar el medio de pago",
   path: ["metodoPago"]
-}).refine(
-  (data) => data.valor >= totalPrice,
-  {
-    message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-    path: ['valor'],
-  }
-);
+})
+// .refine(
+//   (data) => data.valor == totalPrice,
+//   {
+//     message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+//     path: ['valor'],
+//   }
+// );
 
   // 3) El esquema FINAL, según sea catálogo o dropshipper
   const schema = isCatalog
@@ -134,7 +141,7 @@ const baseSchema = z.object({
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      documento: '', email: '', nombre: '', telefono: '', valor: '',
+      documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
       incluyeEnvio: 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
       fechaDespacho: null, franjaEntrega: [ "08:00-08:00 PM" ], departamento: '', ciudad: '', direccion: '', barrio: '',
@@ -176,7 +183,8 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
       })),
 
       // productos: [{ "items": [], "imagen": "", "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17 }, { "items": [], "imagen": "", "precio": 167900, "titulo": "Roku Express Hd Convertidor Tv En Smart A Tv Streaming", "cantidad": 1, "idProducto": 3, "idCategoria": 14 }, { "items": [], "imagen": "", "precio": 119900, "titulo": "Marcadores Doble Punta Set 168 Colores Dibujo Base De Alcohol", "cantidad": 1, "idProducto": 40, "idCategoria": 12 }],
-      total_pedido: data.valor,
+      //total_pedido: data.valor,
+      total_pedido: isCatalog ? totalPrice : data.valor,
       nombre_cliente: data.clienteNombre,
       telefono_cliente: data.clienteCelular,
       telefono_tran: data.clienteTransportadora,
@@ -200,7 +208,7 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
 
       // nota: `Pedido realizado por el asesor ${data.nombre} con documento ${data.documento}`,
       nota: data.notas || 'Esta es una nota automatizada del pedido',
-      pago_recibir: data.valor,
+      pago_recibir: isCatalog ? totalPrice : data.valor,
       medio_pago: "efectivo",
       forma_pago: "Nequi"
 
@@ -386,8 +394,9 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
     setValue('ciudad', 10);      // Igual aquí
     setValue('direccion', 'Cra 123 #45-67');
     setValue('barrio', 'El Prado');
-    setValue('transferencia', 'Sí');
+    
     setValue('contraentrega', 'No');
+    setValue('transferencia', 'Sí');
     setValue('notas', 'Esto es una prueba automatizada');
   };
 
@@ -898,15 +907,17 @@ const numericFields = [
 
 
                 {/* Campo valor, con lógica de habilitación/deshabilitación */}
+              {!isCatalog && (
                 <div className="col-12 md:col-6">
                   <label>Valor a cobrar al cliente</label>
                   <InputText
                     {...register("valor")}
                     className="w-full"
-                  // disabled={watch("incluyeEnvio") !== 'Sí'}
                   />
                   {errors.valor && <small className="p-error">{errors.valor.message}</small>}
                 </div>
+              )}
+
 
                 {/* Radio Buttons: ¿Incluye Envío? */}
                 <div className="col-12">
@@ -926,34 +937,7 @@ const numericFields = [
                   {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
                 </div>
 
-
-
-                {/* ¿Otro medio? */}
-                {medioComisionSeleccionado === 'Otro' && (
-                  <div className="col-12 md:col-6">
-                    <label>¿Cuál?</label>
-                    <InputText {...register("otroMedio")} className="w-full" />
-                  </div>
-                )}
-
-                <div className="formgrid grid">
-                  <div className="col-12">
-                    <label>¿Pago por transferencia?</label>
-                    <Controller
-                      name="transferencia"
-                      control={control}
-                      render={({ field }) => (
-                        <div className="flex gap-3">
-                          <RadioButton inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="transfer_si">Sí</label>
-                          <RadioButton inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="transfer_no">No</label>
-                        </div>
-                      )}
-                    />
-                  </div>
-
-                  {transferencia === 'No' && (
+                  {(
                     <div className="col-12">
                       <label>¿Pago Contraentrega?</label>
                       <Controller
@@ -972,7 +956,38 @@ const numericFields = [
                     </div>
                   )}
 
-                  {transferencia === 'No' && contraentrega === 'No' && (
+
+                <div className="formgrid grid">
+                  <div className="col-12">
+                    <label>¿Pago por transferencia?</label>
+                    <Controller
+                    
+                      name="transferencia"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex gap-3">
+                          <RadioButton disabled="true" inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="transfer_si">Sí</label>
+                          <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="transfer_no">No</label>
+                        </div>
+                      )}
+                    />
+                  </div>
+
+                {/* ¿Otro medio? */}
+                {medioComisionSeleccionado === 'Otro' && (
+                  <div className="col-12 md:col-6">
+                    <label>¿Cuál?</label>
+                    <InputText {...register("otroMedio")} className="w-full" />
+                  </div>
+                )}
+
+
+
+
+
+                  {transferencia === 'Sí' && contraentrega === 'No' && (
                     <>
                       <div className="col-12 md:col-6">
                         <label>Medio de pago</label>
