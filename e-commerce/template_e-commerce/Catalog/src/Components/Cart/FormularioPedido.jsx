@@ -60,6 +60,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
   const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
   const isCatalog = hostname.includes("localhost");
+  //const isCatalog = hostname.includes("catalogo");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
@@ -68,69 +69,69 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const [activeIndex, setActiveIndex] = useState(0);
 
   const dropshipperSchema = z.object({
-  documento: z.string().min(1, "Documento requerido"),
-  email:    z.string().email("Email inválido"),
-  nombre:   z.string().min(1, "Nombre requerido"),
-  telefono: z.string().min(7, "Teléfono inválido"),
-  medioComision: z.string().min(1, "Seleccione un medio"),
-  pin_asesor:     z.string().optional(),valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-}).refine(
-  (data) => data.valor == totalPrice,
-  {
-    message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-    path: ['valor'],
-  }
-);
-const baseSchema = z.object({
-  //documento: z.string().min(1, "Documento requerido"),
-  //email: z.string().email("Email inválido"),
-  //nombre: z.string().min(1, "Nombre requerido"),
-  //telefono: z.string().min(7, "Teléfono inválido"),
-  // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-  incluyeEnvio: z.enum(["Sí", "No"]),
-  //medioComision: z.string().min(1, "Seleccione un medio"),
-  otroMedio: z.string().optional(),
-  //pin_asesor: z.string().optional(),
+    documento: z.string().min(1, "Documento requerido"),
+    email: z.string().email("Email inválido"),
+    nombre: z.string().min(1, "Nombre requerido"),
+    telefono: z.string().min(7, "Teléfono inválido"),
+    medioComision: z.string().min(1, "Seleccione un medio"),
+    pin_asesor: z.string().optional(), valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+  }).refine(
+    (data) => data.valor == totalPrice,
+    {
+      message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+      path: ['valor'],
+    }
+  );
+  const baseSchema = z.object({
+    //documento: z.string().min(1, "Documento requerido"),
+    //email: z.string().email("Email inválido"),
+    //nombre: z.string().min(1, "Nombre requerido"),
+    //telefono: z.string().min(7, "Teléfono inválido"),
+    // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+    incluyeEnvio: z.enum(["Sí", "No"]),
+    //medioComision: z.string().min(1, "Seleccione un medio"),
+    otroMedio: z.string().optional(),
+    //pin_asesor: z.string().optional(),
 
 
-  clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
-  clienteDocumento: z.string().min(1, "Documento requerida"),
-  clienteCelular: z.string().min(7, "Celular inválido"),
-  clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
+    clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
+    clienteDocumento: z.string().min(1, "Documento requerida"),
+    clienteCelular: z.string().min(7, "Celular inválido"),
+    clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
 
-  fechaDespacho: z.date({ required_error: "Fecha requerida" }),
-  // franjaEntrega: z.string().min(1, "Franja requerida"),
-  franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+    fechaDespacho: z.date({ required_error: "Fecha requerida" }),
+    // franjaEntrega: z.string().min(1, "Franja requerida"),
+    franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
 
-  departamento: z.number().min(1, "Departamento requerido"),
-  ciudad: z.number().min(1, "Ciudad requerida"),
-  direccion: z.string().min(1, "Dirección requerida"),
-  barrio: z.string().min(1, "Barrio requerido"),
-  notas: z.string().max(1000).optional(),
+    departamento: z.number().min(1, "Departamento requerido"),
+    ciudad: z.number().min(1, "Ciudad requerida"),
+    direccion: z.string().min(1, "Dirección requerida"),
+    barrio: z.string().min(1, "Barrio requerido"),
+    notas: z.string().max(1000).optional(),
 
-  contraentrega: z.enum(["Sí", "No"]),
-  metodoPago: z.string().optional(),
-  otroMetodoPago: z.string().optional(),
-  transferencia: z.enum(["Sí", "No"]),
+    contraentrega: z.enum(["Sí", "No"]),
+    metodoPago: z.string().optional(),
+    otroMetodoPago: z.string().optional(),
+    transferencia: z.enum(["Sí", "No"]),
 
 
 
-}).refine((data) => {
-  if (data.transferencia === "Sí") return true;
-  if (data.contraentrega === "No" && !data.metodoPago) return false;
-  if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
-  return true;
-}, {
-  message: "Debe seleccionar el medio de pago",
-  path: ["metodoPago"]
-})
-// .refine(
-//   (data) => data.valor == totalPrice,
-//   {
-//     message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-//     path: ['valor'],
-//   }
-// );
+  }).refine((data) => {
+    if (data.transferencia === "Sí") return true;
+    if (data.contraentrega === "No" && !data.metodoPago) return false;
+    if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
+    return true;
+  }, {
+    message: "Debe seleccionar el medio de pago",
+    path: ["metodoPago"]
+  })
+  // .refine(
+  //   (data) => data.valor == totalPrice,
+  //   {
+  //     message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+  //     path: ['valor'],
+  //   }
+  // );
 
   // 3) El esquema FINAL, según sea catálogo o dropshipper
   const schema = isCatalog
@@ -144,8 +145,8 @@ const baseSchema = z.object({
       documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
       incluyeEnvio: 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: null, franjaEntrega: [ "08:00-08:00 PM" ], departamento: '', ciudad: '', direccion: '', barrio: '',
-      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'No', notas: '', pin_asesor: ''
+      fechaDespacho: null, franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
+      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'Sí', notas: '', pin_asesor: ''
 
 
     }
@@ -157,7 +158,7 @@ const baseSchema = z.object({
 
   const medioComisionSeleccionado = watch('medioComision');
 
-const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const onSubmit = async (data) => {
     setIsFinalSubmit(false); // reset state after successful submit
@@ -252,7 +253,7 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
       if (result.success) {
         //toast.success("Pedido enviado correctamente.");
         console.log("Pedido enviado exitosamente:", result);
-        
+
         // if (typeof onPedidoSuccess === 'function') {
         //   onPedidoSuccess();
         // }
@@ -371,7 +372,7 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
     const isDev = process.env.NODE_ENV !== 'production';
 
     if (isDev) {
-      inicializarFormularioDePrueba();
+      // inicializarFormularioDePrueba();
     }
   }, []);
 
@@ -394,7 +395,7 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
     setValue('ciudad', 10);      // Igual aquí
     setValue('direccion', 'Cra 123 #45-67');
     setValue('barrio', 'El Prado');
-    
+
     setValue('contraentrega', 'No');
     setValue('transferencia', 'Sí');
     setValue('notas', 'Esto es una prueba automatizada');
@@ -450,7 +451,7 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
     consultarAsesor();
   }, [documento, tipoAsesor]); // Se ejecuta al cambiar documento o tipo asesor
 
-  
+
 
 
   const resumenPedido = [
@@ -482,40 +483,40 @@ const [showSuccessModal, setShowSuccessModal] = useState(false);
     { campo: "Medio de Pago", valor: watch("metodoPago") },
     { campo: "Otro Método de Pago", valor: watch("otroMetodoPago") },
   ];
-// At the top of your file or in a useEffect/useMemo
-const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
-const numericFields = [
-  'documento',
-  'telefono',
-  'clienteDocumento',
-  'clienteCelular',
-  'clienteTransportadora'
-];
-// const numericFields = ['clienteDocumento', 'clienteCelular', 'clienteTransportadora'];
+  // At the top of your file or in a useEffect/useMemo
+  const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
+  const numericFields = [
+    'documento',
+    'telefono',
+    'clienteDocumento',
+    'clienteCelular',
+    'clienteTransportadora'
+  ];
+  // const numericFields = ['clienteDocumento', 'clienteCelular', 'clienteTransportadora'];
 
   return (
 
     // <div className="card p-4 surface-50" style={{ maxWidth: '900px', margin: 'auto' }}>
     // <div className="card flex justify-content-center" style={{ backgroundColor: '#f9f9f9', borderLeft: '5px solid #0c6efd' }}>
     <div
-  className="card flex justify-content-center"
-  style={{
-    backgroundColor: '#f9f9f9',
-    borderLeft: `5px solid ${color1}`,
-  }}
->
+      className="card flex justify-content-center"
+      style={{
+        backgroundColor: '#f9f9f9',
+        borderLeft: `5px solid ${color1}`,
+      }}
+    >
 
 
 
 
       {/* <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}> */}
-<div
-  style={{
-    height: 'calc(100vh - 50px)',
-    overflowY: 'auto',
-    padding: '1rem'            /* opcional, para respirar */
-  }}
->
+      <div
+        style={{
+          height: 'calc(100vh - 50px)',
+          overflowY: 'auto',
+          padding: '1rem'            /* opcional, para respirar */
+        }}
+      >
         <div className="hide-on-mobile">
           <InfoCarroPedido pedido={null} />
         </div>
@@ -546,41 +547,41 @@ const numericFields = [
 
 
 
-      <Dialog
-        header="¡Éxito!"
-        visible={showSuccessModal}
-         onHide={() => {
-               if (typeof onPedidoSuccess === 'function') {
-       onPedidoSuccess();
-     }
-   }}
-    style={{ width: '350px' }}
-    modal
-  >      
-        <p>Pedido enviado correctamente.</p>
-      </Dialog>
+        <Dialog
+          header="¡Éxito!"
+          visible={showSuccessModal}
+          onHide={() => {
+            if (typeof onPedidoSuccess === 'function') {
+              onPedidoSuccess();
+            }
+          }}
+          style={{ width: '350px' }}
+          modal
+        >
+          <p>Pedido enviado correctamente.</p>
+        </Dialog>
 
 
 
         <form onSubmit={handleSubmit(onSubmit, onError)}>
 
-          <Stepper 
-          orientation="vertical"
-          headerPosition="left" 
-          activeStep={activeIndex} 
-          onStepChange={(e) => setActiveIndex(e.index)} 
+          <Stepper
+            orientation="vertical"
+            headerPosition="left"
+            activeStep={activeIndex}
+            onStepChange={(e) => setActiveIndex(e.index)}
           >
 
 
-            { !isCatalog && (
+            {!isCatalog && (
               <StepperPanel header="Datos del Asesor">
                 <Card title="Datos del asesor" className="w-full border border-gray-400 shadow-md rounded-xl">
-                
 
-                <div className="formgrid grid">
 
-                  
-                  {/* {[
+                  <div className="formgrid grid">
+
+
+                    {/* {[
                     ['documento', 'Tu Documento'],
                     ['pin_asesor', 'Tu PIN (* alfanumérico)'],
 
@@ -596,34 +597,34 @@ const numericFields = [
 
                   ))} */}
 
-                  {[
-  ['documento', 'Tu Documento'],
-  ['pin_asesor', 'Tu PIN (* alfanumérico)'],
-].map(([field, label]) => {
-  const onlyNumbers = numericFields.includes(field);
-  return (
-    <div key={field} className="col-12 md:col-6">
-      <label>{label}</label>
-      <InputText
-        {...register(field)}
-        className="w-full"
-        onKeyPress={onlyNumbers
-          ? e => {
-              if (!/[0-9]/.test(e.key)) {
-                e.preventDefault();
-              }
-            }
-          : undefined
-        }
-      />
-      {errors[field] && (
-        <small className="p-error">{errors[field]?.message}</small>
-      )}
-    </div>
-  );
-})}
+                    {[
+                      ['documento', 'Tu Documento'],
+                      ['pin_asesor', 'Tu PIN (* alfanumérico)'],
+                    ].map(([field, label]) => {
+                      const onlyNumbers = numericFields.includes(field);
+                      return (
+                        <div key={field} className="col-12 md:col-6">
+                          <label>{label}</label>
+                          <InputText
+                            {...register(field)}
+                            className="w-full"
+                            onKeyPress={onlyNumbers
+                              ? e => {
+                                if (!/[0-9]/.test(e.key)) {
+                                  e.preventDefault();
+                                }
+                              }
+                              : undefined
+                            }
+                          />
+                          {errors[field] && (
+                            <small className="p-error">{errors[field]?.message}</small>
+                          )}
+                        </div>
+                      );
+                    })}
 
-                  {/* {[
+                    {/* {[
 
                     ['email', 'Tu email'],
                     ['nombre', 'Tu Nombre'],
@@ -635,53 +636,53 @@ const numericFields = [
                       {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
                     </div>
                   ))} */}
-{[
-  ['email', 'Tu email'],
-  ['nombre', 'Tu Nombre'],
-  ['telefono', 'Tu Teléfono']
-].map(([field, label]) => {
-  const onlyNumbers = numericFields.includes(field);
-  return (
-    <div key={field} className="col-12 md:col-6">
-      <label>{label}</label>
-      <InputText
-        {...register(field)}
-        className="w-full"
-        onKeyPress={onlyNumbers
-          ? e => {
-              if (!/[0-9]/.test(e.key)) e.preventDefault();
-            }
-          : undefined
-        }
-      />
-      {errors[field] && (
-        <small className="p-error">{errors[field]?.message}</small>
-      )}
-    </div>
-  );
-})}
+                    {[
+                      ['email', 'Tu email'],
+                      ['nombre', 'Tu Nombre'],
+                      ['telefono', 'Tu Teléfono']
+                    ].map(([field, label]) => {
+                      const onlyNumbers = numericFields.includes(field);
+                      return (
+                        <div key={field} className="col-12 md:col-6">
+                          <label>{label}</label>
+                          <InputText
+                            {...register(field)}
+                            className="w-full"
+                            onKeyPress={onlyNumbers
+                              ? e => {
+                                if (!/[0-9]/.test(e.key)) e.preventDefault();
+                              }
+                              : undefined
+                            }
+                          />
+                          {errors[field] && (
+                            <small className="p-error">{errors[field]?.message}</small>
+                          )}
+                        </div>
+                      );
+                    })}
 
 
-                  
-                  <div className="col-12 md:col-6">
-                    <label>¿Dónde recibes comisiones?</label>
-                    <Controller
-                      name="medioComision"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
-                      )}
-                    />
-                    {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+
+                    <div className="col-12 md:col-6">
+                      <label>¿Dónde recibes comisiones?</label>
+                      <Controller
+                        name="medioComision"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
+                        )}
+                      />
+                      {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+                    </div>
+
+                    <div className="col-12 flex justify-content-end">
+
+
+                    </div>
                   </div>
 
-                  <div className="col-12 flex justify-content-end">
-
-
-                  </div>
-                </div>
-
-</Card>
+                </Card>
               </StepperPanel>
             )}
 
@@ -708,35 +709,35 @@ const numericFields = [
                 </div> */}
 
                 <div className="formgrid grid">
-  {[
-    ['clienteNombre', 'Nombrel del cliente'],
-    ['clienteDocumento', 'Documento del cliente'],
-    ['clienteCelular', 'Celular Llamadas del cliente'],
-    ['clienteTransportadora', 'Celular WhatsApp del cliente'],
-  ].map(([field, label]) => {
-    const onlyNumbers = numericFields.includes(field);
-    return (
-      <div key={field} className="col-12 md:col-6">
-        <label>{label}</label>
-        <InputText
-          {...register(field)}
-          className="w-full"
-          // si es campo numérico, bloquear cualquier tecla que no sea dígito
-          onKeyPress={onlyNumbers
-            ? e => {
-                if (!/[0-9]/.test(e.key)) {
-                  e.preventDefault();
-                }
-              }
-            : undefined
-          }
-        />
-        {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
-      </div>
-    );
-  })}
-  <div className="col-12 flex justify-content-between" />
-</div>
+                  {[
+                    ['clienteNombre', 'Nombrel del cliente'],
+                    ['clienteDocumento', 'Documento del cliente'],
+                    ['clienteCelular', 'Celular Llamadas del cliente'],
+                    ['clienteTransportadora', 'Celular WhatsApp del cliente'],
+                  ].map(([field, label]) => {
+                    const onlyNumbers = numericFields.includes(field);
+                    return (
+                      <div key={field} className="col-12 md:col-6">
+                        <label>{label}</label>
+                        <InputText
+                          {...register(field)}
+                          className="w-full"
+                          // si es campo numérico, bloquear cualquier tecla que no sea dígito
+                          onKeyPress={onlyNumbers
+                            ? e => {
+                              if (!/[0-9]/.test(e.key)) {
+                                e.preventDefault();
+                              }
+                            }
+                            : undefined
+                          }
+                        />
+                        {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
+                      </div>
+                    );
+                  })}
+                  <div className="col-12 flex justify-content-between" />
+                </div>
               </Card>
             </StepperPanel>
 
@@ -795,17 +796,17 @@ const numericFields = [
                     /> */}
 
                     <Controller
-                        name="franjaEntrega"
-                        control={control}
-                        defaultValue={["08:00-08:00 PM"]}
-                        render={({ field }) => (
-                          <InputText
-                            value={(field.value || []).join(', ')}
-                            readOnly
-                            className="w-full"
-                          />
-                        )}
-                      />
+                      name="franjaEntrega"
+                      control={control}
+                      defaultValue={["08:00-08:00 PM"]}
+                      render={({ field }) => (
+                        <InputText
+                          value={(field.value || []).join(', ')}
+                          readOnly
+                          className="w-full"
+                        />
+                      )}
+                    />
                     {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
                   </div>
 
@@ -907,16 +908,16 @@ const numericFields = [
 
 
                 {/* Campo valor, con lógica de habilitación/deshabilitación */}
-              {!isCatalog && (
-                <div className="col-12 md:col-6">
-                  <label>Valor a cobrar al cliente</label>
-                  <InputText
-                    {...register("valor")}
-                    className="w-full"
-                  />
-                  {errors.valor && <small className="p-error">{errors.valor.message}</small>}
-                </div>
-              )}
+                {!isCatalog && (
+                  <div className="col-12 md:col-6">
+                    <label>Valor a cobrar al cliente</label>
+                    <InputText
+                      {...register("valor")}
+                      className="w-full"
+                    />
+                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
+                  </div>
+                )}
 
 
                 {/* Radio Buttons: ¿Incluye Envío? */}
@@ -937,51 +938,51 @@ const numericFields = [
                   {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
                 </div>
 
-                  {(
-                    <div className="col-12">
-                      <label>¿Pago Contraentrega?</label>
-                      <Controller
-                        name="contraentrega"
-                        control={control}
-                        render={({ field }) => (
-                          <div className="flex gap-3">
-                            <RadioButton inputId="contra_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                            <label htmlFor="contra_si">Sí</label>
-                            <RadioButton inputId="contra_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                            <label htmlFor="contra_no">No</label>
-                          </div>
-                        )}
-                      />
-                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
-                    </div>
-                  )}
+                {(
+                  <div className="col-12">
+                    <label>¿Pago Contraentrega?</label>
+                    <Controller
+                      name="contraentrega"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex gap-3">
+                          <RadioButton inputId="contra_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="contra_si">Sí</label>
+                          <RadioButton inputId="contra_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="contra_no">No</label>
+                        </div>
+                      )}
+                    />
+                    {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+                  </div>
+                )}
 
 
                 <div className="formgrid grid">
                   <div className="col-12">
                     <label>¿Pago por transferencia?</label>
                     <Controller
-                    
+
                       name="transferencia"
                       control={control}
                       render={({ field }) => (
                         <div className="flex gap-3">
                           <RadioButton disabled="true" inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
                           <label htmlFor="transfer_si">Sí</label>
-                          <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="transfer_no">No</label>
+                          {/* <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="transfer_no">No</label> */}
                         </div>
                       )}
                     />
                   </div>
 
-                {/* ¿Otro medio? */}
-                {medioComisionSeleccionado === 'Otro' && (
-                  <div className="col-12 md:col-6">
-                    <label>¿Cuál?</label>
-                    <InputText {...register("otroMedio")} className="w-full" />
-                  </div>
-                )}
+                  {/* ¿Otro medio? */}
+                  {medioComisionSeleccionado === 'Otro' && (
+                    <div className="col-12 md:col-6">
+                      <label>¿Cuál?</label>
+                      <InputText {...register("otroMedio")} className="w-full" />
+                    </div>
+                  )}
 
 
 
@@ -1012,17 +1013,7 @@ const numericFields = [
                   )}
 
                   <div className="col-12 flex justify-content-between">
-                    {/* <Button label="Atrás" 
-                          onClick={() => setActiveIndex(activeIndex - 1)}
-        disabled={activeIndex === 0}
-                  /> */}
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(4)} /> */}
-                    {/* <Button
-                    label="Siguiente"
-                    type="button"
-                            onClick={() => setActiveIndex(activeIndex + 1)}
-        disabled={activeIndex === totalSteps - 1}
-                  /> */}
+
 
                   </div>
 
@@ -1030,7 +1021,7 @@ const numericFields = [
               </Card>
             </StepperPanel>
             <StepperPanel header="Resumen">
-              
+
               <div className="formgrid grid">
                 <div className="col-12">
 
@@ -1038,7 +1029,7 @@ const numericFields = [
                   <Card title="Resumen del pedido" className="w-full">
 
                     <ScrollPanel style={{ width: '100%', height: '400px' }}>
-                      
+
                       <DataTable
                         value={resumenPedido.filter(item => item.valor && item.valor !== "")}
                         showGridlines
@@ -1081,26 +1072,17 @@ const numericFields = [
                   </Card>
                 </div>
               </div>
-              <div className="col-12 flex justify-content-between">
-                {/* <Button label="Atrás" 
-        onClick={() => setActiveIndex(activeIndex - 1)}
-        disabled={activeIndex === 0}
-              /> */}
-                {/* <Button type="submit" label="Guardar" className="p-button-success" /> */}
 
-
-              </div>
             </StepperPanel>
           </Stepper>
-                <Button
-                  type="submit"
-                  label="Guardar"
-                  className="p-button-success"
-                  onClick={() => setIsFinalSubmit(true)}
-                />
+          <Button
+            type="submit"
+            label="Guardar"
+            className="p-button-success"
+            onClick={() => setIsFinalSubmit(true)}
+          />
         </form>
-</div>
-      {/* </ScrollPanel> */}
+      </div>
     </div>
   );
 }
