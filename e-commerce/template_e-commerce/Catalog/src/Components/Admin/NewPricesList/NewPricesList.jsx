@@ -388,6 +388,7 @@ export default function NewPricesList() {
                             <button className='selected'>Agregar Lista de precio por producto</button>
                             <span className="close" onClick={toggleModal}>&times;</span>
                         </div>
+                    <div className="scrollable-form-container">
                         <form id="crearForm">
 
                             <div className='flexGrap'>
@@ -587,6 +588,7 @@ export default function NewPricesList() {
                             </button>
 
                         </form>
+                        </div>
                     </div>
                 </div>
             )}

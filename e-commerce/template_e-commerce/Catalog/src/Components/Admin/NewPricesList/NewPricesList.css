@@ -140,3 +140,34 @@
         margin: 2px;
     }
 }
+/* ✅ Estilos de modal con scroll funcional */
+.modal {
+  position: fixed;
+  z-index: 1000;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.modal-content {
+  background-color: #fff;
+  width: 90vw;
+  max-height: 90vh;
+  overflow: hidden;
+  border-radius: 10px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ✅ Contenedor scrollable del formulario */
+.scrollable-form-container {
+  overflow-y: auto;
+  flex: 1;
+  padding-right: 0.5rem;
+}
