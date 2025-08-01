@@ -134,8 +134,8 @@ export default function NewPedido({ onPedidoCreado }) {
     clienteTransportadora: z.string().min(7, "Celular inválido"),
     fechaDespacho: z.string().min(1, "Fecha requerida"),
     franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
-    valor: z.coerce.number()
-      .min(1, "Debe ingresar un valor válido"),
+    // valor: z.coerce.number()
+    //   .min(1, "Debe ingresar un valor válido"),
 
     departamento: z.number().min(1, "Departamento requerido"),
     ciudad: z.number().min(1, "Ciudad requerida"),
@@ -155,16 +155,7 @@ export default function NewPedido({ onPedidoCreado }) {
         cantidad: z.number(),
       })
     ).min(1, "Debes seleccionar al menos un producto"),
-  }).refine(
-    (data) => {
-      const total = data.productosSeleccionados.reduce((acc, p) => acc + Number(p.precio) * Number(p.cantidad), 0);
-      return Number(data.valor) >= total;
-    },
-    {
-      message: "El valor a cobrar no puede ser menor al total de productos.",
-      path: ["valor"], // El error se muestra en el campo valor
-    }
-  );
+  })
 
   const {
     control,
@@ -193,14 +184,14 @@ export default function NewPedido({ onPedidoCreado }) {
       clienteCelular: "",
       clienteTransportadora: "",
       fechaDespacho: "",
-      // franjaEntrega: ["08:00-08:00 PM"], // Valor por defecto
-      franjaEntrega: [],
+      franjaEntrega: ["08:00-08:00 PM"], // Valor por defecto
+      //franjaEntrega: [],
       departamento: null,
       ciudad: null,
       direccion: "",
       barrio: "",
       notas: "",
-      incluyeEnvio: "No",
+      incluyeEnvio: esDropshipper ? "No" : "Sí", // 👈 "Sí" si no es dropshipper
       transferencia: "No",
       contraentrega: "Sí",
       metodoPago: "",
@@ -309,8 +300,8 @@ export default function NewPedido({ onPedidoCreado }) {
         franja_horario: data.franjaEntrega.join(','),
         nota: data.notas || '',
         pago_recibir: data.valor,
-        medio_pago: data.metodoPago || 'efectivo',
-        forma_pago: "Nequi",
+        medio_pago: 'efectivo',
+        forma_pago: data.metodoPago || 'efectivo',
         // ...otros campos según tu lógica
       };
     } else if (tipoPedido === 'catalogo') {
@@ -338,8 +329,8 @@ export default function NewPedido({ onPedidoCreado }) {
         franja_horario: data.franjaEntrega.join(','),
         nota: data.notas || '',
         pago_recibir: data.productosSeleccionados.reduce((acc, p) => acc + p.precio * p.cantidad, 0),
-        medio_pago: data.metodoPago || 'efectivo',
-        forma_pago: "Nequi",
+        medio_pago: 'efectivo',
+        forma_pago: data.metodoPago || 'efectivo',
         // ...otros campos que necesites
       };
     }
@@ -576,14 +567,14 @@ export default function NewPedido({ onPedidoCreado }) {
             <legend>(*) Campos obligatorios</legend>
 
             <div style={{ margin: '12px 0' }}>
-              <label>
+              {/* <label>
                 <input
                   type="checkbox"
                   checked={esDropshipper}
                   onChange={e => setEsDropshipper(e.target.checked)}
                 />{" "}
                 ¿El Pedido es de Dropshipper? Marca la casilla si es así.
-              </label>
+              </label> */}
             </div>
             {/* <Button
               type="button"
@@ -681,7 +672,7 @@ export default function NewPedido({ onPedidoCreado }) {
                       control={control}
                       render={({ field }) => (
                         <MultiSelect {...field} options={franjasHorarias}
-                          // disabled="true" 
+                          disabled={franjasHorarias.length === 1} // si solo hay una opción
                           placeholder="Selecciona una o más" display="chip" />
                       )}
                     />
@@ -836,6 +827,8 @@ export default function NewPedido({ onPedidoCreado }) {
 
                 {/* 5. Pago */}
                 <TabPanel header="Pago">
+
+                  {esDropshipper && (
                   <div className="field">
                     <label>Valor a cobrar al cliente</label>
 
@@ -860,85 +853,96 @@ export default function NewPedido({ onPedidoCreado }) {
                     <label className="p-sr-only">(*Debe ser mayor o igual a ${total})</label>
                     <div>
 
-                      <pre>typeof valor: {typeof valor}</pre>
+                      {/* <pre>typeof valor: {typeof valor}</pre>
                       <pre>valor: {String(valor)}</pre>
                       <pre>typeof total: {typeof total}</pre>
-                      <pre>total: {total}</pre>
+                      <pre>total: {total}</pre> */}
                     </div>
-                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
+                    
 
                   </div>
-
-
-                  <div className="field">
-                    <label>Incluye Envío</label>
-                    <Controller
-                      name="incluyeEnvio"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={[
-                          { label: "Sí", value: "Sí" },
-                          { label: "No", value: "No" }
-                        ]} placeholder="Seleccione" />
-                      )}
-                    />
-                    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
-                  </div>
-
-                  <div className="field">
-                    <label>Transferencia</label>
-                    <Controller
-                      name="transferencia"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={[
-                          { label: "Sí", value: "Sí" },
-                          { label: "No", value: "No" }
-                        ]} placeholder="Seleccione" />
-                      )}
-                    />
-                    {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
-                  </div>
-
-                  {watch("transferencia") === "No" && (
-                    <div className="field">
-                      <label>Contraentrega</label>
-                      <Controller
-                        name="contraentrega"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown {...field} options={[
-                            { label: "Sí", value: "Sí" },
-                            { label: "No", value: "No" }
-                          ]} placeholder="Seleccione" />
-                        )}
-                      />
-                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
-
-                      {watch("contraentrega") === "No" && (
-                        <>
-                          <div className="field">
-                            <label>Método de Pago</label>
-                            <Controller
-                              name="metodoPago"
-                              control={control}
-                              render={({ field }) => (
-                                <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
-                              )}
-                            />
-                            {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
-                          </div>
-
-                          {watch("metodoPago") === "Otro" && (
-                            <div className="field">
-                              <label>¿Cuál?</label>
-                              <InputText {...register("otroMetodoPago")} />
-                            </div>
-                          )}
-                        </>
-                      )}
-                    </div>
                   )}
+                  {errors.valor && <small className="p-error">{errors.valor.message}</small>}
+
+{esDropshipper && (
+  <div className="field">
+    <label>Incluye Envío</label>
+    <Controller
+      name="incluyeEnvio"
+      control={control}
+      render={({ field }) => (
+        <Dropdown
+          {...field}
+          options={[
+            { label: "Sí", value: "Sí" },
+            { label: "No", value: "No" }
+          ]}
+          placeholder="Seleccione"
+        />
+      )}
+    />
+    {errors.incluyeEnvio && (
+      <small className="p-error">{errors.incluyeEnvio.message}</small>
+    )}
+  </div>
+)}
+
+  <div className="field">
+    <label>¿Pago contraentrega?</label>
+    <Controller
+      name="contraentrega"
+      control={control}
+      render={({ field }) => (
+        <Dropdown {...field} options={[
+          { label: "Sí", value: "Sí" },
+          { label: "No", value: "No" }
+        ]} placeholder="Seleccione" />
+      )}
+    />
+    {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+  </div>
+
+  {/* Mostrar Transferencia SÍ SOLO si contraentrega es No */}
+  {watch("contraentrega") === "No" && (
+    <div className="field">
+      <label>¿Pago por transferencia?</label>
+      <Controller
+        name="transferencia"
+        control={control}
+        render={({ field }) => (
+          <Dropdown
+            {...field}
+            options={[{ label: "Sí", value: "Sí" }]}
+            placeholder="Sí"
+            disabled
+          />
+        )}
+      />
+      {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
+    </div>
+  )}
+
+  {/* Método de pago obligatorio si no es contraentrega */}
+  {watch("contraentrega") === "No" && (
+    <div className="field">
+      <label>Método de Pago</label>
+      <Controller
+        name="metodoPago"
+        control={control}
+        render={({ field }) => (
+          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
+        )}
+      />
+      {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
+
+      {watch("metodoPago") === "Otro" && (
+        <div className="field">
+          <label>¿Cuál?</label>
+          <InputText {...register("otroMetodoPago")} />
+        </div>
+      )}
+    </div>
+  )}
 
                 </TabPanel>
 

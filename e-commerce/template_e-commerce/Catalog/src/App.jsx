@@ -18,7 +18,7 @@ function App() {
     const root = document.documentElement;
 
     if (userType === "Dropshipper") {
-      root.style.setProperty('--color1', '#FF6600');
+      root.style.setProperty('--color1', '#000000');
     } else {
       root.style.setProperty('--color1', '#2ea74e');
     }

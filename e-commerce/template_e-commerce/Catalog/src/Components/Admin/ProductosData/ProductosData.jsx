@@ -634,6 +634,7 @@ export default function ProductosData() {
             {modalVisible && (
                 <div className="modal">
                     <div className="modal-content">
+                         
                         <div className='deFlexBtnsModal'>
 
                             <div className='deFlexBtnsModal'>
@@ -641,13 +642,16 @@ export default function ProductosData() {
                                     className={selectedSection === 'texto' ? 'selected' : ''}
                                     onClick={() => handleSectionChange('texto')}
                                 >
-                                    Editar Texto
+                                    Editar Producto
                                 </button>
                             </div>
                             <span className="close" onClick={cerrarModal}>
                                 &times;
                             </span>
+                        
                         </div>
+
+                   <div className="scrollable-modal-body">
                         <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
                             <div className='flexGrap'>
                                 <fieldset id='titulo'>
@@ -1058,6 +1062,8 @@ export default function ProductosData() {
                         <div className='sectionImg' style={{ display: selectedSection === 'imagenes' ? 'flex' : 'none' }}>
 
                             <button className='btnPost' onClick={() => handleEditarImagenBanner(producto.idProducto)}>Guardar </button>
+
+                        </div>
 
                         </div>
 

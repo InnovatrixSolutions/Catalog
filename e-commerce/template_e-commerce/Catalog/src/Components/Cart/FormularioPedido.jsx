@@ -88,7 +88,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
     //nombre: z.string().min(1, "Nombre requerido"),
     //telefono: z.string().min(7, "Teléfono inválido"),
     // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-    incluyeEnvio: z.enum(["Sí", "No"]),
+    // incluyeEnvio: z.enum(["Sí", "No"]),
     //medioComision: z.string().min(1, "Seleccione un medio"),
     otroMedio: z.string().optional(),
     //pin_asesor: z.string().optional(),
@@ -143,7 +143,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
     resolver: zodResolver(schema),
     defaultValues: {
       documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
-      incluyeEnvio: 'No', medioComision: '', otroMedio: '',
+       incluyeEnvio: isCatalog ? 'Sí' : 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
       fechaDespacho: null, franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
       contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'Sí', notas: '', pin_asesor: ''
@@ -920,23 +920,25 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
                 )}
 
 
-                {/* Radio Buttons: ¿Incluye Envío? */}
-                <div className="col-12">
-                  <label>¿Incluye Envío?</label>
-                  <Controller
-                    name="incluyeEnvio"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex gap-3">
-                        <RadioButton inputId="si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                        <label htmlFor="si">Sí</label>
-                        <RadioButton inputId="no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                        <label htmlFor="no">No</label>
-                      </div>
-                    )}
-                  />
-                  {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
-                </div>
+{!isCatalog && (
+  <div className="col-12">
+    <label>¿Incluye Envío?</label>
+    <Controller
+      name="incluyeEnvio"
+      control={control}
+      render={({ field }) => (
+        <div className="flex gap-3">
+          <RadioButton inputId="si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="si">Sí</label>
+          <RadioButton inputId="no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="no">No</label>
+        </div>
+      )}
+    />
+    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
+  </div>
+)}
+
 
                 {(
                   <div className="col-12">
