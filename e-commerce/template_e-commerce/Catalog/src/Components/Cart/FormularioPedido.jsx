@@ -1030,7 +1030,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
 
                   <Card title="Resumen del pedido" className="w-full">
 
-                    <ScrollPanel style={{ width: '100%', height: '400px' }}>
+                    <ScrollPanel style={{ width: '90%' }}>
 
                       <DataTable
                         value={resumenPedido.filter(item => item.valor && item.valor !== "")}
