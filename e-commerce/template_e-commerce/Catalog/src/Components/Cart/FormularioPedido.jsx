@@ -32,6 +32,7 @@ import { Column } from 'primereact/column';
 
 import { Card } from 'primereact/card';
 
+import { handleWhatsappMessage } from '../../Utils/whatsapp'; // Ajusta el path si es diferente
 
 
 
@@ -60,6 +61,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
   const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
   const isCatalog = hostname.includes("localhost");
+  const [telefonoTienda, setTelefonoTienda] = useState('');
   //const isCatalog = hostname.includes("catalogo");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
@@ -160,6 +162,16 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+useEffect(() => {
+  fetch(`${baseURL}/tiendaGet.php`)
+    .then(res => res.json())
+    .then(data => {
+      const telefono = data.tienda?.[0]?.telefono || '';
+      setTelefonoTienda(telefono);
+    })
+    .catch(error => console.error('Error al cargar la tienda:', error));
+}, []);
+
   const onSubmit = async (data) => {
     setIsFinalSubmit(false); // reset state after successful submit
     setShowErrorsDialog(false); // just in case
@@ -257,6 +269,21 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
         // if (typeof onPedidoSuccess === 'function') {
         //   onPedidoSuccess();
         // }
+
+              const datosWhatsapp = {
+        idPedido: data.idPedido,
+        nombre: formData.nombre,
+        telefono: formData.telefono,
+        entrega: formData.entrega === 'delivery' ? formData.direccion : 'Retiro en Sucursal',
+        pago: formData.pago,
+        codigo: formData.codigo || '',
+        total: totalPrice,
+        nota: formData.nota,
+        productos: cartItems,
+        pagoRecibir: formData.pagoRecibir
+      };
+
+      handleWhatsappMessage(datosWhatsapp, telefonoTienda); // ← WhatsApp justo aquí
         setShowSuccessModal(true);
       } else {
         toast.error("Error en el envío del pedido. Revisa todos los campos");
@@ -1028,11 +1055,50 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
                 <div className="col-12">
 
 
-                  <Card title="Resumen del pedido" className="w-full">
+                 
 
-                    <ScrollPanel style={{ width: '90%' }}>
+                    <Card title="Resumen del pedido" className="w-full" style={{ maxWidth: 600, margin: '0 auto' }}>
+  <div style={{ padding: '1rem', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}>
 
-                      <DataTable
+    {/* ENCABEZADO DEL TICKET */}
+    <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>🧾 Resumen del Pedido</h3>
+
+    {/* INFORMACIÓN GENERAL */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      {resumenPedido
+        .filter(item => item.valor && item.valor !== "")
+        .map((item, index) => (
+          <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 'bold' }}>{item.campo}</span>
+            <span>{item.valor}</span>
+          </div>
+      ))}
+    </div>
+
+    {/* PRODUCTOS */}
+    <h4 style={{ marginBottom: '1rem', borderTop: '1px dashed #aaa', paddingTop: '1rem' }}>🛒 Productos Seleccionados</h4>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {cartItems.map((item, index) => (
+        <div key={index} style={{ borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+          <strong>{item.titulo}</strong><br />
+          Cantidad: {item.cantidad}<br />
+          Precio Unitario: ${Number(item.precio).toLocaleString()}<br />
+          Subtotal: <strong>${Number(item.precio * item.cantidad).toLocaleString()}</strong>
+        </div>
+      ))}
+    </div>
+
+    {/* TOTAL */}
+    <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '1.5rem' }}>
+      Total: ${Number(totalPrice).toLocaleString()}
+    </div>
+  </div>
+</Card>
+
+
+                    {/* <ScrollPanel style={{ width: '100%', overflowX: 'scroll'  }}> */}
+ <div style={{ minWidth: '1200px' }}>
+{/*                       <DataTable
                         value={resumenPedido.filter(item => item.valor && item.valor !== "")}
                         showGridlines
                         size="small"
@@ -1041,9 +1107,15 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
                       >
                         <Column field="campo" header="Campo" />
                         <Column field="valor" header="Valor" />
-                      </DataTable>
+                      </DataTable> */}
+
+                      {/* <h3 className="mt-4 mb-3">Resumen del pedido</h3> */}
+
+
+
+
                       {/* You can also add the product summary here, if you want */}
-                      <h3 className="mt-4 mb-3">Productos Seleccionados</h3>
+{/*                       <h3 className="mt-4 mb-3">Productos Seleccionados</h3>
                       <DataTable
                         value={cartItems}
                         showGridlines
@@ -1064,14 +1136,17 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
                           body={(row) => `$${(row.precio * row.cantidad).toLocaleString()}`}
                           style={{ width: 120, textAlign: 'right', fontWeight: 600 }}
                         />
-                      </DataTable>
-                      <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
-                        Total: ${Number(totalPrice).toLocaleString()}
+                      </DataTable> */}
+
+
                       </div>
-                    </ScrollPanel>
 
+                    {/* </ScrollPanel> */}
+                      {/* <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
+                        Total: ${Number(totalPrice).toLocaleString()}
+                      </div> */}
 
-                  </Card>
+        
                 </div>
               </div>
 
