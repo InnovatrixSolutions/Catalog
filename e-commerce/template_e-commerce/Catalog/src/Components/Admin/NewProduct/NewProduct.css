@@ -1,13 +1,28 @@
 .items{
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
+    /* flex-wrap: wrap; */
+  flex-wrap: nowrap; /* 👈 Previene el salto de línea */
+    overflow-x: auto;   /* 👈 Scroll horizontal si hay overflow */
     margin-bottom: 1rem;
 }
-.items fieldset{
+/* .items fieldset{
     width: 15%;
+} */
+.items fieldset {
+    min-width: 200px; /* 👈 Esto da un ancho base para el scroll */
+    flex: 0 0 auto;    /* 👈 Impide que se encojan */
 }
 
+.items::-webkit-scrollbar {
+    height: 5px;
+    background-color: transparent;
+}
+
+.items::-webkit-scrollbar-thumb {
+    background-color: var(--color1); 
+    border-radius: 10px;
+}
 #flexLabel{
     display: flex;
     align-items: center;
@@ -18,10 +33,18 @@
 #flexLabel span{
     width: 100%;
 }
-#crearForm #flexLabel input{
+/* #crearForm #flexLabel input{
     padding: 0;
     width:auto;
 }
+ */
+#crearForm #flexLabel input {
+    padding: 8px;
+    width: auto;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+}
+
 
  #textLabel{
     border-bottom: 1px solid  #949191;
@@ -140,3 +163,57 @@
         margin: 2px;
     }
 }
+
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  width: 95%;
+  
+  max-width: 800px;
+  height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+.custom-modal-width {
+  width: 900px !important; /* Fuerza la aplicación del ancho */
+}
+
+.modal-scroll {
+  overflow-y: auto;
+  flex: 1;
+}
+
+#crearForm input,
+#crearForm select,
+#crearForm textarea {
+  border: 1px solid #ccc !important;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #333;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+#crearForm input:focus,
+#crearForm select:focus,
+#crearForm textarea:focus {
+  border-color: var(--color1); /* Reemplaza con tu color primario si tienes variables */
+  outline: none;
+}
+

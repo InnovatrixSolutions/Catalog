@@ -170,8 +170,8 @@ export default function Products() {
                                                 value={subcategoria.subcategoria}
                                                 onClick={() => handleClickSubcategoria(subcategoria.idSubCategoria)}
                                                 style={{
-                                                    borderBottom: subcategoriaSeleccionada === subcategoria.idSubCategoria ? '2px solid #F80050' : '',
-                                                    color: subcategoriaSeleccionada === subcategoria.idSubCategoria ? '#F80050' : '',
+                                                    borderBottom: subcategoriaSeleccionada === subcategoria.idSubCategoria ? '2px solid #09c332' : '',
+                                                    color: subcategoriaSeleccionada === subcategoria.idSubCategoria ? '#09c332' : '',
                                                 }}
                                                 id='subcategoriaInput'
 

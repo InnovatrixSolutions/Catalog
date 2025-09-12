@@ -1,10 +1,10 @@
-/* *{
+*{
   padding: 0 ;
   margin: 0;
   box-sizing: border-box;
   transition: all 0.2s linear;
  
-} */
+}
 :root{
   --text-color: #000;
   --text-color2: #5c5959;
@@ -14,55 +14,34 @@
   /* --color1:#F80050; */
   --color1:#2ea74e;
   --color2:#752FB5;
-
-  /* --color3:rgba(31, 135, 233, 0.455); */
-    /*Arreglado por sebas*/
-  --color3: #fff;
+  --color3:rgba(31, 135, 233, 0.455);
   --blanco: #fff;
-
-  /* --input:#c1bfbf; */
-
-  /*Arreglado por sebas*/
-  
-  --input: #ffffff;
+  --input:#c1bfbf;
   /* --loading:#f8004f60; */
   --loading:#83e79e;
 }
+
 
 h2,h3,h4,h5,h6{
   color: var(--text-color);
 }
 
+
 a{
   text-decoration: none;
 }
 
-body{
+ body{
   background-color: var(--gris);
-}
-a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSlide-scroll-products,  .categoriasInputs input,.cardProdcutSelected, .cardProdcutmasVendido,.cartIconFixed,.inputsGrap{
+ }
+ a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSlide-scroll-products,  .categoriasInputs input,.cardProdcutSelected, .cardProdcutmasVendido,.cartIconFixed,.inputsGrap{
   opacity: 0;
   animation: slideFromLeft 1s ease-in-out forwards;
   -webkit-animation: slideFromLeft 1s ease-in-out forwards;
 }
 
-.modaldashboard{
-  opacity: 0;
-  animation: slideUp 0.4s ease-in-out forwards;
-  -webkit-animation: slideUp 0.4s ease-in-out forwards;
-}
-
-.titles-text-heading {
-  font-size: 2rem;
-  font-weight: bold;
-  color: var(--color1); /* Or another standout color */
-  text-align: center;
-  margin-bottom: 2rem;
-  margin-top: 2rem;
-  border-bottom: 2px solid var(--color1); /* Optional underline */
-  padding-bottom: 0.5rem;
-  background-color: #f3f3f3; /* Optional background highlight */
-  border-radius: 8px;
+  
+.modaldashboard{ opacity: 0; animation: slideUp 0.4s ease-in-out forwards; -webkit-animation: slideUp 0.4s ease-in-out forwards;
 }
 
 @keyframes slideFromLeft {
@@ -73,16 +52,19 @@ a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSli
       -moz-transform: translateX(-20%);
       -ms-transform: translateX(-20%);
       -o-transform: translateX(-20%);
-  }
+}
   to {
       opacity: 1;
       transform: translateX(0);
   }
 }
 
+
+
 @keyframes slideFromCenter {
   from {
       opacity: 0;
+     
   }
   to {
       opacity: 10;
@@ -92,11 +74,13 @@ a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSli
       -ms-transform: translateY(0%);
       -o-transform: translateY(0%);
   }
-}
+  }
+
   
 @keyframes slideUp {
   from {
       opacity: 0;
+     
   }
   to {
       opacity: 10;
@@ -105,65 +89,7 @@ a,#btnSubmenu,.CategoriConten,.card, .detail-contain img, p,.modalNav,#SwiperSli
       -moz-transform: translateY(-3%);
       -ms-transform: translateY(-3%);
       -o-transform: translateY(-3%);
+}
   }
-}
  
-.p-inputtext {
-  background: #fff !important;  /* or your preferred color */
-  border: 1.5px solid var(--color1) !important;
-}
-
-.p-dropdown, .p-multiselect {
-  background: #fff !important;
-  border: 1.5px solid var(--color1) !important;
-}
-
-.modal {
-  position: fixed;
-  left: 0; top: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.2);
-  z-index: 99999 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.modal-content {
-  width: 90vw;
-  max-width: 900px;
-  min-width: 340px;
-  margin: 0 auto;
-  background: #fff;
-  border-radius: 12px;
-  padding: 32px 24px;
-  box-sizing: border-box;
-  overflow: visible !important;
-  z-index: 100000 !important;
-  position: relative;
-}
-
-.cardProductData, .cardProductDataText {
-  /* ... */
-}
-/* PRIME REACT OVERLAYS */
-.p-dropdown-panel,
-.p-multiselect-panel,
-.p-calendar-panel,
-.p-autocomplete-panel,
-.p-column-filter-overlay {
-  z-index: 1100 !important;
-}
-.p-tabview-nav {
-  gap: 1rem !important;
-}
-
-
-/* Ensure PrimeReact overlays are above all custom modals */
-.p-dropdown-panel,
-.p-multiselect-panel,
-.p-calendar-panel,
-.p-autocomplete-panel,
-.p-column-filter-overlay,
-.p-dialog-mask,
-.p-overlaypanel {
-  z-index: 110001 !important; /* Above your .modal-content (100000) */
-}
+ 

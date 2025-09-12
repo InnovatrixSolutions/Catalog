@@ -17,8 +17,8 @@ function App() {
     console.log('userType:', userType); // 👈 verify in dev tools
     const root = document.documentElement;
 
-    if (userType === "Dropshipper") {
-      root.style.setProperty('--color1', '#FF6600');
+    if (userType === "dropshipper") {
+      root.style.setProperty('--color1', '#27F5A6');
     } else {
       root.style.setProperty('--color1', '#2ea74e');
     }

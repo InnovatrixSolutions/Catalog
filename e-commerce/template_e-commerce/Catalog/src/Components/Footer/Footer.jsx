@@ -46,9 +46,12 @@ export default function Footer() {
             <div className='footerText' id='footerText'>
                 <Anchor to='/'>
                     {tienda?.imagen1 ? (
-                        <img src={tienda?.imagen1} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                     ) : (
-                        <img src={Nologo} alt="logo" />
+                        // <img src={Nologo} alt="logo" />
+                        // <img src={tienda?.imagen1} alt="logo" />
+                        <img src={tienda?.imagen1} alt="" />
                     )}
                 </Anchor>
 
@@ -70,14 +73,14 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className='footerText'>
+            {/* <div className='footerText'>
                 <h3>Categorias</h3>
                 {
                     categorias?.map((item, index) => (
                         <Anchor key={index} to={`/categoria/${item.idCategoria}`}>{item.categoria}</Anchor>
                     ))
                 }
-            </div>
+            </div> */}
 
             <div className='footerText'>
                 <h3>Acceso</h3>

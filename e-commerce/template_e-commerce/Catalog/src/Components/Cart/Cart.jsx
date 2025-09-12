@@ -206,34 +206,8 @@ export default function Cart() {
             })
             .catch(error => console.error('Error al cargar códigos:', error));
     };
-    // const handleWhatsappMessage = (data) => {
-    //     const { idPedido, nombre, telefono, entrega, pago, codigo, total, nota, productos, pagoRecibir } = data;
-
-    //     const formattedTotalPrice = total?.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
-    //     const phoneNumber = `${tienda[0]?.telefono}`;
-
-    //     // Formatear los detalles de los productos
-    //     const productosDetails = productos.map(item => {
-    //         return `\n✅ *${item.titulo}* \n      Precio: ${moneda} ${item?.precio?.toString()?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}  x  ${item.cantidad}\n      ${item.items}\n`;
-    //     }).join('');
-
-    //     const message = `¡Hola! 🌟 Mi pedido es el N°${idPedido}\n${productosDetails}\n👤 Nombre: ${nombre}\n\n📱 Teléfono: ${telefono}\n\n📦 Entrega: ${entrega}\n\n💵 Forma de pago: ${pago}\n\n📌 Pago al recibirlo: ${pagoRecibir}\n\n🏷 Código de descuento: ${codigo}\n\n✅ Nota: ${nota}\n\n*Total: ${moneda} ${formattedTotalPrice}*`;
-
-    //     const whatsappUrl = `https://api.whatsapp.com/send?phone=${phoneNumber}&text=${encodeURIComponent(message)}`;
-
-    //     window.open(whatsappUrl, '_blank');
-
-    //     // Limpiar estados (opcional, dependiendo de tu lógica)
-    //     setName('');
-    //     setLocation('');
-    //     setNoteText('');
-    //     setCodigo('');
-    //     setModalIsOpen(false);
-    //     setModalIsOpen2(false);
-    // };
-
-
-
+  
+ 
 
 
     // Función para aumentar la cantidad de un producto en el carrito
@@ -628,6 +602,16 @@ export default function Cart() {
                                         onRequestClose={closeModal2}
                                         className="modal-cart"
                                         overlayClassName="overlay-cart"
+                                         style={{
+                                        content: {
+                                        top: '5%',            // leave a little “breathing room”
+                                        bottom: '5%',
+                                        left: '5%',
+                                        right: '5%',
+                                        overflowY: 'auto',    // <-- native scroll on the modal itself
+                                        padding: '1rem'
+                                        }
+                                    }}
                                     >
                                                                                 <div className='deFLex'>
                                             <button onClick={closeModal2} ><FontAwesomeIcon icon={faArrowLeft} />  </button>

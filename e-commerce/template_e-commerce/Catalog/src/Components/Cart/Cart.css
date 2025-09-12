@@ -371,22 +371,26 @@
 /* === Estilos personalizados para PrimeReact === */
 
 .p-inputtext {
-    background-color: var(--gris2);
+    /* background-color: var(--gris2); */
+    border: 1px solid #ccc; 
     border-radius: 6px;
-    border: none;
+    /* border: none; */
     padding: 13px;
     width: 100%;
 }
 
 .p-dropdown {
-    background-color: var(--gris2);
+    /* background-color: var(--gris2); */
+
     border-radius: 6px;
     border: none;
+    
     width: 100%;
 }
 
 .p-calendar {
     width: 100%;
+    
 }
 
 .p-button {
@@ -397,7 +401,7 @@
 }
 
 .p-button:hover {
-    background-color: #003f8a; /* más oscuro que color1 si quieres */
+    background-color: var(--color1); /* más oscuro que color1 si quieres */
 }
 
 .p-error {
@@ -419,12 +423,13 @@
 }
 
 .p-multiselect {
-    background-color: var(--gris2);
+    /* background-color: var(--gris2); */
     border-radius: 6px;
     border: none;
     padding: 13px;
     width: 100%;
     font-family: inherit;
+    border: 1px solid #ccc; 
 }
 
 .p-multiselect .p-multiselect-label {

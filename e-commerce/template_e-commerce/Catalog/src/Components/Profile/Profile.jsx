@@ -29,9 +29,11 @@ export default function Profile() {
             {tienda?.imagen1 ? (
                 <img src={tienda?.imagen1} alt="logo" />
             ) : (
-                <img src={Nologo} alt="logo" />
+                // <img src={Nologo} alt="logo" />
+                <img src={tienda?.imagen1} alt="logo" />
             )}
             <h2>{tienda.nombre}</h2>
+            
             <div className='profileText'>
                 <p>{tienda.eslogan}</p>
                 <Anchor to={`https://www.google.com/maps?q=${encodeURIComponent(tienda.direccion)}`} target="_blank">{tienda.direccion}</Anchor>

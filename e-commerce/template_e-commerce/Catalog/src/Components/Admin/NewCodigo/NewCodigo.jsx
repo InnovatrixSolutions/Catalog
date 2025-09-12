@@ -294,6 +294,7 @@ export default function NewCodigo() {
                             <button className='selected'>Agregar Codigo</button>
                             <span className="close" onClick={toggleModal}>&times;</span>
                         </div>
+                        <div className="scrollable-form-container">
                         <form >
                             <div className='flexGrap'>
                                 <fieldset>
@@ -480,6 +481,7 @@ export default function NewCodigo() {
                                 </button>
                             )}
                         </form>
+                    </div>
                     </div>
                 </div>
             )}
