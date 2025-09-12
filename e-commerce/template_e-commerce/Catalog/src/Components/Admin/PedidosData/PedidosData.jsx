@@ -1629,7 +1629,7 @@ const header = renderHeader();
               name="valorFlete"
               control={control}
               render={({ field }) => (
-                <InputText {...field} placeholder="Valor del Flete" className="w-full mb-2" />
+                <InputText {...field} placeholder="Valor del Fletex" className="w-full mb-2" />
               )}
             />
           </div>
@@ -1643,7 +1643,7 @@ const header = renderHeader();
                 <Dropdown
                   {...field}
                   options={[
-                    { label: "Pendiente", value: "Pendiente" },
+                    { label: "Pendientex", value: "Pendiente" },
                     { label: "Entregado", value: "Entregado" },
                     { label: "Devolución", value: "Devolución" },
                     { label: "Cancelado", value: "Cancelado" }

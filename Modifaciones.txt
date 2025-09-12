@@ -1,0 +1,7 @@
+src/Layouts/PagesLayaut.jsx 
+src/Componentes/ProducstPage.jsx Linea 116
+src/Componentes/Detail.jsx Linea 456-458 y 461-465
+src/Layouts/Demo.jsx Linea 16-17
+
+<BtnWhatsapp />
+ <Cart />
