@@ -1,9 +1,17 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *'); // Permitir solicitudes desde cualquier origen (no seguro para producción)
 
 // Cargar variables de entorno desde el archivo .env
 require __DIR__.'/vendor/autoload.php';
+require_once 'cors_headers.php';
+require_once 'Utils.php';
+
+// Manejo de solicitudes OPTIONS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
+
+
+
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__);

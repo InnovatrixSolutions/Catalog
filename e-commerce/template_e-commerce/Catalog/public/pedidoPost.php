@@ -18,7 +18,8 @@ $contrasena = $_ENV['DB_PASS'];
 $dbname = $_ENV['DB_NAME'];
 
 try {
-    $dsn = "mysql:host=$servidor;dbname=$dbname";
+    //$dsn = "mysql:host=$servidor;dbname=$dbname";
+     $dsn = "mysql:host=$servidor;dbname=$dbname;charset=utf8mb4"; 
     $conexion = new PDO($dsn, $usuario, $contrasena);
     $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 

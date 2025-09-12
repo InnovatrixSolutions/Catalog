@@ -1,16 +1,18 @@
 <?php
-header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: DELETE, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
+// header('Content-Type: application/json');
+// header('Access-Control-Allow-Origin: *');
+// header('Access-Control-Allow-Methods: DELETE, OPTIONS');
+// header('Access-Control-Allow-Headers: Content-Type');
+
+require __DIR__.'/vendor/autoload.php';
+require_once 'cors_headers.php';
+require_once 'Utils.php';
 
 // Manejo de solicitudes OPTIONS
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
-
 // Cargar variables de entorno desde el archivo .env
-require __DIR__.'/vendor/autoload.php';
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -36,7 +38,8 @@ try {
         }
 
         // Eliminar el código de la base de datos
-        $sqlDelete = "DELETE FROM codigos WHERE idCodigo = :idCodigo";
+        // $sqlDelete = "DELETE FROM codigos WHERE idCodigo = :idCodigo";
+        $sqlDelete = "UPDATE codigos SET estado = 'inactivo' WHERE idCodigo = :idCodigo";
         $sentenciaDelete = $conexion->prepare($sqlDelete);
         $sentenciaDelete->bindParam(':idCodigo', $idCodigo, PDO::PARAM_INT);
 
