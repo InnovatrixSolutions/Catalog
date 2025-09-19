@@ -2,11 +2,14 @@
 const getBaseURL = () => {
     const currentHost = window.location.hostname; // Obtiene el host actual
     if (currentHost.startsWith('www.')) {
+        // Si tiene 'www.', usa la versión con 'www.'
         return 'https://www.catalogo.mercadoyepes.co/';
         // return 'https://www.catalogodrop.mercadoyepes.co/';
         //return "http://localhost:3000/";
     } else {
-        return 'https://www.catalogo.mercadoyepes.co/';
+
+        // Si no tiene 'www.', usa la versión sin 'www.'
+        return 'https://catalogo.mercadoyepes.co/';
         // return 'https://catalogodrop.mercadoyepes.co/';
         //return "http://localhost:3000/"; // Cambia esto a la URL base correcta para tu entorno local
     }
