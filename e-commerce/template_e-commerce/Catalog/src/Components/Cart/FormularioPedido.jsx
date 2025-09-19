@@ -58,8 +58,8 @@ const franjasHorarias = [
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const hostname = window.location.hostname;
   //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
-  // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
-  const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
+  const tipoAsesor = hostname.includes("localhost") ? "catalog" : "dropshipper";
+  //const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
   const isCatalog = hostname.includes("localhost");
   const [telefonoTienda, setTelefonoTienda] = useState('');
   //const isCatalog = hostname.includes("catalogo");
