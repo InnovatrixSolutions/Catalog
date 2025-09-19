@@ -25,7 +25,17 @@ try {
     $conexion = new PDO($dsn, $usuario, $contrasena);
     $conexion->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     if ($_SERVER['REQUEST_METHOD'] === 'PUT') {
-        Utils::responder(true, "Pedido creado exitosamente", ['id' => $orderId]);
+
+        $transportadora = 1;
+        $numeroGuia = 'NO-528787';
+        $valorFlete = 545454;
+
+        $respuesta = array_merge($_POST, [
+            'transportadora' => $transportadora,
+            'numero_guia' => $numeroGuia,
+            'valor_flete' => $valorFlete
+        ]);
+        Utils::responder(true, "Petición recibida", $respuesta);
     } else {
         http_response_code(405);
         Utils::responder(false, "Método no permitido");
