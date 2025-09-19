@@ -192,7 +192,26 @@ export default function NewProduct() {
 
 
         formData.append('sku', sku);
+        formData.append('descripcion', descripcion);
+formData.append('masVendido', masVendido);
+formData.append('precioAnterior', precioAnterior);
+formData.append('verItems', verItems);
+if (verItems === 'Si') {
+  formData.append('item1', item1);
+  formData.append('item2', item2);
+  formData.append('item3', item3);
+  formData.append('item4', item4);
+  formData.append('item5', item5);
+  formData.append('item6', item6);
+  formData.append('item7', item7);
+  formData.append('item8', item8);
+  formData.append('item9', item9);
+  formData.append('item10', item10);
+}
 
+for (let pair of formData.entries()) {
+  console.log(`${pair[0]}: ${pair[1]}`);
+}
 
         try {
             const response = await fetch(`${baseURL}/productosPost.php`, {
@@ -219,7 +238,10 @@ export default function NewProduct() {
 
 
 
-
+const handleSubmit = (e) => {
+  e.preventDefault();  // Necesario para que no recargue la página
+  crear();
+};
 
     const handleMasVendidoChange = (e) => {
         setMasVendido(e.target.value);
@@ -342,12 +364,18 @@ export default function NewProduct() {
             )}
             {modalOpen && (
                 <div className="modal">
-                    <div className="modal-content">
+                    <div className="modal-content custom-modal-width">
                         <div className='deFlexBtnsModal'>
                             <button className='selected'>Agregar Producto</button>
                             <span className="close" onClick={toggleModal}>&times;</span>
                         </div>
-                        <form id="crearForm">
+
+  <div className="modal-scroll">
+
+
+                        {/* <form id="crearForm"> */}
+                        <form id="crearForm" onSubmit={handleSubmit}>
+                            
 
                             <div className='flexGrap'>
                                 <fieldset id='titulo'>
@@ -547,16 +575,22 @@ export default function NewProduct() {
                                 </button>
                             )} */}
 
-                            <button
+                            {/* <button
                                 type="button"
                                 onClick={crear}
                                 className={addingProduct ? 'btnLoading' : 'btnPost'}
                                 disabled={addingProduct}
-                            >
+                            > */}
+
+                            <button type="submit" className={addingProduct ? 'btnLoading' : 'btnPost'} disabled={addingProduct}>
+  {addingProduct ? 'Agregando...' : 'Agregar'}
+
+
                                 {addingProduct ? 'Agregando...' : 'Agregar'}
                             </button>
 
                         </form>
+                        </div>
                     </div>
                 </div>
             )}

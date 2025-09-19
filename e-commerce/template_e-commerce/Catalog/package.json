@@ -1,5 +1,6 @@
 {
-  "name": "sistema-cat",
+  
+  "name": "catalogo-mercado-yepes",
   "version": "0.1.0",
   "private": true,
   "dependencies": {

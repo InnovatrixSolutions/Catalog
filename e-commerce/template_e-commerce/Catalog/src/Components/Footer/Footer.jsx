@@ -73,14 +73,14 @@ export default function Footer() {
                 </div>
             </div>
 
-            <div className='footerText'>
+            {/* <div className='footerText'>
                 <h3>Categorias</h3>
                 {
                     categorias?.map((item, index) => (
                         <Anchor key={index} to={`/categoria/${item.idCategoria}`}>{item.categoria}</Anchor>
                     ))
                 }
-            </div>
+            </div> */}
 
             <div className='footerText'>
                 <h3>Acceso</h3>

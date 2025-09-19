@@ -1,6 +1,14 @@
 <?php
 // Cargar variables de entorno desde el archivo .env
+
 require __DIR__.'/vendor/autoload.php';
+require_once 'cors_headers.php';
+require_once 'Utils.php';
+
+// Manejo de solicitudes OPTIONS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__);
@@ -67,20 +75,20 @@ crearTablaSiNoExiste($conexion, 'subcategorias', $consultaSubCategorias);
         descripcion TEXT NOT NULL,
         titulo VARCHAR(255) NOT NULL,
         precio INT(100) NOT NULL,
-       idCategoria INT(100) NOT NULL,
-       idSubCategoria INT(100),
+        idCategoria INT(100) NOT NULL,
+        idSubCategoria INT(100),
         masVendido VARCHAR(30) NOT NULL,
         imagen1 VARCHAR(900),
         imagen2 VARCHAR(900),
         imagen3 VARCHAR(900),
         imagen4 VARCHAR(900),
         item1 VARCHAR(255),
-         item2 VARCHAR(255),
-         item3 VARCHAR(255),
-         item4 VARCHAR(255),
-         item5 VARCHAR(255),
+        item2 VARCHAR(255),
+        item3 VARCHAR(255),
+        item4 VARCHAR(255),
+        item5 VARCHAR(255),
         item6 VARCHAR(255),
-         item7 VARCHAR(255),
+        item7 VARCHAR(255),
         item8 VARCHAR(255),
         item9 VARCHAR(255),
         item10 VARCHAR(255),
@@ -115,20 +123,20 @@ crearTablaSiNoExiste($conexion, 'subcategorias', $consultaSubCategorias);
 
     // Crear tabla 'pedidos' si no existe
     $consultaPedidos = "CREATE TABLE IF NOT EXISTS `pedidos` (
-    idPedido INT(11) AUTO_INCREMENT PRIMARY KEY,
-    estado VARCHAR(50) NOT NULL,
-    productos JSON NOT NULL,
-    total DECIMAL(10,2) NOT NULL,
-    nota VARCHAR(255),
-    nombre VARCHAR(50),
-    codigo VARCHAR(50),
-    entrega VARCHAR(100) NOT NULL,
-    telefono VARCHAR(20),
-    pago VARCHAR(50) NOT NULL,
-    pagado VARCHAR(50) NOT NULL,
-    pagoRecibir VARCHAR(10),
-    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )";
+                idPedido INT(11) AUTO_INCREMENT PRIMARY KEY,
+                estado VARCHAR(50) NOT NULL,
+                productos JSON NOT NULL,
+                total DECIMAL(10,2) NOT NULL,
+                nota VARCHAR(255),
+                nombre VARCHAR(50),
+                codigo VARCHAR(50),
+                entrega VARCHAR(100) NOT NULL,
+                telefono VARCHAR(20),
+                pago VARCHAR(50) NOT NULL,
+                pagado VARCHAR(50) NOT NULL,
+                pagoRecibir VARCHAR(10),
+                createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )";
     crearTablaSiNoExiste($conexion, 'pedidos', $consultaPedidos);
 
     // Crear tabla 'usuarios' si no existe

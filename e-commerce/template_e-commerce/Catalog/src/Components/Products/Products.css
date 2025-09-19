@@ -84,15 +84,12 @@
     object-fit: cover;
     border-radius: 15px;
 }
-.cardText {
-  display: flex;
-  flex-direction: column;
-  /* elimina o sobreescribe el space-between: */
-  justify-content: flex-start;
-  /* para asegurarnos de que ocupe todo el alto del .cardProdcut */
-  height: 100%;
-  padding: 10px;
-  box-sizing: border-box;
+.cardText{
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    justify-content: space-between;
 }
 .cardText h4{
     white-space: nowrap;
@@ -413,8 +410,10 @@
     color: var(--text-color2);
    
 }
-.deFLexPrice {
-  margin-top: auto;
+.deFLexPrice{
+    display: flex;
+    gap: 20px;
+    
 }
 .precioTachado {
     text-decoration: line-through;
@@ -620,88 +619,4 @@
     
       }
     
-}
-
-/* Products.css */
-
-.carousel-card {
-  width: 18rem;       /* fixed card width */
-  height: 24rem;      /* fixed card height */
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  box-sizing: border-box;
-}
-.carousel-card .mb-3 {
-  flex-shrink: 0;     /* keep image area from stretching */
-}
-.carousel-card h4,
-.carousel-card h6,
-.carousel-card .mt-5 {
-  flex-shrink: 0;     /* prevent text sections from pushing layout */
-}
-
-
-/* en tu Products.css */
-@media (max-width: 575px) {
-  /* Oculta los puntos */
-  .p-carousel .p-carousel-indicators {
-    display: none !important;
-  }
-  /* Oculta las flechas prev/next */
-  .p-carousel .p-carousel-prev,
-  .p-carousel .p-carousel-next {
-    display: none !important;
-  }
-}
-
-
-/* Sidebar “match” */
-.p-sidebar.p-sidebar-left {
-  background: var(--blanco);
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.1);
-}
-
-.p-sidebar .p-sidebar-header {
-  padding: 1rem 1.5rem;
-  font-size: 1.25rem;
-  color: var(--text-color2);
-  border-bottom: 1px solid var(--gris2);
-}
-
-.p-sidebar ul {
-  list-style: none;
-  margin: 0;
-  padding: 0 1rem;
-}
-.p-sidebar ul li {
-  padding: .75rem 0;
-  cursor: pointer;
-  color: var(--text-color2);
-  border-bottom: 1px solid var(--gris2);
-  transition: background .2s;
-}
-.p-sidebar ul li:last-child {
-  border-bottom: none;
-}
-.p-sidebar ul li:hover {
-  background: var(--gris);
-}
-.p-sidebar ul li.selected {
-  background: var(--color1);
-  color: white;
-}
-
-/* Botón “ver categorías” */
-.btn-ver-cats {
-  background: var(--color);
-  color: var(--blanco);
-  border: none;
-  padding: .5rem 1rem;
-  border-radius: 20px;
-  font-weight: 500;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-}
-.btn-ver-cats:hover {
-  opacity: .9;
 }

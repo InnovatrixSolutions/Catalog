@@ -1,6 +1,14 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+// header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Origin: http://localhost:3000");
+require_once 'cors_headers.php';
+require_once 'Utils.php';
+
+// Manejo de solicitudes OPTIONS
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    exit;
+}
+
 
 session_start();
 

@@ -1,7 +1,8 @@
 // utils/whatsapp.js
 import moneda from '../Components/moneda'; // Adjust this path if needed
 
-export const handleWhatsappMessage = (data, tiendaTelefono = '') => {
+export const handleWhatsappMessage = (data, tiendaTelefono = '3166402868') => {
+  console.log("Enviando mensaje por WhatsApp..."); 
   const {
     idPedido,
     nombre,

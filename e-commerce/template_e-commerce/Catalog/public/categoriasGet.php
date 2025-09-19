@@ -1,11 +1,12 @@
 <?php
-header("Content-Type: application/json");
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: GET, OPTIONS');
-header('Access-Control-Allow-Headers: Content-Type');
-
-// Cargar variables de entorno desde el archivo .env
+// header("Content-Type: application/json");
+// header('Access-Control-Allow-Origin: *');
+// header('Access-Control-Allow-Methods: GET, OPTIONS');
+// header('Access-Control-Allow-Headers: Content-Type');
 require __DIR__.'/vendor/autoload.php';
+require_once 'cors_headers.php';
+require_once 'Utils.php';
+// Cargar variables de entorno desde el archivo .env
 use Dotenv\Dotenv;
 
 $dotenv = Dotenv::createImmutable(__DIR__);

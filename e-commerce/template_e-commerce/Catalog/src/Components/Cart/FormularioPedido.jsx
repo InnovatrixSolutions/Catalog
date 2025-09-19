@@ -32,6 +32,7 @@ import { Column } from 'primereact/column';
 
 import { Card } from 'primereact/card';
 
+import { handleWhatsappMessage } from '../../Utils/whatsapp'; // Ajusta el path si es diferente
 
 
 
@@ -39,8 +40,10 @@ const medioPagoLista = [
   'Nequi', 'Bancolombia', 'Bold (Tarjeta)', 'Daviplata',
   'Mercadopago', 'Addi', 'Sistecredito', 'Otro'
 ];
+
+
 const franjasHorarias = [
-  { label: "08:00-80:00 PM", value: "08:00-08:00 PM" },
+  { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
   // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
   // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
   // { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
@@ -55,73 +58,97 @@ const franjasHorarias = [
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const hostname = window.location.hostname;
   //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
-  const tipoAsesor = hostname.includes("xxxxx") ? "catalog" : "dropshipper";
+  // const tipoAsesor = hostname.includes("catalogo") ? "catalog" : "dropshipper";
+  const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
+  const isCatalog = hostname.includes("localhost");
+  const [telefonoTienda, setTelefonoTienda] = useState('');
+  //const isCatalog = hostname.includes("catalogo");
   console.log('hostname:', hostname);
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
   console.log("Valor total:", totalPrice);
 
   const [activeIndex, setActiveIndex] = useState(0);
-const schema = z.object({
-  documento: z.string().min(1, "Documento requerido"),
-  email: z.string().email("Email inválido"),
-  nombre: z.string().min(1, "Nombre requerido"),
-  telefono: z.string().min(7, "Teléfono inválido"),
-  valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-  incluyeEnvio: z.enum(["Sí", "No"]),
-  medioComision: z.string().min(1, "Seleccione un medio"),
-  otroMedio: z.string().optional(),
-  pin_asesor: z.string().optional(),
+
+  const dropshipperSchema = z.object({
+    documento: z.string().min(1, "Documento requerido"),
+    email: z.string().email("Email inválido"),
+    nombre: z.string().min(1, "Nombre requerido"),
+    telefono: z.string().min(7, "Teléfono inválido"),
+    medioComision: z.string().min(1, "Seleccione un medio"),
+    pin_asesor: z.string().optional(), valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+  }).refine(
+    (data) => data.valor == totalPrice,
+    {
+      message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+      path: ['valor'],
+    }
+  );
+  const baseSchema = z.object({
+    //documento: z.string().min(1, "Documento requerido"),
+    //email: z.string().email("Email inválido"),
+    //nombre: z.string().min(1, "Nombre requerido"),
+    //telefono: z.string().min(7, "Teléfono inválido"),
+    // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
+    // incluyeEnvio: z.enum(["Sí", "No"]),
+    //medioComision: z.string().min(1, "Seleccione un medio"),
+    otroMedio: z.string().optional(),
+    //pin_asesor: z.string().optional(),
 
 
-  clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
-  clienteDocumento: z.string().min(1, "Documento requerida"),
-  clienteCelular: z.string().min(7, "Celular inválido"),
-  clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
+    clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
+    clienteDocumento: z.string().min(1, "Documento requerida"),
+    clienteCelular: z.string().min(7, "Celular inválido"),
+    clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
 
-  fechaDespacho: z.date({ required_error: "Fecha requerida" }),
-  // franjaEntrega: z.string().min(1, "Franja requerida"),
-  franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+    fechaDespacho: z.date({ required_error: "Fecha requerida" }),
+    // franjaEntrega: z.string().min(1, "Franja requerida"),
+    franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
 
-  departamento: z.number().min(1, "Departamento requerido"),
-  ciudad: z.number().min(1, "Ciudad requerida"),
-  direccion: z.string().min(1, "Dirección requerida"),
-  barrio: z.string().min(1, "Barrio requerido"),
-  notas: z.string().max(1000).optional(),
+    departamento: z.number().min(1, "Departamento requerido"),
+    ciudad: z.number().min(1, "Ciudad requerida"),
+    direccion: z.string().min(1, "Dirección requerida"),
+    barrio: z.string().min(1, "Barrio requerido"),
+    notas: z.string().max(1000).optional(),
 
-  contraentrega: z.enum(["Sí", "No"]),
-  metodoPago: z.string().optional(),
-  otroMetodoPago: z.string().optional(),
-  transferencia: z.enum(["Sí", "No"]),
+    contraentrega: z.enum(["Sí", "No"]),
+    metodoPago: z.string().optional(),
+    otroMetodoPago: z.string().optional(),
+    transferencia: z.enum(["Sí", "No"]),
 
 
 
-}).refine((data) => {
-  if (data.transferencia === "Sí") return true;
-  if (data.contraentrega === "No" && !data.metodoPago) return false;
-  if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
-  return true;
-}, {
-  message: "Debe seleccionar el medio de pago",
-  path: ["metodoPago"]
-}).refine(
-  (data) => data.valor >= totalPrice,
-  {
-    message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-    path: ['valor'],
-  }
-);
+  }).refine((data) => {
+    if (data.transferencia === "Sí") return true;
+    if (data.contraentrega === "No" && !data.metodoPago) return false;
+    if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
+    return true;
+  }, {
+    message: "Debe seleccionar el medio de pago",
+    path: ["metodoPago"]
+  })
+  // .refine(
+  //   (data) => data.valor == totalPrice,
+  //   {
+  //     message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+  //     path: ['valor'],
+  //   }
+  // );
 
+  // 3) El esquema FINAL, según sea catálogo o dropshipper
+  const schema = isCatalog
+    ? baseSchema
+    : baseSchema.merge(dropshipperSchema);
 
 
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      documento: '', email: '', nombre: '', telefono: '', valor: '',
-      incluyeEnvio: 'No', medioComision: '', otroMedio: '',
+      documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
+       incluyeEnvio: isCatalog ? 'Sí' : 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: null, franjaEntrega: [], departamento: '', ciudad: '', direccion: '', barrio: '',
-      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'No', notas: '', pin_asesor: ''
+      fechaDespacho: null, franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
+      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'Sí', notas: '', pin_asesor: ''
 
 
     }
@@ -133,20 +160,30 @@ const schema = z.object({
 
   const medioComisionSeleccionado = watch('medioComision');
 
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
+useEffect(() => {
+  fetch(`${baseURL}/tiendaGet.php`)
+    .then(res => res.json())
+    .then(data => {
+      const telefono = data.tienda?.[0]?.telefono || '';
+      setTelefonoTienda(telefono);
+    })
+    .catch(error => console.error('Error al cargar la tienda:', error));
+}, []);
 
   const onSubmit = async (data) => {
     setIsFinalSubmit(false); // reset state after successful submit
     setShowErrorsDialog(false); // just in case
     const resumenPedido = {
-      tipo_pedido: "dropshipper",
-      doc_asesor: data.documento,
-      pin_asesor: data.pin_asesor,
-      nombre_asesor: data.nombre,
-      telefono_asesor: data.telefono,
-      telefono_whatsapp: data.telefono,
-      medio_pago_asesor: data.medioComision,
-      email: data.email,
+      tipo_pedido: "catalogo",
+      // doc_asesor: data.documento,
+      // pin_asesor: data.pin_asesor,
+      // nombre_asesor: data.nombre,
+      // telefono_asesor: data.telefono,
+      // telefono_whatsapp: data.telefono,
+      // medio_pago_asesor: data.medioComision,
+      // email: data.email,
 
       productos: cartItems.map(item => ({
         idProducto: item.idProducto,
@@ -159,7 +196,8 @@ const schema = z.object({
       })),
 
       // productos: [{ "items": [], "imagen": "", "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17 }, { "items": [], "imagen": "", "precio": 167900, "titulo": "Roku Express Hd Convertidor Tv En Smart A Tv Streaming", "cantidad": 1, "idProducto": 3, "idCategoria": 14 }, { "items": [], "imagen": "", "precio": 119900, "titulo": "Marcadores Doble Punta Set 168 Colores Dibujo Base De Alcohol", "cantidad": 1, "idProducto": 40, "idCategoria": 12 }],
-      total_pedido: data.valor,
+      //total_pedido: data.valor,
+      total_pedido: isCatalog ? totalPrice : data.valor,
       nombre_cliente: data.clienteNombre,
       telefono_cliente: data.clienteCelular,
       telefono_tran: data.clienteTransportadora,
@@ -177,12 +215,13 @@ const schema = z.object({
       //fecha_despacho: new Date().toISOString().replace('T', ' ').substring(0, 19),
       // franja_horario: data.franjaEntrega,
       // franja_horario: "05:00-10:00 AM,03:00-07:00 pm",
-      franja_horario: data.franjaEntrega.join(','),
+      // franja_horario: data.franjaEntrega.join(','),
+      franja_horario: "08:00-08:00 PM",
 
 
       // nota: `Pedido realizado por el asesor ${data.nombre} con documento ${data.documento}`,
-      nota: data.notas || '',
-      pago_recibir: data.valor,
+      nota: data.notas || 'Esta es una nota automatizada del pedido',
+      pago_recibir: isCatalog ? totalPrice : data.valor,
       medio_pago: "efectivo",
       forma_pago: "Nequi"
 
@@ -224,12 +263,31 @@ const schema = z.object({
       console.log("Respuesta del servidor:", result);
 
       if (result.success) {
-        toast.success("Pedido enviado correctamente.");
-        if (typeof onPedidoSuccess === 'function') {
-          onPedidoSuccess();
-        }
+        //toast.success("Pedido enviado correctamente.");
+        console.log("Pedido enviado exitosamente:", result);
+
+        // if (typeof onPedidoSuccess === 'function') {
+        //   onPedidoSuccess();
+        // }
+
+              const datosWhatsapp = {
+        idPedido: data.idPedido,
+        nombre: formData.nombre,
+        telefono: formData.telefono,
+        entrega: formData.entrega === 'delivery' ? formData.direccion : 'Retiro en Sucursal',
+        pago: formData.pago,
+        codigo: formData.codigo || '',
+        total: totalPrice,
+        nota: formData.nota,
+        productos: cartItems,
+        pagoRecibir: formData.pagoRecibir
+      };
+
+      handleWhatsappMessage(datosWhatsapp, telefonoTienda); // ← WhatsApp justo aquí
+        setShowSuccessModal(true);
       } else {
-        toast.error("Error en el envío del pedido.");
+        toast.error("Error en el envío del pedido. Revisa todos los campos");
+        toast.error("Error: " + result.error || "Error desconocido");
       }
 
     } catch (error) {
@@ -341,7 +399,7 @@ const schema = z.object({
     const isDev = process.env.NODE_ENV !== 'production';
 
     if (isDev) {
-      inicializarFormularioDePrueba();
+      // inicializarFormularioDePrueba();
     }
   }, []);
 
@@ -359,13 +417,14 @@ const schema = z.object({
     setValue('clienteCelular', '3107654321');
     setValue('clienteTransportadora', '3107654321');
     setValue('fechaDespacho', new Date());
-    setValue('franjaEntrega', []);
+    //setValue('franjaEntrega', []);
     setValue('departamento', 1); // Asegúrate que sea un ID válido en tu sistema
     setValue('ciudad', 10);      // Igual aquí
     setValue('direccion', 'Cra 123 #45-67');
     setValue('barrio', 'El Prado');
-    setValue('transferencia', 'Sí');
+
     setValue('contraentrega', 'No');
+    setValue('transferencia', 'Sí');
     setValue('notas', 'Esto es una prueba automatizada');
   };
 
@@ -419,7 +478,8 @@ const schema = z.object({
     consultarAsesor();
   }, [documento, tipoAsesor]); // Se ejecuta al cambiar documento o tipo asesor
 
-  const isCatalog = tipoAsesor === 'catalog';
+
+
 
   const resumenPedido = [
     { campo: "Documento Asesor", valor: watch("documento") },
@@ -450,27 +510,40 @@ const schema = z.object({
     { campo: "Medio de Pago", valor: watch("metodoPago") },
     { campo: "Otro Método de Pago", valor: watch("otroMetodoPago") },
   ];
-// At the top of your file or in a useEffect/useMemo
-const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
-
+  // At the top of your file or in a useEffect/useMemo
+  const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
+  const numericFields = [
+    'documento',
+    'telefono',
+    'clienteDocumento',
+    'clienteCelular',
+    'clienteTransportadora'
+  ];
+  // const numericFields = ['clienteDocumento', 'clienteCelular', 'clienteTransportadora'];
 
   return (
 
     // <div className="card p-4 surface-50" style={{ maxWidth: '900px', margin: 'auto' }}>
     // <div className="card flex justify-content-center" style={{ backgroundColor: '#f9f9f9', borderLeft: '5px solid #0c6efd' }}>
     <div
-  className="card flex justify-content-center"
-  style={{
-    backgroundColor: '#f9f9f9',
-    borderLeft: `5px solid ${color1}`,
-  }}
->
+      className="card flex justify-content-center"
+      style={{
+        backgroundColor: '#f9f9f9',
+        borderLeft: `5px solid ${color1}`,
+      }}
+    >
 
 
 
 
-      <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}>
-
+      {/* <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}> */}
+      <div
+        style={{
+          height: 'calc(100vh - 50px)',
+          overflowY: 'auto',
+          padding: '1rem'            /* opcional, para respirar */
+        }}
+      >
         <div className="hide-on-mobile">
           <InfoCarroPedido pedido={null} />
         </div>
@@ -501,28 +574,43 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
 
 
+        <Dialog
+          header="¡Éxito!"
+          visible={showSuccessModal}
+          onHide={() => {
+            if (typeof onPedidoSuccess === 'function') {
+              onPedidoSuccess();
+            }
+          }}
+          style={{ width: '350px' }}
+          modal
+        >
+          <p>Pedido enviado correctamente.</p>
+        </Dialog>
 
 
 
         <form onSubmit={handleSubmit(onSubmit, onError)}>
 
-          <Stepper 
-          
-          headerPosition="left" 
-          activeStep={activeIndex} 
-          onStepChange={(e) => setActiveIndex(e.index)} 
+          <Stepper
+            orientation="vertical"
+            headerPosition="left"
+            activeStep={activeIndex}
+            onStepChange={(e) => setActiveIndex(e.index)}
           >
-            {tipoAsesor !== 'catalog' && (
+
+
+            {!isCatalog && (
               <StepperPanel header="Datos del Asesor">
                 <Card title="Datos del asesor" className="w-full border border-gray-400 shadow-md rounded-xl">
-                {/* <StepperPanel header={<span className="font-bold">Forma de pago</span>}> */}
 
-                <div className="formgrid grid">
 
-                  {/* Campos generales */}
-                  {[
+                  <div className="formgrid grid">
+
+
+                    {/* {[
                     ['documento', 'Tu Documento'],
-                    ['pin_asesor', 'Tu PIN (* debe ser alfanumérico)'],
+                    ['pin_asesor', 'Tu PIN (* alfanumérico)'],
 
 
                   ].map(([field, label]) => (
@@ -534,9 +622,36 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                     </div>
 
 
-                  ))}
+                  ))} */}
 
-                  {[
+                    {[
+                      ['documento', 'Tu Documento'],
+                      ['pin_asesor', 'Tu PIN (* alfanumérico)'],
+                    ].map(([field, label]) => {
+                      const onlyNumbers = numericFields.includes(field);
+                      return (
+                        <div key={field} className="col-12 md:col-6">
+                          <label>{label}</label>
+                          <InputText
+                            {...register(field)}
+                            className="w-full"
+                            onKeyPress={onlyNumbers
+                              ? e => {
+                                if (!/[0-9]/.test(e.key)) {
+                                  e.preventDefault();
+                                }
+                              }
+                              : undefined
+                            }
+                          />
+                          {errors[field] && (
+                            <small className="p-error">{errors[field]?.message}</small>
+                          )}
+                        </div>
+                      );
+                    })}
+
+                    {/* {[
 
                     ['email', 'Tu email'],
                     ['nombre', 'Tu Nombre'],
@@ -547,43 +662,62 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                       <InputText {...register(field)} className="w-full" />
                       {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
                     </div>
-                  ))}
+                  ))} */}
+                    {[
+                      ['email', 'Tu email'],
+                      ['nombre', 'Tu Nombre'],
+                      ['telefono', 'Tu Teléfono']
+                    ].map(([field, label]) => {
+                      const onlyNumbers = numericFields.includes(field);
+                      return (
+                        <div key={field} className="col-12 md:col-6">
+                          <label>{label}</label>
+                          <InputText
+                            {...register(field)}
+                            className="w-full"
+                            onKeyPress={onlyNumbers
+                              ? e => {
+                                if (!/[0-9]/.test(e.key)) e.preventDefault();
+                              }
+                              : undefined
+                            }
+                          />
+                          {errors[field] && (
+                            <small className="p-error">{errors[field]?.message}</small>
+                          )}
+                        </div>
+                      );
+                    })}
 
 
-                  {/* Medio comisión */}
-                  <div className="col-12 md:col-6">
-                    <label>¿En dónde recibes tus comisiones?</label>
-                    <Controller
-                      name="medioComision"
-                      control={control}
-                      render={({ field }) => (
-                        <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
-                      )}
-                    />
-                    {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+
+                    <div className="col-12 md:col-6">
+                      <label>¿Dónde recibes comisiones?</label>
+                      <Controller
+                        name="medioComision"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
+                        )}
+                      />
+                      {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+                    </div>
+
+                    <div className="col-12 flex justify-content-end">
+
+
+                    </div>
                   </div>
 
-                  <div className="col-12 flex justify-content-end">
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(1)} /> */}
-                    {/* <Button
-                  label="Siguiente"
-                  type="button"
-                  onClick={() => setActiveIndex(activeIndex + 1)}
-                    disabled={activeIndex === totalSteps - 1}
-                /> */}
-
-                  </div>
-                </div>
-
-</Card>
+                </Card>
               </StepperPanel>
             )}
 
 
 
             <StepperPanel header="Datos del Cliente">
-              <Card title="Datos de tu cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
-                <div className="formgrid grid">
+              <Card title="Datos del cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
+                {/* <div className="formgrid grid">
                   {[
                     ['clienteNombre', 'Nombre de tu cliente'],
                     ['clienteDocumento', 'Documento de tu cliente'],
@@ -597,21 +731,39 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                     </div>
                   ))}
                   <div className="col-12 flex justify-content-between">
-                    {/* <Button 
-                  label="Atrás" 
-                  onClick={() => setActiveIndex(activeIndex - 1)}
-                    disabled={activeIndex === 0} 
-                  /> */}
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(2)} /> */}
-                    {/* <Button
-                    label="Siguiente"
-                    type="button"
-                    onClick={() => setActiveIndex(activeIndex + 1)}
-                    disabled={activeIndex === totalSteps - 1}
-
-                  /> */}
 
                   </div>
+                </div> */}
+
+                <div className="formgrid grid">
+                  {[
+                    ['clienteNombre', 'Nombrel del cliente'],
+                    ['clienteDocumento', 'Documento del cliente'],
+                    ['clienteCelular', 'Celular Llamadas del cliente'],
+                    ['clienteTransportadora', 'Celular WhatsApp del cliente'],
+                  ].map(([field, label]) => {
+                    const onlyNumbers = numericFields.includes(field);
+                    return (
+                      <div key={field} className="col-12 md:col-6">
+                        <label>{label}</label>
+                        <InputText
+                          {...register(field)}
+                          className="w-full"
+                          // si es campo numérico, bloquear cualquier tecla que no sea dígito
+                          onKeyPress={onlyNumbers
+                            ? e => {
+                              if (!/[0-9]/.test(e.key)) {
+                                e.preventDefault();
+                              }
+                            }
+                            : undefined
+                          }
+                        />
+                        {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
+                      </div>
+                    );
+                  })}
+                  <div className="col-12 flex justify-content-between" />
                 </div>
               </Card>
             </StepperPanel>
@@ -635,18 +787,50 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
                   <div className="col-12 md:col-6">
                     <label>Franja de Entrega</label>
-                    <Controller
+                    {/* <Controller
                       name="franjaEntrega"
                       control={control}
                       render={({ field }) => (
                         <MultiSelect
                           {...field}
+                          value={field.value}           // pasa el valor inicial
                           options={franjasHorarias}
                           placeholder="Seleccione una o varias franjas"
                           className="w-full"
                           display="chip"
-                          // disabled="true"
+                          disabled
                           
+                        />
+                      )}
+                    /> */}
+
+                    {/* <Controller
+                      name="franjaEntrega"
+                      control={control}
+                      defaultValue={["08:00-08:00 PM"]}  // asegúrate de que el valor por defecto está aquí
+                      render={({ field }) => (
+                        <MultiSelect
+                          value={field.value}
+                          options={franjasHorarias}
+                          onChange={e => field.onChange(e.value)}   // extrae el array de `e.value`
+                          placeholder="08:00-08:00 PM"
+                          disabled={true}          // booleano
+                          appendTo="self"                            // booleano, no cadena
+                          display="chip"
+                          className="w-full"
+                        />
+                      )}
+                    /> */}
+
+                    <Controller
+                      name="franjaEntrega"
+                      control={control}
+                      defaultValue={["08:00-08:00 PM"]}
+                      render={({ field }) => (
+                        <InputText
+                          value={(field.value || []).join(', ')}
+                          readOnly
+                          className="w-full"
                         />
                       )}
                     />
@@ -751,81 +935,89 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
 
 
                 {/* Campo valor, con lógica de habilitación/deshabilitación */}
-                <div className="col-12 md:col-6">
-                  <label>Valor a cobrar al cliente</label>
-                  <InputText
-                    {...register("valor")}
-                    className="w-full"
-                  // disabled={watch("incluyeEnvio") !== 'Sí'}
-                  />
-                  {errors.valor && <small className="p-error">{errors.valor.message}</small>}
-                </div>
-
-                {/* Radio Buttons: ¿Incluye Envío? */}
-                <div className="col-12">
-                  <label>¿Incluye Envío?</label>
-                  <Controller
-                    name="incluyeEnvio"
-                    control={control}
-                    render={({ field }) => (
-                      <div className="flex gap-3">
-                        <RadioButton inputId="si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                        <label htmlFor="si">Sí</label>
-                        <RadioButton inputId="no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                        <label htmlFor="no">No</label>
-                      </div>
-                    )}
-                  />
-                  {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
-                </div>
-
-
-
-                {/* ¿Otro medio? */}
-                {medioComisionSeleccionado === 'Otro' && (
+                {!isCatalog && (
                   <div className="col-12 md:col-6">
-                    <label>¿Cuál?</label>
-                    <InputText {...register("otroMedio")} className="w-full" />
+                    <label>Valor a cobrar al cliente</label>
+                    <InputText
+                      {...register("valor")}
+                      className="w-full"
+                    />
+                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
                   </div>
                 )}
+
+
+{!isCatalog && (
+  <div className="col-12">
+    <label>¿Incluye Envío?</label>
+    <Controller
+      name="incluyeEnvio"
+      control={control}
+      render={({ field }) => (
+        <div className="flex gap-3">
+          <RadioButton inputId="si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="si">Sí</label>
+          <RadioButton inputId="no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+          <label htmlFor="no">No</label>
+        </div>
+      )}
+    />
+    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
+  </div>
+)}
+
+
+                {(
+                  <div className="col-12">
+                    <label>¿Pago Contraentrega?</label>
+                    <Controller
+                      name="contraentrega"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex gap-3">
+                          <RadioButton inputId="contra_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="contra_si">Sí</label>
+                          <RadioButton inputId="contra_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="contra_no">No</label>
+                        </div>
+                      )}
+                    />
+                    {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+                  </div>
+                )}
+
 
                 <div className="formgrid grid">
                   <div className="col-12">
                     <label>¿Pago por transferencia?</label>
                     <Controller
+
                       name="transferencia"
                       control={control}
                       render={({ field }) => (
                         <div className="flex gap-3">
-                          <RadioButton inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <RadioButton disabled="true" inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
                           <label htmlFor="transfer_si">Sí</label>
-                          <RadioButton inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="transfer_no">No</label>
+                          {/* <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
+                          <label htmlFor="transfer_no">No</label> */}
                         </div>
                       )}
                     />
                   </div>
 
-                  {transferencia === 'No' && (
-                    <div className="col-12">
-                      <label>¿Pago Contraentrega?</label>
-                      <Controller
-                        name="contraentrega"
-                        control={control}
-                        render={({ field }) => (
-                          <div className="flex gap-3">
-                            <RadioButton inputId="contra_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                            <label htmlFor="contra_si">Sí</label>
-                            <RadioButton inputId="contra_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                            <label htmlFor="contra_no">No</label>
-                          </div>
-                        )}
-                      />
-                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+                  {/* ¿Otro medio? */}
+                  {medioComisionSeleccionado === 'Otro' && (
+                    <div className="col-12 md:col-6">
+                      <label>¿Cuál?</label>
+                      <InputText {...register("otroMedio")} className="w-full" />
                     </div>
                   )}
 
-                  {transferencia === 'No' && contraentrega === 'No' && (
+
+
+
+
+                  {transferencia === 'Sí' && contraentrega === 'No' && (
                     <>
                       <div className="col-12 md:col-6">
                         <label>Medio de pago</label>
@@ -850,17 +1042,7 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                   )}
 
                   <div className="col-12 flex justify-content-between">
-                    {/* <Button label="Atrás" 
-                          onClick={() => setActiveIndex(activeIndex - 1)}
-        disabled={activeIndex === 0}
-                  /> */}
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(4)} /> */}
-                    {/* <Button
-                    label="Siguiente"
-                    type="button"
-                            onClick={() => setActiveIndex(activeIndex + 1)}
-        disabled={activeIndex === totalSteps - 1}
-                  /> */}
+
 
                   </div>
 
@@ -868,16 +1050,55 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
               </Card>
             </StepperPanel>
             <StepperPanel header="Resumen">
-              
+
               <div className="formgrid grid">
                 <div className="col-12">
 
 
-                  <Card title="Resumen del pedido" className="w-full">
+                 
 
-                    <ScrollPanel style={{ width: '100%', height: '400px' }}>
-                      
-                      <DataTable
+                    <Card title="Resumen del pedido" className="w-full" style={{ maxWidth: 600, margin: '0 auto' }}>
+  <div style={{ padding: '1rem', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}>
+
+    {/* ENCABEZADO DEL TICKET */}
+    <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>🧾 Resumen del Pedido</h3>
+
+    {/* INFORMACIÓN GENERAL */}
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
+      {resumenPedido
+        .filter(item => item.valor && item.valor !== "")
+        .map((item, index) => (
+          <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
+            <span style={{ fontWeight: 'bold' }}>{item.campo}</span>
+            <span>{item.valor}</span>
+          </div>
+      ))}
+    </div>
+
+    {/* PRODUCTOS */}
+    <h4 style={{ marginBottom: '1rem', borderTop: '1px dashed #aaa', paddingTop: '1rem' }}>🛒 Productos Seleccionados</h4>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+      {cartItems.map((item, index) => (
+        <div key={index} style={{ borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
+          <strong>{item.titulo}</strong><br />
+          Cantidad: {item.cantidad}<br />
+          Precio Unitario: ${Number(item.precio).toLocaleString()}<br />
+          Subtotal: <strong>${Number(item.precio * item.cantidad).toLocaleString()}</strong>
+        </div>
+      ))}
+    </div>
+
+    {/* TOTAL */}
+    <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '1.5rem' }}>
+      Total: ${Number(totalPrice).toLocaleString()}
+    </div>
+  </div>
+</Card>
+
+
+                    {/* <ScrollPanel style={{ width: '100%', overflowX: 'scroll'  }}> */}
+ <div style={{ minWidth: '1200px' }}>
+{/*                       <DataTable
                         value={resumenPedido.filter(item => item.valor && item.valor !== "")}
                         showGridlines
                         size="small"
@@ -886,9 +1107,15 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                       >
                         <Column field="campo" header="Campo" />
                         <Column field="valor" header="Valor" />
-                      </DataTable>
+                      </DataTable> */}
+
+                      {/* <h3 className="mt-4 mb-3">Resumen del pedido</h3> */}
+
+
+
+
                       {/* You can also add the product summary here, if you want */}
-                      <h3 className="mt-4 mb-3">Productos Seleccionados</h3>
+{/*                       <h3 className="mt-4 mb-3">Productos Seleccionados</h3>
                       <DataTable
                         value={cartItems}
                         showGridlines
@@ -909,36 +1136,30 @@ const color1 = getComputedStyle(document.documentElement).getPropertyValue('--co
                           body={(row) => `$${(row.precio * row.cantidad).toLocaleString()}`}
                           style={{ width: 120, textAlign: 'right', fontWeight: 600 }}
                         />
-                      </DataTable>
-                      <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
-                        Total: ${Number(totalPrice).toLocaleString()}
+                      </DataTable> */}
+
+
                       </div>
-                    </ScrollPanel>
 
+                    {/* </ScrollPanel> */}
+                      {/* <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
+                        Total: ${Number(totalPrice).toLocaleString()}
+                      </div> */}
 
-                  </Card>
+        
                 </div>
               </div>
-              <div className="col-12 flex justify-content-between">
-                {/* <Button label="Atrás" 
-        onClick={() => setActiveIndex(activeIndex - 1)}
-        disabled={activeIndex === 0}
-              /> */}
-                {/* <Button type="submit" label="Guardar" className="p-button-success" /> */}
-                <Button
-                  type="submit"
-                  label="Guardar"
-                  className="p-button-success"
-                  onClick={() => setIsFinalSubmit(true)}
-                />
 
-              </div>
             </StepperPanel>
           </Stepper>
-
+          <Button
+            type="submit"
+            label="Guardar"
+            className="p-button-success"
+            onClick={() => setIsFinalSubmit(true)}
+          />
         </form>
-
-      </ScrollPanel>
+      </div>
     </div>
   );
 }
