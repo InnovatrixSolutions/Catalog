@@ -1,0 +1,15 @@
+[2025-09-22 00:58:30] Content-Type: multipart/form-data; boundary=X-INSOMNIA-BOUNDARY
+Raw input (first 500 chars):
+--X-INSOMNIA-BOUNDARY
+Content-Disposition: form-data; name="idpedido"
+
+128
+--X-INSOMNIA-BOUNDARY
+Content-Disposition: form-data; name="tipo_pedido"
+
+catalogo
+--X-INSOMNIA-BOUNDARY
+Content-Disposition: form-data; name="productos"
+
+[{"items": [], "imagen": null, "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17}, {"items": [], "imagen": null, "precio": 167900, "titulo": "Roku Express Hd Con
+
