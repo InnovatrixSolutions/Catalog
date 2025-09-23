@@ -1469,236 +1469,154 @@ const header = renderHeader();
 
 {modalVisible && (
 
-    <Dialog
+<Dialog
   header="Detalle del Pedido"
   visible={modalVisible}
   onHide={cerrarModal}
-  style={{ width: '95vw', maxWidth: '700px' }}
-  contentStyle={{ maxHeight: '85vh', overflowY: 'auto' }}
+  style={{ width: '95vw', maxWidth: '920px' }}
+  contentStyle={{ padding: 0 }}
   modal
   draggable={false}
   dismissableMask
 >
-  
-      {/* Productos */}
-      <Card title="Productos del pedido" className="mb-4">
-        <div className="p-grid p-nogutter" style={{ rowGap: '1rem' }}>
-          {Array.isArray(JSON.parse(pedido?.productos || '[]')) &&
-            JSON.parse(pedido.productos).map(producto => (
-              <div className="p-col-12 p-md-6" key={producto.titulo}>
-                <Card>
-                  <img src={producto.imagen} alt="imagen" style={{ maxHeight: 70, marginBottom: 8 }} />
-                  <div><strong>{producto.titulo}</strong></div>
-                  <div>{moneda} {producto.precio} x{producto.cantidad}</div>
-                  <div>{producto?.items?.join(', ')}</div>
-                </Card>
-              </div>
-            ))}
-        </div>
-      </Card>
-
-<Card title="Información completa del Pedido" className="mb-3">
-  <div className="p-grid">
-    <div className="p-col-12 p-md-6">
-      <label>ID Pedido</label>
-      <InputText value={pedido.idPedido ?? ''} disabled className="w-full mb-2" />
+  {/* Top meta */}
+  <div className="modal-topbar">
+    <div className="modal-topbar__left">
+      <h3># {pedido?.idPedido ?? '—'}</h3>
+      <span className="badge">{pedido?.estado ?? '—'}</span>
+      <span className={`badge ${pedido?.pagado === 'Si' ? 'ok' : 'warn'}`}>
+        Pagado: {pedido?.pagado ?? '—'}
+      </span>
+      {pedido?.tipo_pedido && <span className="badge subtle">{pedido.tipo_pedido}</span>}
     </div>
-    <div className="p-col-12 p-md-6">
-      <label>Fecha de creación</label>
-      <InputText value={pedido.createdAt ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Nombre</label>
-      <InputText value={pedido.nombre ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Teléfono</label>
-      <InputText value={pedido.telefono ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Entrega</label>
-      <InputText value={pedido.entrega ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Estado</label>
-      <InputText value={pedido.estado ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Tipo de Pedido</label>
-      <InputText value={pedido.tipo_pedido ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Pago</label>
-      <InputText value={pedido.pago ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>¿Pagado?</label>
-      <InputText value={pedido.pagado ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Pago al Recibir</label>
-      <InputText value={pedido.pagoRecibir ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Total</label>
-      <InputText value={pedido.total ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Total Productos</label>
-      <InputText value={pedido.total_productos ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Código Descuento</label>
-      <InputText value={pedido.codigo ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Nota</label>
-      <InputText value={pedido.nota ?? ''} disabled className="w-full mb-2" />
-    </div>
-    {/* Nuevos campos */}
-    <div className="p-col-12 p-md-6">
-      <label>Forma de Pago</label>
-      <InputText value={pedido.forma_pago ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Tipo de Cupón</label>
-      <InputText value={pedido.tipo_cupon ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Valor del Cupón</label>
-      <InputText value={pedido.valor_cupon ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Total Cupón</label>
-      <InputText value={pedido.total_cupon ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Franja Horaria</label>
-      <InputText value={pedido.franja_horario ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Fecha Despacho</label>
-      <InputText value={pedido.fecha_despacho ?? ''} disabled className="w-full mb-2" />
-    </div>
-    {/* Campos de ubicación */}
-    <div className="p-col-12 p-md-6">
-      <label>País (ID)</label>
-      <InputText value={pedido.country_id ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Departamento (ID)</label>
-      <InputText value={pedido.state_id ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Ciudad (ID)</label>
-      <InputText value={pedido.city_id ?? ''} disabled className="w-full mb-2" />
-    </div>
-    <div className="p-col-12 p-md-6">
-      <label>Teléfono Transportador</label>
-      <InputText value={pedido.telefono_tran ?? ''} disabled className="w-full mb-2" />
+    <div className="modal-topbar__right">
+      <small className="muted">Creado: {pedido?.createdAt ?? '—'}</small>
+      {pedido?.fecha_despacho && <small className="muted"> • Despacho: {pedido.fecha_despacho}</small>}
     </div>
   </div>
-</Card>
 
-
-      <Divider />
-
-      {/* Sección editable */}
-      <form onSubmit={handleSubmit(onSubmitEdit)}>
-        <div className="p-grid">
-          <div className="p-col-12 p-md-4">
-            <Controller
-              name="transportadora"
-              control={control}
-              render={({ field }) => (
-                <InputText {...field} placeholder="Transportadora" className="w-full mb-2" />
-              )}
-            />
-          </div>
-          <div className="p-col-12 p-md-4">
-            <Controller
-              name="numeroGuia"
-              control={control}
-              render={({ field }) => (
-                <InputText {...field} placeholder="Número de Guía" className="w-full mb-2" />
-              )}
-            />
-          </div>
-          <div className="p-col-12 p-md-4">
-            <Controller
-              name="valorFlete"
-              control={control}
-              render={({ field }) => (
-                <InputText {...field} placeholder="Valor del Fletex" className="w-full mb-2" />
-              )}
-            />
-          </div>
-        </div>
-        <div className="p-grid">
-          <div className="p-col-12 p-md-6">
-            <Controller
-              name="estado"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  options={[
-                    { label: "Pendientex", value: "Pendiente" },
-                    { label: "Entregado", value: "Entregado" },
-                    { label: "Devolución", value: "Devolución" },
-                    { label: "Cancelado", value: "Cancelado" }
-                  ]}
-                  placeholder="Estado"
-                  className="w-full mb-2"
-                />
-              )}
-            />
-            {errors.estado && <small className="p-error">{errors.estado.message}</small>}
-          </div>
-          <div className="p-col-12 p-md-6">
-            <Controller
-              name="pagado"
-              control={control}
-              render={({ field }) => (
-                <Dropdown
-                  {...field}
-                  options={[
-                    { label: "Sí", value: "Si" },
-                    { label: "No", value: "No" }
-                  ]}
-                  placeholder="¿Pagado?"
-                  className="w-full mb-2"
-                />
-              )}
-            />
-            {errors.pagado && <small className="p-error">{errors.pagado.message}</small>}
-          </div>
-        </div>
-        {(watch('estado') === "Devolución" || watch('estado') === "Cancelado") && (
-          <div className="p-grid">
-            <div className="p-col-12">
-              <Controller
-                name="notaPedidoInterna"
-                control={control}
-                render={({ field }) => (
-                  <InputText {...field} placeholder="Motivo" className="w-full mb-2" />
-                )}
-              />
-              {errors.notaPedidoInterna && <small className="p-error">{errors.notaPedidoInterna.message}</small>}
+  {/* Productos */}
+  <div className="section">
+    <h4 className="section-title">Productos del pedido</h4>
+    <div className="products-grid">
+      {Array.isArray(JSON.parse(pedido?.productos || '[]')) &&
+        JSON.parse(pedido.productos).map((producto, i) => (
+          <div className="product-card" key={`${producto.titulo}-${i}`}>
+            <img src={producto?.imagen1 || producto?.imagen} alt={producto?.titulo} />
+            <div className="body">
+              <div className="title" title={producto?.titulo}>{producto?.titulo}</div>
+              {!!(producto?.items?.length) && <div className="items">{producto.items.join(', ')}</div>}
+              <div className="footer">
+                <span className="price">{moneda} {producto?.precio}</span>
+                <span className="qty">x{producto?.cantidad}</span>
+              </div>
             </div>
           </div>
-        )}
-        <div className="p-grid">
-          <div className="p-col-12" style={{ textAlign: 'right' }}>
-            <Button type="submit" label="Guardar" className="p-button-success" />
-          </div>
+        ))}
+    </div>
+  </div>
+
+  {/* Información completa */}
+  <div className="section">
+    <h4 className="section-title">Información completa del pedido</h4>
+    <div className="info-grid">
+      {[
+        ['ID Pedido', pedido.idPedido],
+        ['Fecha de creación', pedido.createdAt],
+        ['Nombre', pedido.nombre],
+        ['Teléfono', pedido.telefono],
+        ['Entrega', pedido.entrega],
+        ['Estado', pedido.estado],
+        ['Tipo de Pedido', pedido.tipo_pedido],
+        ['Pago', pedido.pago],
+        ['¿Pagado?', pedido.pagado],
+        ['Pago al Recibir', pedido.pagoRecibir],
+        ['Total', pedido.total],
+        ['Total Productos', pedido.total_productos],
+        ['Código Descuento', pedido.codigo],
+        ['Forma de Pago', pedido.forma_pago],
+        ['Tipo de Cupón', pedido.tipo_cupon],
+        ['Valor del Cupón', pedido.valor_cupon],
+        ['Total Cupón', pedido.total_cupon],
+        ['Franja Horaria', pedido.franja_horario],
+        ['Fecha Despacho', pedido.fecha_despacho],
+        ['País (ID)', pedido.country_id],
+        ['Departamento (ID)', pedido.state_id],
+        ['Ciudad (ID)', pedido.city_id],
+        ['Teléfono Transportador', pedido.telefono_tran],
+      ].map(([label, val], idx) => (
+        <div key={idx} className="info-row">
+          <label>{label}</label><span>{val ?? '—'}</span>
         </div>
-      </form>
+      ))}
+      <div className="info-row span-2">
+        <label>Nota</label><span>{pedido.nota ?? '—'}</span>
+      </div>
+    </div>
+  </div>
 
+  {/* Edición */}
+  <div className="section">
+    <h4 className="section-title">Actualizar pedido</h4>
+    <form onSubmit={handleSubmit(onSubmitEdit)} className="form-grid">
+      <div>
+        <Controller name="transportadora" control={control}
+          render={({ field }) => <InputText {...field} placeholder="Transportadora" className="w-full" />} />
+      </div>
+      <div>
+        <Controller name="numeroGuia" control={control}
+          render={({ field }) => <InputText {...field} placeholder="Número de Guía" className="w-full" />} />
+      </div>
+      <div>
+        <Controller name="valorFlete" control={control}
+          render={({ field }) => <InputText {...field} placeholder="Valor del Flete" className="w-full" />} />
+      </div>
 
-    
+      <div>
+        <Controller name="estado" control={control} render={({ field }) =>
+          <Dropdown {...field} className="w-full"
+            placeholder="Estado"
+            options={[
+              { label: 'Pendiente', value: 'Pendiente' },
+              { label: 'Entregado', value: 'Entregado' },
+              { label: 'Devolución', value: 'Devolución' },
+              { label: 'Cancelado', value: 'Cancelado' }
+            ]}
+          />
+        }/>
+        {errors.estado && <small className="p-error">{errors.estado.message}</small>}
+      </div>
 
-  </Dialog>
+      <div>
+        <Controller name="pagado" control={control} render={({ field }) =>
+          <Dropdown {...field} className="w-full"
+            placeholder="¿Pagado?"
+            options={[{ label: 'Sí', value: 'Si' }, { label: 'No', value: 'No' }]}
+          />
+        }/>
+        {errors.pagado && <small className="p-error">{errors.pagado.message}</small>}
+      </div>
+
+      {(watch('estado') === 'Devolución' || watch('estado') === 'Cancelado') && (
+        <div className="span-2">
+          <Controller name="notaPedidoInterna" control={control}
+            render={({ field }) => <InputText {...field} placeholder="Motivo" className="w-full" />} />
+          {errors.notaPedidoInterna && <small className="p-error">{errors.notaPedidoInterna.message}</small>}
+        </div>
+      )}
+
+      <div className="actions span-2">
+        <Button type="button" label="Imprimir Ticket" icon="pi pi-print" className="p-button-text"
+          onClick={() => imprimirTicket2(pedido)} />
+        <Button type="button" label="Descargar PDF" icon="pi pi-download" className="p-button-text"
+          onClick={handleDownloadPDF} />
+        <span className="spacer" />
+        <Button type="submit" label="Guardar" className="p-button-success" />
+      </div>
+    </form>
+  </div>
+</Dialog>
+
 )}
             
             
