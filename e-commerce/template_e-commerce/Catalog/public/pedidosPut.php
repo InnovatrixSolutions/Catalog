@@ -77,7 +77,7 @@ try {
         $estado = $requestData['estado'] ?? null;
         $productos = isset($requestData['productos']) ? json_decode($requestData['productos'], true) : null;
         $total = $requestData['total'] ?? null;
-        $nombre = $requestData['nombre'] ?? null;
+        $nombre = $requestData['nombre_cliente'] ?? null;
         $telefono = $requestData['telefono'] ?? null;
         $entrega = $requestData['entrega'] ?? null;
         $nota = $requestData['nota'] ?? null;
