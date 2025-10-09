@@ -1,0 +1,11 @@
+# DB_HOST=127.0.0.1  # laragon
+DB_HOST=mysql #docker
+DB_PORT=3306
+DB_NAME=catalog_db
+DB_USER=catalogo_user
+DB_PASS=catalogo_pass
+SESSION_VALIDATE=false
+API_KEY=Yepe$M2025$
+# SESSION_VALIDATE=true
+# RUTA_WEB=https://catalogo.mercadoyepes.co/
+RUTA_WEB=http://catalogo_jc.docker
