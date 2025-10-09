@@ -1,25 +1,27 @@
 // Detecta si la URL tiene 'www.' o no y devuelve la base correcta
 const getBaseURL = () => {
-    const currentHost = window.location.hostname; // Obtiene el host actual
-    if (currentHost.startsWith('www.')) {
-        // Si tiene 'www.', usa la versión con 'www.'
-        // return 'https://www.catalogo.mercadoyepes.co/';
-        // return 'https://www.catalogodrop.mercadoyepes.co/';
-        // return "http://localhost:3000/";
-        // return "https://catalogo.mercadoyepes.co/";
-        return "http://catalogo_jc.test//";
-    } else {
-
-        // Si no tiene 'www.', usa la versión sin 'www.'
-        // return 'https://catalogo.mercadoyepes.co/';
-        // return 'https://catalogodrop.mercadoyepes.co/';
-        // return "http://localhost:3000/"; // Cambia esto a la URL base correcta para tu entorno local
-        // return "https://catalogo.mercadoyepes.co/"; // Cambia esto a la URL base correcta para tu entorno local
-        return "http://catalogo_jc.test/";
+    // ✅ VARIABLE DE ENTORNO (máxima flexibilidad)
+    if (process.env.REACT_APP_API_URL) {
+        console.log('🎯 Usando URL desde variable de entorno:', process.env.REACT_APP_API_URL);
+        return process.env.REACT_APP_API_URL;
     }
+
+    const currentHost = window.location.hostname;
+
+    // ✅ DETECCIÓN AUTOMÁTICA (fallback)
+    if (currentHost === 'localhost' || currentHost === 'catalogo_jc.docker') {
+        return "http://catalogo_jc.docker:8080";
+    }
+
+    if (currentHost === 'catalogo_jc.test') {
+        return "http://catalogo_jc.test";
+    }
+
+    // ✅ PRODUCCIÓN (default)
+    return "https://catalogo.mercadoyepes.co";
 };
+
 
 const baseURL = getBaseURL(); // Obtiene la URL base correcta
 
 export default baseURL;
-

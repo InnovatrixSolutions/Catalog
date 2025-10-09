@@ -1,0 +1,60 @@
+services:
+  php-apache:
+    image: php:8.1-apache
+    container_name: catalogo-php
+    hostname: catalogo_jc.docker
+    volumes:
+      - ./public:/var/www/html
+    ports:
+      - "0.0.0.0:8080:80"    # ✅ CORRECTO: externo:interno
+    command: >
+      bash -c "
+      docker-php-ext-install mysqli pdo pdo_mysql &&
+      a2enmod rewrite &&
+      apache2-foreground
+      "
+    environment:
+      - APACHE_DOCUMENT_ROOT=/var/www/html
+    networks:
+      - catalogo-network
+
+  react-dev:
+    image: node:18-alpine
+    container_name: catalogo-react
+    working_dir: /app
+    volumes:
+      - .:/app
+    ports:
+      - "3000:3000"   # ✅ CORRECTO
+    command: sh -c "npm install && npm start"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    networks:
+      - catalogo-network
+
+  mysql:
+    image: mysql:8.0
+    container_name: catalogo-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: catalogo_db
+      MYSQL_USER: catalogo_user
+      MYSQL_PASSWORD: catalogo_pass
+    ports:
+      - "3307:3306"   # ✅ CORRECTO: externo:interno
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    command: 
+      - --general-log
+      - --general-log-file=/var/log/mysql/general-log.log
+      - --log-output=FILE  
+    networks:
+      - catalogo-network
+
+volumes:
+  mysql_data:
+
+networks:
+  catalogo-network:
+    driver: bridge
