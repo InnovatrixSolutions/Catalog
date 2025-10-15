@@ -11,6 +11,7 @@ const getBaseURL = () => {
     // ✅ DETECCIÓN AUTOMÁTICA (fallback)
     if (currentHost === 'localhost' || currentHost === 'catalogo_jc.docker') {
         return "http://catalogo_jc.docker:8080";
+    
     }
 
     if (currentHost === 'catalogo_jc.test') {
