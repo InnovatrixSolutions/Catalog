@@ -21,3 +21,8 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+# Ignorar carpetas de imágenes
+public/imagenes_banners/
+public/imagenes_productos/
+public/imagenes_tienda/
