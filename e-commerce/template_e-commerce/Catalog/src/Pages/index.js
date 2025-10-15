@@ -14,8 +14,15 @@ import Codigos from "./Codigos/Codigos";
 import PageDetail from '../Pages/PageDetail/PageDetail';
 import PageProductos from "./PageProductos/PageProductos";
 import Pedidos from "./Pedidos/Pedidos";
+
+import PedidosDropshipper from "./PedidosDropshipper/PedidosDropshipper";
+
+import LiquidacionDropshipper from "./LiquidacionDropshipper/LiquidacionDropshipper";
+
+
 import Tienda from "./Tienda/Tienda";
 import MetodosDePago from "./MetodosDePago/MetodosDePago";
+import PedidosCatalogo from "./PedidosCatalogo/PedidosCatalogo";
 
 export const router = createBrowserRouter([
 
@@ -78,6 +85,22 @@ export const router = createBrowserRouter([
                 path: `/dashboard/pedidos/view?`,
                 element: <Pedidos />,
             },
+
+                        {
+                path: `/dashboard/pedidos/dropshipper/view?`,
+                element: <PedidosDropshipper />,
+            },
+
+                                    {
+                path: `/dashboard/pedidos/catalogo/view?`,
+                element: <PedidosCatalogo />,
+            },
+
+                                                {
+                path: `/dashboard/liquidacion/dropshipper/view?`,
+                element: <LiquidacionDropshipper />,
+            },
+
             {
                 path: `/dashboard/mi-tienda`,
                 element: <Tienda />,

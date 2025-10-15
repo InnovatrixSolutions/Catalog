@@ -171,3 +171,178 @@
   flex: 1;
   padding-right: 0.5rem;
 }
+
+/* === Backdrop con blur (mantener difuminado) === */
+.modal{
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background-color: rgba(0,0,0,.4);
+  backdrop-filter: blur(6px);
+}
+
+/* === Panel del modal haciendo match con la tabla === */
+.modal-content{
+  background-color: var(--blanco, #fff);
+  width: 90vw;
+  max-width: 120vh;            /* como ya usas en tu CSS */
+  max-height: 90vh;
+  overflow: hidden;
+  border-radius: 10px;
+  border: 1px solid #888;       /* borde existente */
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  box-shadow: 0 12px 30px rgba(0,0,0,.18);
+}
+
+/* Header/Barra superior (coincide con th background) */
+.deFlexBtnsModal{
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #d1cccc;
+  background-color: #6868682b;  /* igual que .table th */
+}
+.deFlexBtnsModal button{
+  background: transparent;
+  border: none;
+  padding: 5px 10px;
+  color: var(--text-color2);
+  font-weight: 600;
+}
+.selected{
+  border-bottom: 2px solid var(--color1) !important;
+  color: var(--color1) !important;
+}
+
+/* Botón cerrar */
+.close{
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 2px 8px;
+  border-radius: 8px;
+  color: var(--text-color2);
+}
+.close:hover{ background-color: #f2f2f261; }
+
+/* === Zona scrolleable interna (match con .table-container) === */
+.scrollable-modal-body,
+.scrollable-form-container{  /* mapeo para tu nombre anterior */
+  overflow-y: auto;
+  flex: 1;
+  padding-right: .5rem;
+}
+
+/* Scrollbar consistente con tabla */
+.scrollable-modal-body::-webkit-scrollbar,
+.scrollable-form-container::-webkit-scrollbar{
+  width: 5px;
+  height: 5px;
+  background-color: transparent;
+}
+.scrollable-modal-body::-webkit-scrollbar-thumb,
+.scrollable-form-container::-webkit-scrollbar-thumb{
+  background-color: var(--color1);
+  border-radius: 10px;
+}
+
+/* === Fieldsets e inputs con el mismo “look” de filtros === */
+legend{
+  padding: 10px;
+  color: var(--text-color2);
+}
+
+fieldset{
+  padding: 6px 8px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 49%;
+  border: 1px solid #d1cccc;   /* mismo borde que usas */
+  background-color: #fefefe;    /* claro como filas impares */
+}
+fieldset:focus-within{
+  border-color: var(--color1);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+}
+
+fieldset input,
+fieldset select{
+  padding: 8px 10px;
+  width: 100%;
+  border-radius: 7px;
+  border: 1px solid #949191;    /* mismo tono que inputsColumn */
+  background-color: var(--blanco);
+  color: var(--text-color2);
+  font-size: .95rem;
+}
+fieldset input:focus,
+fieldset select:focus{
+  outline: none;
+  border-color: var(--color1);
+  box-shadow: 0 0 0 3px rgba(0,0,0,0.03);
+}
+
+/* === Acciones inferiores (igual a tus botones) === */
+.modal-actions{
+  display: flex;
+  gap: .6rem;
+  justify-content: flex-end;
+  border-top: 1px solid #d1cccc;
+  padding-top: .75rem;
+}
+
+.btnPost{
+  padding: 13px 13px;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--color1);
+  color: var(--blanco);
+  width: 20vh;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  margin-top: 0; /* en modal no necesitamos margen extra */
+}
+.btnLoading{
+  background-color: var(--loading, #9aa3b2) !important;
+  color: var(--blanco);
+  cursor: not-allowed;
+}
+.btnSecondary{
+  padding: 13px 13px;
+  border-radius: 10px;
+  border: 1px solid #949191;
+  background-color: transparent;
+  color: var(--text-color2);
+}
+
+/* === Imágenes dentro del modal (same family que previevProduct) === */
+.scrollable-modal-body img,
+.scrollable-form-container img{
+  border-radius: 10px;
+  width: 40px; height: 40px;
+  object-fit: cover;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+}
+
+/* === Responsive (coincide con tu media query) === */
+@media (max-width: 1000px){
+  .modal{ align-items: flex-end; justify-content: flex-end; }
+  .modal-content{
+    width: 100%;
+    height: 100vh;
+    max-height: 100vh;
+    border-radius: 0;
+  }
+  fieldset{ width: 100%; }
+}

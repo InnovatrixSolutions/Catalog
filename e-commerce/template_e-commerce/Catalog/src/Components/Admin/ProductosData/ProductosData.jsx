@@ -15,6 +15,7 @@ import { Link as Anchor } from "react-router-dom";
 import imageIcon from '../../../images/imageIcon.png';
 import { fetchUsuario, getUsuario } from '../../user';
 import PricesList from '../PricesList/PricesList';
+import NewPricesListt from '../NewPricesList/NewPricesList';
 export default function ProductosData() {
     const [productos, setProductos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -24,7 +25,7 @@ export default function ProductosData() {
     const [nuevoPrecioAnterior, setNuevoPrecioAnterior] = useState(0);
     const [producto, setProducto] = useState({});
     const [modalImagenVisible, setModalImagenVisible] = useState(false);
-    const [modalPriceListVisible, setModalPriceListVisible] = useState(false);
+    const [modalPriceListVisible, setModalPriceListVisible] = useState(true);
 
     const [imagenSeleccionada, setImagenSeleccionada] = useState('');
     const [filtroId, setFiltroId] = useState('');
@@ -130,12 +131,16 @@ export default function ProductosData() {
     }, []);
 
 
-    const openModalPriceList = (item) => {
-        setModalPriceListVisible(true);
-        }
-    const closeModalPriceList = () => {
-        setModalPriceListVisible(false);
-         }
+const openModalPriceList = (productoOrId) => {
+  const id = typeof productoOrId === 'object' ? productoOrId?.idProducto : productoOrId;
+  setPriceListFor(id ?? null);
+  setModalPriceListVisible(true);
+};
+
+const closeModalPriceList = () => {
+  setModalPriceListVisible(false);
+  setPriceListFor(null);
+};
     const cargarCategoriasYSubcategorias = async () => {
         try {
             const [categoriasRes, subcategoriasRes] = await Promise.all([
@@ -540,6 +545,34 @@ export default function ProductosData() {
             'error'
         );
     }
+const [pricesList, setPricesList] = useState([]);
+   const [idProducto, setIdProducto] = useState(3); // <-- id del producto para lista de precios
+const [priceListFor, setPriceListFor] = useState(null); // <-- id o objeto del producto
+     const pricesListFiltered = pricesList.filter(item => {
+        const idMatch = item.idProducto.toString().includes(filtroId);
+        const tituloMatch = !filtroTitulo || item.titulo.toLowerCase().includes(filtroTitulo.toLowerCase());
+        const categoriaMatch = item.idCategoria.toString().includes(filtroCategoria);
+        const categoriasMatch = !filtroCategoria2 || item.categoria.includes(filtroCategoria2);
+        return idMatch && tituloMatch && categoriaMatch && categoriasMatch;
+    });
+    
+        const cargarListaPrecios = () => {
+        const url = idProducto
+    ? `${baseURL}/listaPreciosGet.php?idProducto=${idProducto}`
+    : `${baseURL}/listaPreciosGet.php`;
+        fetch(url, {
+            method: 'GET',
+        })
+            .then(response => response.json())
+            .then(data => {
+                setPricesList(data.listaprecios || []);
+                console.log(data.listaprecios)
+            })
+            .catch(error => console.error('Error al cargar lista de precios:', error));
+    };
+    const recargarListaPrecios = () => {
+        cargarListaPrecios();
+    };
     return (
         
         <div>
@@ -550,7 +583,18 @@ export default function ProductosData() {
                 
 
                 <div className='deFlex2'>
-                    <NewProduct />
+<NewProduct
+  onCreated={(created) => {
+    cargarProductos();
+    const id = created?.idProducto ?? created?.id ?? created ?? null;
+    openModalPriceList(id); // si id es null, abre modal en blanco
+  }}
+/>
+
+
+
+
+
                     {selectedProducts.length > 0 && (
                     <button
                         className='btnDanger'
@@ -1072,6 +1116,24 @@ export default function ProductosData() {
                     </div>
                 </div>
             )}
+
+{modalPriceListVisible && (
+  <div className="modal">
+    <div className="modal-content">
+      <span className="close" onClick={closeModalPriceList}>&times;</span>
+      <h2>Lista de precios</h2>
+      {/* Si NO hay id, queda en blanco como pediste */}
+      { 
+
+<NewPricesListt/>
+      }
+    </div>
+  </div>
+)}
+
+
+
+
             <div className='table-container'>
                 <table className='table'>
                     <thead>
@@ -1260,20 +1322,7 @@ export default function ProductosData() {
                 </table>
                 
             </div>
-            {modalPriceListVisible && (
 
-            <div className="modal">
-                <div className="modal-content">
-                    <span className="close" onClick={closeModalPriceList}>&times;</span>
-                    <h2>Lista de precios</h2>
-                    <PricesList idProducto={3} />
-                    {/* <PricesList/> */}
-
-
-
-                </div>
-            </div>
-        )}
 
             {/* {productosFiltrados?.length > visibleCount && (
                 <button onClick={handleShowMore} id="show-more-btn">

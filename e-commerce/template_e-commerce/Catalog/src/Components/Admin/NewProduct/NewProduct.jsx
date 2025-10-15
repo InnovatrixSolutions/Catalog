@@ -7,7 +7,7 @@ import imageIcon from '../../../images/imageIcon.png';
 import { fetchUsuario, getUsuario } from '../../user';
 import Swal from 'sweetalert2';
 import planes from '../../planes';
-export default function NewProduct() {
+export default function NewProduct({ onCreated }) {
     const [mensaje, setMensaje] = useState('');
     const [imagenPreview, setImagenPreview] = useState([null, null, null, null]); // Arreglo para imágenes
     const [isImageSelected, setIsImageSelected] = useState([false, false, false, false]); // Arreglo para selección de imágenes
@@ -193,21 +193,21 @@ export default function NewProduct() {
 
         formData.append('sku', sku);
         formData.append('descripcion', descripcion);
-formData.append('masVendido', masVendido);
-formData.append('precioAnterior', precioAnterior);
-formData.append('verItems', verItems);
-if (verItems === 'Si') {
-  formData.append('item1', item1);
-  formData.append('item2', item2);
-  formData.append('item3', item3);
-  formData.append('item4', item4);
-  formData.append('item5', item5);
-  formData.append('item6', item6);
-  formData.append('item7', item7);
-  formData.append('item8', item8);
-  formData.append('item9', item9);
-  formData.append('item10', item10);
-}
+        formData.append('masVendido', masVendido);
+        formData.append('precioAnterior', precioAnterior);
+        formData.append('verItems', verItems);
+        if (verItems === 'Si') {
+        formData.append('item1', item1);
+        formData.append('item2', item2);
+        formData.append('item3', item3);
+        formData.append('item4', item4);
+        formData.append('item5', item5);
+        formData.append('item6', item6);
+        formData.append('item7', item7);
+        formData.append('item8', item8);
+        formData.append('item9', item9);
+        formData.append('item10', item10);
+        }
 
 for (let pair of formData.entries()) {
   console.log(`${pair[0]}: ${pair[1]}`);
@@ -222,13 +222,40 @@ for (let pair of formData.entries()) {
             const data = await response.json();
             console.log(data);
 
-            if (data.mensaje) {
-                toast.success(data.mensaje);
-                window.location.reload();
-            } else {
-                toast.error(data.error);
-                setAddingProduct(false); // 👈 Agregado aquí también
-            }
+            // if (data.mensaje) {
+            //     toast.success(data.mensaje);
+            //     window.location.reload();
+            // } else {
+            //     toast.error(data.error);
+            //     setAddingProduct(false); // 👈 Agregado aquí también
+            // }
+
+
+ if (data.mensaje) {
+  toast.success(data.mensaje);
+
+  // Intenta obtener el id del producto creado (siempre puede venir null)
+  const createdId =
+    data?.idProducto ??
+    data?.producto?.idProducto ??
+    data?.producto?.id ??
+    data?.id ??
+    null;
+
+  // Cierra el modal de creación y corta el loading
+  setModalOpen(false);
+  setAddingProduct(false);
+
+  // Notifica SIEMPRE al padre (aunque createdId sea null)
+  if (typeof onCreated === 'function') {
+    onCreated({ idProducto: createdId });
+  }
+} else {
+  toast.error(data.error || 'Ocurrió un error');
+  setAddingProduct(false);
+}
+
+
         } catch (error) {
             console.error('Error al crear producto:', error);
             toast.error('Error de conexión. Inténtelo de nuevo.');

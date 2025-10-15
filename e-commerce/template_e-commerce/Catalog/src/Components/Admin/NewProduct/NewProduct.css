@@ -1,177 +1,12 @@
-.items{
-    display: flex;
-    gap: 10px;
-    /* flex-wrap: wrap; */
-  flex-wrap: nowrap; /* 👈 Previene el salto de línea */
-    overflow-x: auto;   /* 👈 Scroll horizontal si hay overflow */
-    margin-bottom: 1rem;
-}
-/* .items fieldset{
-    width: 15%;
-} */
-.items fieldset {
-    min-width: 200px; /* 👈 Esto da un ancho base para el scroll */
-    flex: 0 0 auto;    /* 👈 Impide que se encojan */
-}
-
-.items::-webkit-scrollbar {
-    height: 5px;
-    background-color: transparent;
-}
-
-.items::-webkit-scrollbar-thumb {
-    background-color: var(--color1); 
-    border-radius: 10px;
-}
-#flexLabel{
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    width: 100%;
-
-}
-#flexLabel span{
-    width: 100%;
-}
-/* #crearForm #flexLabel input{
-    padding: 0;
-    width:auto;
-}
- */
-#crearForm #flexLabel input {
-    padding: 8px;
-    width: auto;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-}
-
-
- #textLabel{
-    border-bottom: 1px solid  #949191;
-    width: 100%;
-    padding: 10px;
-    margin: 2px;
-    color: var(--text-color2);
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-   
-}
-#textLabel label{
-    width: 100%;
-}
-
-.btnLoading {
-    background-color: #ccc;
-    cursor: not-allowed;
-}
-
-
-.image-container{
-    display: flex;
-    overflow-x: scroll;
-    width: 100%;
-    gap: 1rem;
-    margin-top: 1rem;
- 
-}
-.image-container::-webkit-scrollbar{
-    width: 5px;
-    height: 5px;
-    cursor: pointer;
-    background-color: transparent;
-   
-}
-.image-container::-webkit-scrollbar-thumb {
-    background-color: var(--color1); 
-    border-radius: 10px;
-    margin-top: 3rem;
-  }
-.image-input {
-    margin:  0 0 10px 0;
-    position: relative;
-}
-
-.image-label {
-    cursor: pointer;
-}
-
-.image-icon {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-    background-color: var(--gris);
-    cursor: pointer;
-}
-
-.preview-image {
-    width: 150px;
-    height: 150px;
-    object-fit: cover;
-    border-radius: 10px;
-}
-
-.eliminar-imagen {
-    position: absolute;
-    top: 0;
-    right: 0;
-    background-color: red;
-    padding: 7px;
-    color: var(--blanco);
-    border: none;
-    cursor: pointer;
-    border-radius: 2px;
-}
-#titulo{
-    width: 100%;
-}
-#option{
-    margin-top: -2rem!important;
-}
-
-@media (max-width: 824px){
-    .items fieldset{
-        width: 45%!important;
-    }
-    .items{
-        display: flex;
-        gap: 10px;
-        justify-content: space-between;
-       
-      
-    }
-    .preview-image{
-        width: 115px;
-        height: 115px;
-        object-fit: cover;
-        border-radius: 10px;
-    }
-    .image-icon {
-        width: 115px;
-        height: 115px;
-        object-fit: cover;
-        border-radius: 10px;
-    }
-    .image-container{
-        gap: 1rem;
-     
-    }
-    .image-input {
-        margin: 2px;
-    }
-}
-
-
-.modal {
+/* ============================
+   MODAL
+   ============================ */
+.modal{
   position: fixed;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   width: 100%;
   height: 100%;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0,0,0,.5);
   overflow: hidden;
   display: flex;
   align-items: center;
@@ -179,27 +14,101 @@
   z-index: 1000;
 }
 
-.modal-content {
+.modal-content{
   width: 95%;
-  
   max-width: 800px;
   height: 90vh;
-  overflow: hidden;
+  background: #fff;
+  border-radius: 10px;
+  overflow: hidden;           /* oculta desborde general */
   display: flex;
   flex-direction: column;
 }
-.custom-modal-width {
-  width: 900px !important; /* Fuerza la aplicación del ancho */
+
+/* Fuerza ancho extra si lo necesitas */
+.custom-modal-width{
+  width: 900px !important;
 }
 
-.modal-scroll {
+/* Header del modal (título + cerrar) */
+.deFlexBtnsModal{
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+  padding: 12px 16px;
+  background: #fff;
+  position: sticky;           /* queda fijo al hacer scroll */
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid #eee;
+}
+
+.deFlexBtnsModal button{
+  background: transparent;
+  border: none;
+  padding: 5px 10px;
+  color: var(--text-color2);
+  cursor: pointer;
+}
+
+.deFlexBtnsModal .selected{
+  border-bottom: 2px solid var(--color1);
+  color: var(--color1);
+}
+
+.close{
+  font-size: 24px;
+  cursor: pointer;
+}
+
+/* Cuerpo scrolleable del modal */
+.modal-scroll{
   overflow-y: auto;
   flex: 1;
+  padding: 16px;
 }
 
+.modal-scroll::-webkit-scrollbar{
+  width: 6px;
+}
+.modal-scroll::-webkit-scrollbar-thumb{
+  background: var(--color1);
+  border-radius: 6px;
+}
+
+/* ============================
+   FORMULARIO (GRID)
+   ============================ */
+.flexGrap{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap: 16px;
+  width: 100%;
+}
+
+/* Fieldset base */
+#crearForm fieldset{
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1cccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+}
+
+#crearForm legend{
+  padding: 0 6px;
+  color: var(--text-color2);
+}
+
+/* Input/Select/Textarea */
 #crearForm input,
 #crearForm select,
-#crearForm textarea {
+#crearForm textarea{
+  width: 100%;
   border: 1px solid #ccc !important;
   border-radius: 6px;
   padding: 8px;
@@ -207,13 +116,181 @@
   background-color: #fff;
   color: #333;
   box-sizing: border-box;
-  width: 100%;
 }
 
 #crearForm input:focus,
 #crearForm select:focus,
-#crearForm textarea:focus {
-  border-color: var(--color1); /* Reemplaza con tu color primario si tienes variables */
+#crearForm textarea:focus{
+  border-color: var(--color1);
   outline: none;
 }
 
+/* Título a full y Descripción ocupa ambas columnas */
+#titulo{ width: 100%; }
+#crearForm #descripcion{
+  grid-column: 1 / -1;
+}
+
+/* Línea y etiqueta para variaciones */
+#textLabel{
+  border-bottom: 1px solid #949191;
+  width: 100%;
+  padding: 10px;
+  margin: 2px 0 1rem;
+  color: var(--text-color2);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+#textLabel label{ width: 100%; }
+
+#flexLabel{
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+}
+
+#crearForm #flexLabel input{
+  padding: 8px;
+  width: auto;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* ============================
+   VARIACIONES (SCROLL X)
+   ============================ */
+.items{
+  display: flex;
+  gap: 10px;
+  flex-wrap: nowrap;        /* evita salto de línea */
+  overflow-x: auto;         /* scroll horizontal */
+  margin-bottom: 1rem;
+}
+.items::-webkit-scrollbar{
+  height: 5px;
+  background-color: transparent;
+}
+.items::-webkit-scrollbar-thumb{
+  background-color: var(--color1);
+  border-radius: 10px;
+}
+.items fieldset{
+  min-width: 200px;         /* ancho base de cada ítem */
+  flex: 0 0 auto;           /* no se encoje */
+}
+
+/* ============================
+   IMÁGENES (SCROLL X)
+   ============================ */
+.image-container{
+  display: flex;
+  overflow-x: auto;
+  width: 100%;
+  gap: 1rem;
+  margin-top: 1rem;
+  -webkit-overflow-scrolling: touch;
+}
+.image-container::-webkit-scrollbar{
+  height: 5px;
+}
+.image-container::-webkit-scrollbar-thumb{
+  background-color: var(--color1);
+  border-radius: 10px;
+}
+
+.image-input{
+  margin: 0 0 10px 0;
+  position: relative;
+}
+
+.image-label{ cursor: pointer; }
+
+.image-icon{
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+  background-color: var(--gris);
+  cursor: pointer;
+}
+
+.preview-image{
+  width: 150px;
+  height: 150px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.eliminar-imagen{
+  position: absolute;
+  top: 0; right: 0;
+  background-color: red;
+  padding: 7px;
+  color: var(--blanco);
+  border: none;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+/* ============================
+   BOTONES (ESTADOS)
+   ============================ */
+.btnPost{
+  padding: 13px 13px;
+  border-radius: 10px;
+  border: none;
+  background-color: var(--color1);
+  color: var(--blanco);
+  width: 20vh;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  margin-top: 1rem;
+  cursor: pointer;
+}
+.btnLoading{
+  padding: 13px 13px;
+  border-radius: 10px;
+  border: none;
+  background-color: #ccc;
+  color: var(--blanco);
+  width: 20vh;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  align-items: center;
+  margin-top: 1rem;
+  cursor: not-allowed;
+}
+
+/* ============================
+   DETALLES SUELTOS
+   ============================ */
+#option{ margin-top: -2rem !important; }
+
+/* ============================
+   RESPONSIVE
+   ============================ */
+@media (max-width: 824px){
+  .flexGrap{
+    grid-template-columns: 1fr; /* una columna */
+  }
+
+  .items{
+    justify-content: space-between;
+  }
+
+  .preview-image,
+  .image-icon{
+    width: 115px;
+    height: 115px;
+  }
+
+  .image-container{ gap: 1rem; }
+  .image-input{ margin: 2px; }
+}

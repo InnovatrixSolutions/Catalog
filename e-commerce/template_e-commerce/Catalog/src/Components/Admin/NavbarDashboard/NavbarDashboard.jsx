@@ -134,6 +134,21 @@ export default function Navbar() {
                             <Anchor to={`/dashboard/pedidos`} className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}>
                                 <FontAwesomeIcon icon={faRectangleList} /> Pedidos
                             </Anchor>
+
+                            <Anchor to={`/dashboard/pedidos/dropshipper/view?`} className={location.pathname === '/dashboard/pedidos/dropshipper/view?' ? 'activeLink' : ''}>
+                                <FontAwesomeIcon icon={faRectangleList} /> Pedidos Dropshipper
+                            </Anchor>
+
+
+                            <Anchor to={`/dashboard/pedidos/catalogo/view?`} className={location.pathname === '/dashboard/pedidos/catalogo/view?' ? 'activeLink' : ''}>
+                                <FontAwesomeIcon icon={faRectangleList} /> Pedidos Catálogo
+                            </Anchor>
+
+                            <Anchor to={`/dashboard/liquidacion/dropshipper/view?`} className={location.pathname === '/dashboard/liquidacion/dropshipper/view?' ? 'activeLink' : ''}>
+                                <FontAwesomeIcon icon={faProductHunt} /> Liquidación Dropshipper
+                            </Anchor>
+
+
                             <Anchor to={`/dashboard/banners`} className={location.pathname === '/dashboard/banners' ? 'activeLink' : ''}>
                                 <FontAwesomeIcon icon={faImage} /> Banners
                             </Anchor>
