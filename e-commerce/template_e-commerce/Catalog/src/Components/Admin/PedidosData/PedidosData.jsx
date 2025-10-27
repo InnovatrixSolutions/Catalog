@@ -992,6 +992,7 @@ const header = renderHeader();
 
             <ToastContainer />
             <h1 className='titles-text-heading'>Pedidos</h1>
+            
             <div className='deFlexContent2'>
                 <div className='deFlex2'>
                     <NewPedido onPedidoCreado={() => {
@@ -1074,12 +1075,16 @@ const header = renderHeader();
             </div>
             {location?.pathname === '/dashboard/pedidos' ? (
                 <div className='cards-container'>
+                    
                     {estados?.map(estado => (
+                            
                         <div key={estado} className='estado-container'>
+                            
                             <h2>{estado} ({pedidosFiltrados[estado]?.length || 0})</h2>
 
                             <div className='cards-row'>
                                 {pedidosFiltrados[estado]?.map(item => (
+                                    
                                     <div key={item.idPedido} className='card'>
                                         <h3>Id Pedido: {item.idPedido}</h3>
                                         <span style={{

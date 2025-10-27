@@ -123,7 +123,7 @@ try {
     /*
     add field to tables pedidos
      */
-    $sqlCheckColumn = "SHOW COLUMNS FROM pedidos LIKE 'transportadora'";
+    $sqlCheckColumn = "SHOW COLUMNS FROM pedidos LIKE 'estado_comision'";
     $stmt = $conexion->prepare($sqlCheckColumn);
     $stmt->execute();
     $columnExists = $stmt->fetch();
@@ -133,16 +133,16 @@ try {
 
         $stmt = $conexion->prepare($sql);
         $stmt->execute();
-        echo "Field 'transportadora' added to pedidos<br>";
+        echo "Field 'estado_comision' added to pedidos<br>";
     } else {
-        echo "Field 'transportadora' already exists in pedidos<br>";
+        echo "Field 'estado_comision' already exists in pedidos<br>";
     }
 
 
     /*
     add field to tables pedidos
      */
-    $sqlCheckColumn = "SHOW COLUMNS FROM pedidos LIKE 'transportadora'";
+    $sqlCheckColumn = "SHOW COLUMNS FROM pedidos LIKE 'numero_guia'";
     $stmt = $conexion->prepare($sqlCheckColumn);
     $stmt->execute();
     $columnExists = $stmt->fetch();
@@ -156,6 +156,23 @@ try {
         echo "Field 'numero_guia' already exists in pedidos<br>";
     }
 
+     /*
+    add field to tables pedidos
+     */
+    $sqlCheckColumn = "SHOW COLUMNS FROM pedidos LIKE 'transportadora'";
+    $stmt = $conexion->prepare($sqlCheckColumn);
+    $stmt->execute();
+    $columnExists = $stmt->fetch();
+
+    if (!$columnExists) {
+        $sql = "ALTER TABLE pedidos ADD transportadora VARCHAR(50) NULL AFTER pagoRecibir";
+        $stmt = $conexion->prepare($sql);
+        $stmt->execute();
+        echo "Field 'transportadora' added to transportadora<br>";
+    } else {
+        echo "Field 'transportadora' already exists in pedidos<br>";
+    }
+
     /*
     add field to tables pedidos
      */
@@ -165,7 +182,7 @@ try {
     $columnExists = $stmt->fetch();
 
     if (!$columnExists) {
-        $sql = "ALTER TABLE pedidos ADD transportadora VARCHAR(50) NULL AFTER pagoRecibir";
+        $sql = "ALTER TABLE pedidos ADD valor_flete VARCHAR(50) NULL AFTER pagoRecibir";
         $stmt = $conexion->prepare($sql);
         $stmt->execute();
         echo "Field 'valor_flete' added to pedidos<br>";

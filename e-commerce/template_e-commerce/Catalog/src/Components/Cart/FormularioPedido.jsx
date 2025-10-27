@@ -138,7 +138,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   // 3) El esquema FINAL, según sea catálogo o dropshipper
   const schema = isCatalog
     ? baseSchema
-    : baseSchema.merge(dropshipperSchema);
+     : z.intersection(baseSchema, dropshipperSchema);
 
 
   const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
@@ -270,7 +270,7 @@ useEffect(() => {
         //   onPedidoSuccess();
         // }
 
-              const datosWhatsapp = {
+/*               const datosWhatsapp = {
         idPedido: data.idPedido,
         nombre: formData.nombre,
         telefono: formData.telefono,
@@ -281,7 +281,21 @@ useEffect(() => {
         nota: formData.nota,
         productos: cartItems,
         pagoRecibir: formData.pagoRecibir
-      };
+      }; */
+
+      const datosWhatsapp = {
+  idPedido: result?.data?.idPedido, // o como lo exponga tu API
+  nombre: data?.clienteNombre,
+  telefono: data?.clienteCelular,
+  entrega: data?.direccion,
+  pago: data?.metodoPago,
+  codigo: '',
+  total: totalPrice,
+  nota: data?.notas,
+  productos: cartItems,
+  pagoRecibir: isCatalog ? totalPrice : data.valor
+};
+
 
       handleWhatsappMessage(datosWhatsapp, telefonoTienda); // ← WhatsApp justo aquí
         setShowSuccessModal(true);
@@ -996,7 +1010,7 @@ useEffect(() => {
                       control={control}
                       render={({ field }) => (
                         <div className="flex gap-3">
-                          <RadioButton disabled="true" inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <RadioButton disabled={true} inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
                           <label htmlFor="transfer_si">Sí</label>
                           {/* <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
                           <label htmlFor="transfer_no">No</label> */}

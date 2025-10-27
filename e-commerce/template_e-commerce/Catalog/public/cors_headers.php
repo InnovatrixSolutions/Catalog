@@ -5,9 +5,8 @@ $allowed_origins = [
     "http://catalogo_jc.docker:4000",
     "http://localhost:3000",
     "http://localhost:4000",
-    "http://192.168.10.25:4000",
+    "http://192.168.10.25:*",
     "http://192.168.97.188:4000",
-    "http://192.168.97.188:4000"
 
 ];
 header('Content-Type: application/json');
