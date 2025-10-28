@@ -579,28 +579,28 @@ try {
                   {/* ============ NUEVA SECCIÓN: Lista de Precios ============ */}
                   <div className="price-lists-grid">
                     <fieldset>
-                      <legend>Lista de precios (Catálogo)</legend>
+                      <legend>Lista de precios (Mercado Yepes)</legend>
                       <div className="two-cols">
                         <div>
-                          <label>Precio 1</label>
+                          <label>Precio Actual</label>
                           <input
                             type="number"
                             min="0"
                             step="0.01"
                             value={catPrecio1}
                             onChange={(e) => setCatPrecio1(e.target.value)}
-                            placeholder="Precio 1 catálogo"
+                            placeholder="Precio Actual"
                           />
                         </div>
                         <div>
-                          <label>Precio 2</label>
+                          <label>Precio Anterior</label>
                           <input
                             type="number"
                             min="0"
                             step="0.01"
                             value={catPrecio2}
                             onChange={(e) => setCatPrecio2(e.target.value)}
-                            placeholder="Precio 2 catálogo"
+                            placeholder="Precio Anterior"
                           />
                         </div>
                       </div>
@@ -611,25 +611,25 @@ try {
                       <legend>Lista de precios (Dropshipper)</legend>
                       <div className="two-cols">
                         <div>
-                          <label>Precio 1</label>
+                          <label>Precio Actual</label>
                           <input
                             type="number"
                             min="0"
                             step="0.01"
                             value={dropPrecio1}
                             onChange={(e) => setDropPrecio1(e.target.value)}
-                            placeholder="Precio 1 dropshipper"
+                            placeholder="Precio Actual dropshipper"
                           />
                         </div>
                         <div>
-                          <label>Precio 2</label>
+                          <label>Precio Anterior</label>
                           <input
                             type="number"
                             min="0"
                             step="0.01"
                             value={dropPrecio2}
                             onChange={(e) => setDropPrecio2(e.target.value)}
-                            placeholder="Precio 2 dropshipper"
+                            placeholder="Precio Anterior dropshipper"
                           />
                         </div>
                       </div>
