@@ -5,11 +5,15 @@ services:
     hostname: catalogo_jc.docker
     volumes:
       - ./public:/var/www/html
+      - ./docker/php.ini:/usr/local/etc/php/conf.d/uploads.ini   # opcional recomendado
     ports:
-      - "0.0.0.0:8080:80"    # ✅ CORRECTO: externo:interno
+      - "0.0.0.0:8080:80"
     command: >
       bash -c "
-      docker-php-ext-install mysqli pdo pdo_mysql &&
+      docker-php-ext-install mysqli pdo pdo_mysql fileinfo &&
+      mkdir -p /var/www/html/imagenes_productos &&
+      chown -R www-data:www-data /var/www/html/imagenes_productos ||
+      true &&
       a2enmod rewrite &&
       apache2-foreground
       "
@@ -17,7 +21,6 @@ services:
       - APACHE_DOCUMENT_ROOT=/var/www/html
     networks:
       - catalogo-network
-
   react-dev:
     image: node:18-alpine
     container_name: catalogo-react

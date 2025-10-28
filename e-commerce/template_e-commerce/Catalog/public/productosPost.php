@@ -12,6 +12,14 @@ require_once 'Utils.php';
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     exit;
 }
+// === DEBUG TEMPORAL (bórralo luego) ===
+if (isset($_GET['debug'])) {
+    header('Content-Type: text/plain; charset=utf-8');
+    var_dump($_FILES);
+    var_dump($_POST);
+    exit;
+}
+// === FIN DEBUG ===
 
 
 use Dotenv\Dotenv;
@@ -190,7 +198,8 @@ try {
             $createdAt = $stmtSelect->fetchColumn();
 
             echo json_encode([
-                "mensaje" => "Producto creado exitosamente",
+                "mensaje" => "Producto creado exitosamente",    
+                "idProducto" => (int)$lastId,   
                 "imagen1" => $imagenes[1],
                 "imagen2" => $imagenes[2],
                 "imagen3" => $imagenes[3],

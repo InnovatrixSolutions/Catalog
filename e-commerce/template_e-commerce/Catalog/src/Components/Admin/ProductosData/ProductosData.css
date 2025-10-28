@@ -522,6 +522,104 @@ textarea{
   align-items: center;
 }
 
+/* ====== Modal edición: layout con scroll ====== */
+.modal-content{
+  height: 90vh;           /* alto controlado */
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;       /* el scroll va en el body */
+}
+
+.deFlexBtnsModal{
+  position: sticky;       /* header fijo */
+  top: 0;
+  z-index: 2;
+  background: #fff;
+  border-bottom: 1px solid #eee;
+}
+
+.scrollable-modal-body{
+  flex: 1 1 auto;
+  overflow-y: auto;       /* scroll vertical */
+  min-height: 0;          /* evita que hijos rompan el scroll */
+  padding: 12px 16px;
+}
+
+.scrollable-modal-body::-webkit-scrollbar{ width: 6px; }
+.scrollable-modal-body::-webkit-scrollbar-thumb{
+  background: var(--color1);
+  border-radius: 6px;
+}
+
+/* ====== Grilla de edición (2 cols) ====== */
+.edit-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(280px, 1fr));
+  gap:16px;
+  width:100%;
+}
+.edit-grid #descripcion{ grid-column: 1 / -1; }
+
+.variaciones-scroll-x{
+  overflow-x:auto;
+  -webkit-overflow-scrolling:touch;
+}
+
+
+.edit-grid fieldset{
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #d1cccc;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: #fff;
+}
+.edit-grid legend{ padding: 0 6px; color: var(--text-color2); }
+
+.edit-grid input,
+.edit-grid select,
+.edit-grid textarea{
+  width: 100%;
+  border: 1px solid #ccc !important;
+  border-radius: 6px;
+  padding: 8px;
+  font-size: 14px;
+  background-color: #fff;
+  color: #333;
+}
+
+.edit-grid input:focus,
+.edit-grid select:focus,
+.edit-grid textarea:focus{
+  border-color: var(--color1);
+  outline: none;
+}
+
+/* Descripción ocupa ancho completo */
+.edit-grid #descripcion{ grid-column: 1 / -1; }
+
+/* Tira “Variaciones” con scroll-x (opcional) */
+.variaciones-scroll-x{
+  overflow-x: auto;
+  padding-bottom: 6px;
+}
+.variaciones-scroll-x::-webkit-scrollbar{ height: 5px; }
+.variaciones-scroll-x::-webkit-scrollbar-thumb{
+  background-color: var(--color1);
+  border-radius: 10px;
+}
+
+/* Ítems individuales no se encogen en el carrusel */
+.items{ flex-wrap: nowrap; }
+.items fieldset{ min-width: 200px; flex: 0 0 auto; }
+
+/* Imágenes: mantenemos el scroll-x que ya tienes */
+.previevProduct{ overflow-x: auto; }
+
+
 /* ===============================
    RESPONSIVE
    =============================== */

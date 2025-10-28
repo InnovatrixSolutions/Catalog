@@ -140,131 +140,166 @@ export default function NewProduct({ onCreated }) {
     if (e.target.value !== 'elegir') setCustomStock('');
   };
 
+// devuelve true si hay al menos un precio > 0
+// devuelve true si hay al menos un precio > 0
+const tieneAlMenosUnPrecio = () => {
+  const vals = [catPrecio1, catPrecio2, dropPrecio1, dropPrecio2]
+    .map(v => (v === '' || v === null ? 0 : Number(v)));
+  return vals.some(n => !isNaN(n) && n > 0);
+};
+
   // ----- Guardado de Listas de Precios (después de crear producto) -----
-  const crearListaDePrecios = async ({ idProducto, tipo, precio1, precio2 }) => {
-    // Ajusta nombres de campos/endpoint si tu API usa otros
-    const formData = new FormData();
-    formData.append('idProducto', idProducto);
-    formData.append('tipo', tipo);              // 'catalogo' | 'dropshipper'
-    formData.append('precio1', precio1 || '0'); // default 0 si vacío
-    formData.append('precio2', precio2 || '0');
+const crearListaDePrecios = async ({ idProducto, tipoLista, precio, vigenciaDesde, estado }) => {
+  const fd = new FormData();
+  fd.append('idProducto', idProducto);
+  fd.append('precio', String(precio));
+  fd.append('tipoLista', tipoLista);         // 'catalogo' | 'dropshipper'
+  fd.append('vigenciaDesde', vigenciaDesde); // 'YYYY-MM-DD'
+  fd.append('estado', estado);               // 'actual' | 'anterior'
 
-    const res = await fetch(`${baseURL}/listaPreciosPost.php`, {
-      method: 'POST',
-      body: formData
-    });
+  const res = await fetch(`${baseURL}/listaPreciosPost.php`, { method: 'POST', body: fd });
 
-    // Algunas APIs devuelven vacío al crear correctamente, por eso chequeo suave
-    try {
-      const data = await res.json();
-      if (data?.error) throw new Error(data.error);
-      return data;
-    } catch {
-      // Si no hay JSON válido pero el status OK, lo damos por bueno
-      if (res.ok) return { success: true };
-      throw new Error('Error creando lista de precios');
+  const text = await res.text();
+  let data = {};
+  try { data = JSON.parse(text); } catch {}
+
+  if (!res.ok || data?.error) {
+    const msg = data?.error || text || 'Error creando precio';
+    throw new Error(msg);
+  }
+  return data;
+};
+
+const guardarListasDePrecios = async (idProducto) => {
+  const hoy = new Date().toISOString().slice(0, 10);
+  const tareas = [];
+
+  const pushSiHayValor = (precio, tipoLista, estado) => {
+    const n = Number(precio);
+    if (!isNaN(n) && n > 0) {
+      tareas.push(
+        crearListaDePrecios({
+          idProducto,
+          tipoLista,            // 'catalogo' | 'dropshipper'
+          precio: n,
+          vigenciaDesde: hoy,   // si luego necesitas otra fecha, cámbiala aquí
+          estado,               // 'actual' | 'anterior'
+        })
+      );
     }
   };
+
+  // Catálogo
+  pushSiHayValor(catPrecio1, 'catalogo', 'actual');    // Precio 1 = actual
+  pushSiHayValor(catPrecio2, 'catalogo', 'anterior');  // Precio 2 = anterior
+
+  // Dropshipper
+  pushSiHayValor(dropPrecio1, 'dropshipper', 'actual');    // Precio 1 = actual
+  pushSiHayValor(dropPrecio2, 'dropshipper', 'anterior');  // Precio 2 = anterior
+
+  await Promise.all(tareas);
+};
+
+
   // ---------------------------------------------------------------------
 
-  const crear = async () => {
-    const form = document.getElementById("crearForm");
-    const formData = new FormData(form);
+const crear = async () => {
+  const form = document.getElementById("crearForm");
+  const formData = new FormData(form);
 
-    if (!formData.get('titulo') || !idCategoria || !formData.get('precio') || !formData.get('sku')) {
-      toast.error('Por favor, complete todos los campos obligatorios.');
+  // ✅ primero, validación de campos obligatorios del producto
+  if (!formData.get('titulo') || !idCategoria || !formData.get('precio') || !formData.get('sku')) {
+    toast.error('Por favor, complete todos los campos obligatorios.');
+    setAddingProduct(false);
+    return;
+  }
+
+  // ✅ exige “al menos 1 precio” ANTES de crear el producto
+  if (!tieneAlMenosUnPrecio()) {
+    toast.error('Debes ingresar al menos un precio (catálogo o dropshipper).');
+    return;
+  }
+
+  // (Opcional) exige al menos 1 imagen si quitaste "required" en los inputs
+  // const hayAlMenosUnaImagen = isImageSelected.some(Boolean);
+  // if (!hayAlMenosUnaImagen) {
+  //   toast.error('Debes seleccionar al menos una imagen.');
+  //   return;
+  // }
+
+  setAddingProduct(true);
+
+  // completa formData con tus campos
+  formData.append('idCategoria', idCategoria);
+  formData.append('verItems', verItems);
+  formData.append('idSubCategoria', idSubCategoria ? idSubCategoria : '0');
+  formData.append('Disponible', stock === 'elegir' ? cantidadStock : stock);
+  formData.append('sku', sku);
+  formData.append('descripcion', descripcion);
+  formData.append('masVendido', masVendido);
+  formData.append('precioAnterior', precioAnterior);
+  formData.append('verItems', verItems);
+
+  if (verItems === 'Si') {
+    formData.append('item1', item1);
+    formData.append('item2', item2);
+    formData.append('item3', item3);
+    formData.append('item4', item4);
+    formData.append('item5', item5);
+    formData.append('item6', item6);
+    formData.append('item7', item7);
+    formData.append('item8', item8);
+    formData.append('item9', item9);
+    formData.append('item10', item10);
+  }
+
+  try {
+    // 1) crear producto
+    const response = await fetch(`${baseURL}/productosPost.php`, { method: 'POST', body: formData });
+    const data = await response.json();
+
+    if (data?.error) {
+      toast.error(data.error);
+      setAddingProduct(false);
+      return;
+    }
+    if (!data?.mensaje) {
+      toast.error('Ocurrió un error al crear el producto.');
       setAddingProduct(false);
       return;
     }
 
-    setAddingProduct(true);
+    toast.success(data.mensaje);
 
-    formData.append('idCategoria', idCategoria);
-    formData.append('verItems', verItems);
-    formData.append('idSubCategoria', idSubCategoria ? idSubCategoria : '0');
-    formData.append('Disponible', stock === 'elegir' ? cantidadStock : stock);
-    formData.append('sku', sku);
-    formData.append('descripcion', descripcion);
-    formData.append('masVendido', masVendido);
-    formData.append('precioAnterior', precioAnterior);
-    formData.append('verItems', verItems);
-
-    if (verItems === 'Si') {
-      formData.append('item1', item1);
-      formData.append('item2', item2);
-      formData.append('item3', item3);
-      formData.append('item4', item4);
-      formData.append('item5', item5);
-      formData.append('item6', item6);
-      formData.append('item7', item7);
-      formData.append('item8', item8);
-      formData.append('item9', item9);
-      formData.append('item10', item10);
-    }
-
-    try {
-      const response = await fetch(`${baseURL}/productosPost.php`, {
-        method: 'POST',
-        body: formData
-      });
-
-      const data = await response.json();
-      // 1) Producto creado
-      if (data.mensaje) {
-        toast.success(data.mensaje);
-
-        // Detectar id del producto
-        const createdId =
-          data?.idProducto ??
-          data?.producto?.idProducto ??
-          data?.producto?.id ??
-          data?.id ??
-          null;
-
-        // 2) Intentar crear listas de precios si tenemos id
-        if (createdId) {
-          try {
-            // Guardar lista de precios Catálogo
-            await crearListaDePrecios({
-              idProducto: createdId,
-              tipo: 'catalogo',
-              precio1: catPrecio1,
-              precio2: catPrecio2
-            });
-
-            // Guardar lista de precios Dropshipper
-            await crearListaDePrecios({
-              idProducto: createdId,
-              tipo: 'dropshipper',
-              precio1: dropPrecio1,
-              precio2: dropPrecio2
-            });
-
-            toast.success('Listas de precios guardadas.');
-          } catch (e) {
-            console.error(e);
-            toast.error('El producto se creó, pero hubo un problema guardando las listas de precios.');
-          }
-        } else {
-          toast.warn('Producto creado, pero no se obtuvo ID para registrar listas de precios.');
-        }
-
-        setModalOpen(false);
-        setAddingProduct(false);
-
-        if (typeof onCreated === 'function') {
-          onCreated({ idProducto: createdId });
-        }
-      } else {
-        toast.error(data.error || 'Ocurrió un error');
-        setAddingProduct(false);
-      }
-    } catch (error) {
-      console.error('Error al crear producto:', error);
-      toast.error('Error de conexión. Inténtelo de nuevo.');
+    // 2) obtener idProducto
+    const createdId = data?.idProducto ?? data?.id ?? data?.producto?.idProducto ?? null;
+    if (!createdId) {
+      toast.warn('Producto creado, pero no se recibió idProducto.');
       setAddingProduct(false);
+      return;
     }
-  };
+
+    // 3) guardar listas de precios
+try {
+  await guardarListasDePrecios(createdId);
+  toast.success('Lista(s) de precios guardada(s).');
+} catch (e) {
+  console.error(e);
+  toast.error(`El producto se creó, pero falló guardar una o más listas de precios. ${e?.message ? '(' + e.message + ')' : ''}`);
+}
+
+
+    setModalOpen(false);
+    setAddingProduct(false);
+    if (typeof onCreated === 'function') onCreated({ idProducto: createdId });
+
+  } catch (error) {
+    console.error('Error al crear producto:', error);
+    toast.error('Error de conexión. Inténtelo de nuevo.');
+    setAddingProduct(false);
+  }
+};
+
 
   const handleSubmit = (e) => {
     e.preventDefault();

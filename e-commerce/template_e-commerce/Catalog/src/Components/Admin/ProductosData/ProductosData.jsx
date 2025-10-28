@@ -572,242 +572,284 @@ export default function ProductosData() {
               </span>
             </div>
 
-            <div className="scrollable-modal-body">
-              <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
-                <div className='flexGrap'>
-                  <fieldset id='titulo'>
-                    <legend>Titulo (*)</legend>
-                    <input
-                      type="text"
-                      value={nuevoTitulo}
-                      onChange={(e) => setNuevoTitulo(e.target.value)}
-                    />
-                  </fieldset>
+<div className="scrollable-modal-body">
+  <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
+    {/* GRID 2 columnas */}
+    <div className='edit-grid'>
 
-                  <fieldset>
-                    <legend>Categoría (*)</legend>
-                    <select
-                      id="categoriaSeleccionada"
-                      name="categoriaSeleccionada"
-                      onChange={handleCategoriaSeleccion}
-                      required
-                    >
-                      {categorias
-                        ?.filter(categoriaFiltrada => categoriaFiltrada?.idCategoria === producto?.idCategoria)
-                        ?.map(categoriaFiltrada => (
-                          <option key={producto?.idCategoria} value={producto?.categoria}>
-                            {categoriaFiltrada?.categoria}
-                            {subcategorias
-                              ?.filter(subcategoriaFiltrada => subcategoriaFiltrada.idSubCategoria === producto.idSubCategoria)
-                              ?.map(subcategoriaFiltrada => (
-                                <React.Fragment key={subcategoriaFiltrada.idSubCategoria}>
-                                  {` >`} {subcategoriaFiltrada?.subcategoria}
-                                </React.Fragment>
-                              ))
-                            }
-                          </option>
-                        ))
-                      }
-                      {categoriasConSubcategorias.map(categoria => (
-                        <optgroup key={categoria.idCategoria}>
-                          <option key={`cat-${categoria.idCategoria}`} value={`${categoria.idCategoria}`} id='option'>{categoria.categoria}</option>
-                          {categoria.subcategorias.map(subcategoria => (
-                            <option
-                              key={`sub-${categoria.idCategoria}-${subcategoria.idSubCategoria}`}
-                              value={`${categoria.idCategoria}-${subcategoria.idSubCategoria}`}>
-                              {categoria.categoria} {`>`} {subcategoria.subcategoria}
-                            </option>
-                          ))}
-                        </optgroup>
-                      ))}
-                    </select>
-                  </fieldset>
+      {/* Título */}
+      <fieldset id='titulo'>
+        <legend>Titulo (*)</legend>
+        <input
+          type="text"
+          value={nuevoTitulo}
+          onChange={(e) => setNuevoTitulo(e.target.value)}
+        />
+      </fieldset>
 
-                  <fieldset>
-                    <legend>SKU (*)</legend>
-                    <input
-                      type="text"
-                      value={nuevoSku}
-                      onChange={(e) => setNuevoSku(e.target.value)}
-                    />
-                  </fieldset>
+      {/* Categoría / Subcategoría */}
+      <fieldset>
+        <legend>Categoría (*)</legend>
+        <select
+          id="categoriaSeleccionada"
+          name="categoriaSeleccionada"
+          onChange={handleCategoriaSeleccion}
+          required
+        >
+          {/* Opción actual */}
+          {categorias
+            ?.filter(c => c?.idCategoria === producto?.idCategoria)
+            ?.map(c => (
+              <option key={`actual-${c?.idCategoria}`} value={`${producto?.idCategoria}-${producto?.idSubCategoria || ''}`}>
+                {c?.categoria}
+                {subcategorias
+                  ?.filter(s => s.idSubCategoria === producto.idSubCategoria)
+                  ?.map(s => (
+                    <React.Fragment key={s.idSubCategoria}>
+                      {producto?.idSubCategoria ? ` > ${s?.subcategoria}` : ''}
+                    </React.Fragment>
+                  ))
+                }
+              </option>
+            ))
+          }
+          {/* Todas las opciones */}
+          {categoriasConSubcategorias.map(categoria => (
+            <optgroup key={`catg-${categoria.idCategoria}`}>
+              <option
+                key={`cat-${categoria.idCategoria}`}
+                value={`${categoria.idCategoria}`}
+                id='option'
+              >
+                {categoria.categoria}
+              </option>
+              {categoria.subcategorias.map(sub => (
+                <option
+                  key={`sub-${categoria.idCategoria}-${sub.idSubCategoria}`}
+                  value={`${categoria.idCategoria}-${sub.idSubCategoria}`}
+                >
+                  {categoria.categoria} {`>`} {sub.subcategoria}
+                </option>
+              ))}
+            </optgroup>
+          ))}
+        </select>
+      </fieldset>
 
-                  <fieldset>
-                    <legend>Precio (*)</legend>
-                    <input
-                      type="number"
-                      value={nuevoPrecio}
-                      onChange={(e) => setNuevoPrecio(e.target.value)}
-                    />
-                  </fieldset>
+      {/* SKU */}
+      <fieldset>
+        <legend>SKU (*)</legend>
+        <input
+          type="text"
+          value={nuevoSku}
+          onChange={(e) => setNuevoSku(e.target.value)}
+        />
+      </fieldset>
 
-                  <fieldset>
-                    <legend>Precio anterior </legend>
-                    <input
-                      type="number"
-                      value={nuevoPrecioAnterior}
-                      onChange={(e) => setNuevoPrecioAnterior(e.target.value)}
-                    />
-                  </fieldset>
+      {/* Precio */}
+      <fieldset>
+        <legend>Precio (*)</legend>
+        <input
+          type="number"
+          value={nuevoPrecio}
+          onChange={(e) => setNuevoPrecio(e.target.value)}
+        />
+      </fieldset>
 
-                  <fieldset>
-                    <legend>Más vendido (*)</legend>
-                    <select
-                      value={nuevoMasVendido !== '' ? nuevoMasVendido : producto.masVendido}
-                      onChange={(e) => setNuevoMasVendido(e.target.value)}
-                    >
-                      <option value={producto.masVendido}>{producto.masVendido}</option>
-                      <option value="si">Si</option>
-                      <option value="no">No</option>
-                    </select>
-                  </fieldset>
+      {/* Precio anterior */}
+      <fieldset>
+        <legend>Precio anterior</legend>
+        <input
+          type="number"
+          value={nuevoPrecioAnterior}
+          onChange={(e) => setNuevoPrecioAnterior(e.target.value)}
+        />
+      </fieldset>
 
-                  <fieldset>
-                    <legend>Disponible (*)</legend>
-                    <select
-                      value={nuevoStock}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setNuevoStock(value);
-                        if (value === 'elegir') {
-                          setCantidadStock(producto.stock);
-                        }
-                      }}
-                    >
-                      <option value="">Selecciona opcion</option>
-                      <option value={1}>Disponible</option>
-                      <option value={0}>Agotado</option>
-                      <option value="elegir">Ingrese cantidad</option>
-                    </select>
-                    {nuevoStock === 'elegir' && (
-                      <input
-                        type="number"
-                        min="0"
-                        placeholder="Ingrese cantidad"
-                        value={cantidadStock}
-                        onChange={(e) => setCantidadStock(e.target.value)}
-                        required
-                      />
-                    )}
-                  </fieldset>
+      {/* Más vendido */}
+      <fieldset>
+        <legend>Más vendido (*)</legend>
+        <select
+          value={nuevoMasVendido !== '' ? nuevoMasVendido : producto.masVendido}
+          onChange={(e) => setNuevoMasVendido(e.target.value)}
+        >
+          <option value={producto.masVendido}>{producto.masVendido}</option>
+          <option value="si">Si</option>
+          <option value="no">No</option>
+        </select>
+      </fieldset>
 
-                  <fieldset id='descripcion'>
-                    <legend>Descripcion </legend>
-                    <textarea
-                      type="text"
-                      value={nuevaDescripcion}
-                      onChange={(e) => setNuevaDescripcion(e.target.value)}
-                    />
-                  </fieldset>
+      {/* Stock */}
+      <fieldset>
+        <legend>Disponible (*)</legend>
+        <select
+          value={nuevoStock}
+          onChange={(e) => {
+            const value = e.target.value;
+            setNuevoStock(value);
+            if (value === 'elegir') {
+              setCantidadStock(producto.stock);
+            }
+          }}
+        >
+          <option value="">Selecciona opcion</option>
+          <option value={1}>Disponible</option>
+          <option value={0}>Agotado</option>
+          <option value="elegir">Ingrese cantidad</option>
+        </select>
+        {nuevoStock === 'elegir' && (
+          <input
+            type="number"
+            min="0"
+            placeholder="Ingrese cantidad"
+            value={cantidadStock}
+            onChange={(e) => setCantidadStock(e.target.value)}
+            required
+          />
+        )}
+      </fieldset>
 
-                  <div id='textLabel'>
-                    <label>Variaciones (opcionales)</label>
-                    <div id='flexLabel'>
-                      Dar a elegir a los clientes
-                      <input
-                        type="checkbox"
-                        value={verItems}
-                        checked={verItems === "Si"}
-                        onChange={handleCheckboxChange}
-                      />
-                    </div>
-                  </div>
+      {/* Descripción (a lo ancho) */}
+      <fieldset id='descripcion'>
+        <legend>Descripción</legend>
+        <textarea
+          type="text"
+          value={nuevaDescripcion}
+          onChange={(e) => setNuevaDescripcion(e.target.value)}
+        />
+      </fieldset>
+    </div>
 
-                  {verItems === 'Si' && (
-                    <div className='items'>
-                      {[{ v: item1, s: setItem1 }, { v: item2, s: setItem2 }, { v: item3, s: setItem3 }, { v: item4, s: setItem4 }, { v: item5, s: setItem5 }, { v: item6, s: setItem6 }, { v: item7, s: setItem7 }, { v: item8, s: setItem8 }, { v: item9, s: setItem9 }, { v: item10, s: setItem10 }].map((it, idx) => (
-                        <fieldset key={idx}>
-                          <legend>Variación</legend>
-                          <input
-                            type="text"
-                            required
-                            value={it.v}
-                            onChange={(e) => it.s(e.target.value)}
-                          />
-                        </fieldset>
-                      ))}
-                    </div>
-                  )}
-                </div>
+    {/* Variaciones */}
+    <div id='textLabel'>
+      <label>Variaciones (opcionales)</label>
+      <div id='flexLabel'>
+        Dar a elegir a los clientes
+        <input
+          type="checkbox"
+          value={verItems}
+          checked={verItems === "Si"}
+          onChange={handleCheckboxChange}
+        />
+      </div>
+    </div>
 
-                <label id='textLabel'>Imagenes</label>
-                <div className='previevProduct'>
-                  {imagenPreview ? (
-                    <img src={imagenPreview} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
-                  ) : (
-                    <>
-                      {producto.imagen1 ? (
-                        <img src={producto.imagen1} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
-                      ) : (
-                        <span className='imgNone'>No hay imagen</span>
-                      )}
-                    </>
-                  )}
+    {verItems === 'Si' && (
+      <div className="variaciones-scroll-x">
+        <div className='items'>
+          {[
+            { v: item1, s: setItem1 },
+            { v: item2, s: setItem2 },
+            { v: item3, s: setItem3 },
+            { v: item4, s: setItem4 },
+            { v: item5, s: setItem5 },
+            { v: item6, s: setItem6 },
+            { v: item7, s: setItem7 },
+            { v: item8, s: setItem8 },
+            { v: item9, s: setItem9 },
+            { v: item10, s: setItem10 },
+          ].map((it, idx) => (
+            <fieldset key={idx}>
+              <legend>Variación</legend>
+              <input
+                type="text"
+                required
+                value={it.v || ''}
+                onChange={(e) => it.s(e.target.value)}
+              />
+            </fieldset>
+          ))}
+        </div>
+      </div>
+    )}
 
-                  {imagenPreview2 ? (
-                    <img src={imagenPreview2} alt="Vista previa de la imagen" />
-                  ) : (
-                    <>
-                      {producto.imagen2 ? (
-                        <img src={producto.imagen2} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen2)} />
-                      ) : (
-                        <span className='imgNone'>No hay imagen</span>
-                      )}
-                    </>
-                  )}
+    {/* Imágenes */}
+    <label id='textLabel'>Imagenes</label>
 
-                  {imagenPreview3 ? (
-                    <img src={imagenPreview3} alt="Vista previa de la imagen" />
-                  ) : (
-                    <>
-                      {producto.imagen3 ? (
-                        <img src={producto.imagen3} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen3)} />
-                      ) : (
-                        <span className='imgNone'>No hay imagen</span>
-                      )}
-                    </>
-                  )}
+    {/* Preview con scroll-x */}
+    <div className='previevProduct'>
+      {imagenPreview ? (
+        <img src={imagenPreview} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
+      ) : (
+        <>
+          {producto.imagen1 ? (
+            <img src={producto.imagen1} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
+          ) : (
+            <span className='imgNone'>No hay imagen</span>
+          )}
+        </>
+      )}
 
-                  {imagenPreview4 ? (
-                    <img src={imagenPreview4} alt="Vista previa de la imagen" />
-                  ) : (
-                    <>
-                      {producto.imagen4 ? (
-                        <img src={producto.imagen4} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen4)} />
-                      ) : (
-                        <span className='imgNone'>No hay imagen</span>
-                      )}
-                    </>
-                  )}
-                </div>
+      {imagenPreview2 ? (
+        <img src={imagenPreview2} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen2)} />
+      ) : (
+        <>
+          {producto.imagen2 ? (
+            <img src={producto.imagen2} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen2)} />
+          ) : (
+            <span className='imgNone'>No hay imagen</span>
+          )}
+        </>
+      )}
 
-                <div className='image-container'>
-                  {[{ id: 1, setF: setNuevaImagen, setP: setImagenPreview }, { id: 2, setF: setNuevaImagen2, setP: setImagenPreview2 }, { id: 3, setF: setNuevaImagen3, setP: setImagenPreview3 }, { id: 4, setF: setNuevaImagen4, setP: setImagenPreview4 }].map(({ id, setF, setP }) => (
-                    <div className='image-input' key={id}>
-                      <img
-                        src={imageIcon}
-                        alt="Imagen de ejemplo"
-                        className='image-icon'
-                        onClick={() => document.getElementById(`fileInput${id}`).click()}
-                      />
-                      <input
-                        id={`fileInput${id}`}
-                        type="file"
-                        accept="image/*"
-                        style={{ display: 'none' }}
-                        onChange={(e) => handleFileChange(e, setF, setP)}
-                      />
-                    </div>
-                  ))}
-                </div>
+      {imagenPreview3 ? (
+        <img src={imagenPreview3} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen3)} />
+      ) : (
+        <>
+          {producto.imagen3 ? (
+            <img src={producto.imagen3} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen3)} />
+          ) : (
+            <span className='imgNone'>No hay imagen</span>
+          )}
+        </>
+      )}
 
-                <button className='btnPost' onClick={() => guardarCambios(producto.idProducto)}>Guardar </button>
-              </div>
+      {imagenPreview4 ? (
+        <img src={imagenPreview4} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen4)} />
+      ) : (
+        <>
+          {producto.imagen4 ? (
+            <img src={producto.imagen4} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen4)} />
+          ) : (
+            <span className='imgNone'>No hay imagen</span>
+          )}
+        </>
+      )}
+    </div>
 
-              <div className='sectionImg' style={{ display: selectedSection === 'imagenes' ? 'flex' : 'none' }}>
-                <button className='btnPost' onClick={() => handleEditarImagenBanner(producto.idProducto)}>Guardar </button>
-              </div>
-            </div>
+    {/* Uploads */}
+    <div className='image-container'>
+      {[
+        { id: 1, setF: setNuevaImagen,  setP: setImagenPreview  },
+        { id: 2, setF: setNuevaImagen2, setP: setImagenPreview2 },
+        { id: 3, setF: setNuevaImagen3, setP: setImagenPreview3 },
+        { id: 4, setF: setNuevaImagen4, setP: setImagenPreview4 },
+      ].map(({ id, setF, setP }) => (
+        <div className='image-input' key={id}>
+          <img
+            src={imageIcon}
+            alt="Imagen de ejemplo"
+            className='image-icon'
+            onClick={() => document.getElementById(`fileInput${id}`).click()}
+          />
+          <input
+            id={`fileInput${id}`}
+            type="file"
+            accept="image/*"
+            style={{ display: 'none' }}
+            onChange={(e) => handleFileChange(e, setF, setP)}
+          />
+        </div>
+      ))}
+    </div>
+
+    {/* Guardar */}
+    <button className='btnPost' onClick={() => guardarCambios(producto.idProducto)}>
+      Guardar
+    </button>
+  </div>
+</div>
+
           </div>
         </div>
       )}
