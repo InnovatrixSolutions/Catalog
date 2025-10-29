@@ -648,7 +648,7 @@ export default function ProductosData() {
 
       {/* Precio */}
       <fieldset>
-        <legend>Precio (*)</legend>
+        <legend>Costo Venta (*)</legend>
         <input
           type="number"
           value={nuevoPrecio}
@@ -658,7 +658,7 @@ export default function ProductosData() {
 
       {/* Precio anterior */}
       <fieldset>
-        <legend>Precio anterior</legend>
+        <legend>Costo de compra</legend>
         <input
           type="number"
           value={nuevoPrecioAnterior}

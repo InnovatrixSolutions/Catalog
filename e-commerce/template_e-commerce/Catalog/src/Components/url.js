@@ -19,7 +19,7 @@ const getBaseURL = () => {
     }
 
     // ✅ PRODUCCIÓN (default)
-    return "https://catalogo.mercadoyepes.co";
+    return "https://mercadoyepes.co";
     
 };
 

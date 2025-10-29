@@ -1,37 +1,39 @@
-
 import './App.css';
-import { useEffect } from 'react';
-import { router, } from "./Pages/index";
+import React, { useEffect } from 'react';
 import { RouterProvider } from "react-router-dom";
-import { ToastContainer, toast } from 'react-toastify';
-import React from 'react'
-
-
-
+import { router } from "./Pages/index";
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 function App() {
-  console.log('Env USER TYPE:', process.env.REACT_APP_USER_TYPE);
+  // Mostrar el modo desde el archivo .env
+  console.log('Env MODE:', process.env.REACT_APP_MODE);
 
   useEffect(() => {
-    const userType = process.env.REACT_APP_USER_TYPE;
-    console.log('userType:', userType); // 👈 verify in dev tools
+    const mode = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
+    console.log('App mode detected:', mode);
+
     const root = document.documentElement;
 
-    if (userType === "dropshipper") {
-      root.style.setProperty('--color1', '#27F5A6');
+    // Colores según el modo
+    const colorDropshipper = '#026349ff'; // verde clásico
+    const colorCatalog = 'rgba(46, 167, 135, 1)'; // verde clásico
+
+    // Aplica color según el modo actual
+    if (mode === 'dropshipper') {
+      console.log('🎨 Modo dropshipper activado');
+      root.style.setProperty('--color1', colorDropshipper);
     } else {
-      root.style.setProperty('--color1', '#2ea74e');
+      console.log('🎨 Modo catálogo activado');
+      root.style.setProperty('--color1', colorCatalog);
     }
   }, []);
 
-
   return (
     <>
-    <ToastContainer />
-    <RouterProvider router={router} />
+      <ToastContainer />
+      <RouterProvider router={router} />
     </>
-    
-
   );
 }
 

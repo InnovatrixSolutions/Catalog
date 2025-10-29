@@ -20,7 +20,7 @@ import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { MultiSelect } from 'primereact/multiselect';
 
-
+import { useMemo } from 'react';
 import { useEffect } from 'react';
 
 
@@ -52,18 +52,43 @@ const franjasHorarias = [
 
 
 
+function resolveMode() {
+  // 1) ENV (Create React App)
+  const envModeRaw = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
+  if (envModeRaw === 'catalog' || envModeRaw === 'dropshipper') {
+    return envModeRaw;
+  }
 
+  // (Si usas Vite, descomenta y usa VITE_APP_MODE)
+  // const envModeVite = (import.meta?.env?.VITE_APP_MODE || '').toLowerCase().trim();
+  // if (envModeVite === 'catalog' || envModeVite === 'dropshipper') return envModeVite;
+
+  // 2) Dominio
+  const host = typeof window !== 'undefined' ? window.location.hostname : '';
+  const isDropshipperDomain = /^drop\./i.test(host) || host === 'drop.mercadoyepes.co';
+  let mode = isDropshipperDomain ? 'dropshipper' : 'catalog';
+
+  // 3) (Opcional) override por query param para QA
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const override = (params.get('mode') || '').toLowerCase().trim();
+    if (override === 'dropshipper' || override === 'catalog') {
+      mode = override;
+    }
+  } catch { /* noop */ }
+
+  return mode;
+}
 
 
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
-  const hostname = window.location.hostname;
-  //const tipoAsesor = hostname.includes("catalog") ? "catalog" : "dropshipper";
-  const tipoAsesor = hostname.includes("localhost") ? "catalog" : "dropshipper";
-  //const tipoAsesor = hostname.includes("catalogo") ? "dropshipper" : "catalog";
-  const isCatalog = hostname.includes("localhost");
+   const mode = useMemo(resolveMode, []);
+  const tipoAsesor = mode;               // 'dropshipper' | 'catalog'
+  const isCatalog  = mode === 'catalog'; // booleano
+
   const [telefonoTienda, setTelefonoTienda] = useState('');
   //const isCatalog = hostname.includes("catalogo");
-  console.log('hostname:', hostname);
+  
   console.log("Hostname tipo asesor:", tipoAsesor)
   console.log("Productos seleccionados:", cartItems);
   console.log("Valor total:", totalPrice);
@@ -147,7 +172,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
       documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
        incluyeEnvio: isCatalog ? 'Sí' : 'No', medioComision: '', otroMedio: '',
       clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: null, franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
+      fechaDespacho: new Date(), franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
       contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'Sí', notas: '', pin_asesor: ''
 
 
@@ -786,7 +811,7 @@ useEffect(() => {
 
               <Card title="Datos de la entrega" className="w-full">
                 <div className="formgrid grid">
-                  <div className="col-12 md:col-6">
+{/*                   <div className="col-12 md:col-6">
                     <label>Fecha Despacho</label>
 
 
@@ -798,43 +823,10 @@ useEffect(() => {
                     {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
 
                   </div>
-
-                  <div className="col-12 md:col-6">
+ */}
+              {/*     <div className="col-12 md:col-6">
                     <label>Franja de Entrega</label>
-                    {/* <Controller
-                      name="franjaEntrega"
-                      control={control}
-                      render={({ field }) => (
-                        <MultiSelect
-                          {...field}
-                          value={field.value}           // pasa el valor inicial
-                          options={franjasHorarias}
-                          placeholder="Seleccione una o varias franjas"
-                          className="w-full"
-                          display="chip"
-                          disabled
-                          
-                        />
-                      )}
-                    /> */}
-
-                    {/* <Controller
-                      name="franjaEntrega"
-                      control={control}
-                      defaultValue={["08:00-08:00 PM"]}  // asegúrate de que el valor por defecto está aquí
-                      render={({ field }) => (
-                        <MultiSelect
-                          value={field.value}
-                          options={franjasHorarias}
-                          onChange={e => field.onChange(e.value)}   // extrae el array de `e.value`
-                          placeholder="08:00-08:00 PM"
-                          disabled={true}          // booleano
-                          appendTo="self"                            // booleano, no cadena
-                          display="chip"
-                          className="w-full"
-                        />
-                      )}
-                    /> */}
+                
 
                     <Controller
                       name="franjaEntrega"
@@ -849,13 +841,13 @@ useEffect(() => {
                       )}
                     />
                     {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
-                  </div>
+                  </div> */}
 
 
 
 
                   <div className="col-12 md:col-6">
-                    <label>Departamento de entrega</label>
+                    <label>Dpto. de entrega</label>
                     <Controller
                       name="departamento"
                       control={control}

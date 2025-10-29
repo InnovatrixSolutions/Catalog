@@ -6,7 +6,7 @@ import reportWebVitals from './reportWebVitals';
 
 
 // PrimeReact theme (choose one)
-import 'primereact/resources/themes/saga-blue/theme.css';
+import 'primereact/resources/themes/saga-green/theme.css';
 
 
 
