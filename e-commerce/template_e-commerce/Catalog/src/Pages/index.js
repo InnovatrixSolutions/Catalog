@@ -52,11 +52,20 @@ export const router = createBrowserRouter(
         { path: "dashboard/categorias", element: <Categorias /> },
         { path: "dashboard/promociones", element: <Codigos /> },
 
-        // ✅ NUNCA pongas `?` en el path. Los query params se leen con useSearchParams()
-        { path: "dashboard/pedidos/view", element: <Pedidos /> },
-        { path: "dashboard/pedidos/dropshipper/view", element: <PedidosDropshipper /> },
-        { path: "dashboard/pedidos/catalogo/view", element: <PedidosCatalogo /> },
-        { path: "dashboard/liquidacion/dropshipper/view", element: <LiquidacionDropshipper /> },
+              // Pedidos (normales)
+        { path: "dashboard/pedidos", element: <Pedidos /> },
+        { path: "dashboard/pedidos/view", element: <Pedidos /> }, // alias viejo
+        // Pedidos Dropshipper
+        { path: "dashboard/pedidos-dropshipper", element: <PedidosDropshipper /> },
+
+        // Pedidos Catálogo
+        { path: "dashboard/pedidos-catalogo", element: <PedidosCatalogo /> },
+
+        // Liquidación Dropshipper
+        { path: "dashboard/liquidacion-dropshipper", element: <LiquidacionDropshipper /> },
+
+        
+
 
         { path: "dashboard/mi-tienda", element: <Tienda /> },
         { path: "dashboard/metodos-de-pago", element: <MetodosDePago /> },

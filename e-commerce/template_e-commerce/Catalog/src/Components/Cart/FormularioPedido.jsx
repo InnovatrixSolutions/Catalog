@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
@@ -18,262 +18,257 @@ import 'primeicons/primeicons.css';
 import { Dialog } from 'primereact/dialog';
 import { toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { MultiSelect } from 'primereact/multiselect';
-
-import { useMemo } from 'react';
-import { useEffect } from 'react';
-
-
-import { ScrollPanel } from 'primereact/scrollpanel';
-
-
-import { DataTable } from 'primereact/datatable';
-import { Column } from 'primereact/column';
-
 import { Card } from 'primereact/card';
-
-import { handleWhatsappMessage } from '../../Utils/whatsapp'; // Ajusta el path si es diferente
-
-
+import { handleWhatsappMessage } from '../../Utils/whatsapp';
 
 const medioPagoLista = [
-  'Nequi', 'Bancolombia', 'Bold (Tarjeta)', 'Daviplata',
-  'Mercadopago', 'Addi', 'Sistecredito', 'Otro'
+  'Nequi',
+  'Bancolombia',
+  'Bold (Tarjeta)',
+  'Daviplata',
+  'Mercadopago',
+  'Addi',
+  'Sistecredito',
+  'Otro',
 ];
-
 
 const franjasHorarias = [
-  { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
-  // { label: "10:00-03:00 PM", value: "10:00-03:00 PM" },
-  // { label: "03:00-07:00 PM", value: "03:00-07:00 PM" },
-  // { label: "08:00-08:00 PM", value: "08:00-08:00 PM" },
+  { label: '08:00-08:00 PM', value: '08:00-08:00 PM' },
 ];
 
-
-
-
 function resolveMode() {
-  // 1) ENV (Create React App)
   const envModeRaw = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
   if (envModeRaw === 'catalog' || envModeRaw === 'dropshipper') {
     return envModeRaw;
   }
 
-  // (Si usas Vite, descomenta y usa VITE_APP_MODE)
-  // const envModeVite = (import.meta?.env?.VITE_APP_MODE || '').toLowerCase().trim();
-  // if (envModeVite === 'catalog' || envModeVite === 'dropshipper') return envModeVite;
-
-  // 2) Dominio
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isDropshipperDomain = /^drop\./i.test(host) || host === 'drop.mercadoyepes.co';
+  const isDropshipperDomain =
+    /^drop\./i.test(host) || host === 'drop.mercadoyepes.co';
   let mode = isDropshipperDomain ? 'dropshipper' : 'catalog';
 
-  // 3) (Opcional) override por query param para QA
   try {
     const params = new URLSearchParams(window.location.search);
     const override = (params.get('mode') || '').toLowerCase().trim();
     if (override === 'dropshipper' || override === 'catalog') {
       mode = override;
     }
-  } catch { /* noop */ }
+  } catch {
+    /* noop */
+  }
 
   return mode;
 }
 
-
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
-   const mode = useMemo(resolveMode, []);
-  const tipoAsesor = mode;               // 'dropshipper' | 'catalog'
-  const isCatalog  = mode === 'catalog'; // booleano
+  const mode = useMemo(resolveMode, []);
+  const isCatalog = mode === 'catalog';
+  const isDropshipper = mode === 'dropshipper';
+  const tipoAsesor = mode;
+
+  console.log('MODE =>', mode);
+  console.log('isCatalog =>', isCatalog);
+  console.log('isDropshipper =>', isDropshipper);
+  console.log('Productos seleccionados:', cartItems);
+  console.log('Valor total:', totalPrice);
 
   const [telefonoTienda, setTelefonoTienda] = useState('');
-  //const isCatalog = hostname.includes("catalogo");
-  
-  console.log("Hostname tipo asesor:", tipoAsesor)
-  console.log("Productos seleccionados:", cartItems);
-  console.log("Valor total:", totalPrice);
-
   const [activeIndex, setActiveIndex] = useState(0);
 
-  const dropshipperSchema = z.object({
-    documento: z.string().min(1, "Documento requerido"),
-    email: z.string().email("Email inválido"),
-    nombre: z.string().min(1, "Nombre requerido"),
-    telefono: z.string().min(7, "Teléfono inválido"),
-    medioComision: z.string().min(1, "Seleccione un medio"),
-    pin_asesor: z.string().optional(), valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-  }).refine(
-    (data) => data.valor == totalPrice,
-    {
-      message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-      path: ['valor'],
-    }
-  );
-  const baseSchema = z.object({
-    //documento: z.string().min(1, "Documento requerido"),
-    //email: z.string().email("Email inválido"),
-    //nombre: z.string().min(1, "Nombre requerido"),
-    //telefono: z.string().min(7, "Teléfono inválido"),
-    // valor: z.coerce.number().min(1, "Debe ingresar un valor válido"),
-    // incluyeEnvio: z.enum(["Sí", "No"]),
-    //medioComision: z.string().min(1, "Seleccione un medio"),
-    otroMedio: z.string().optional(),
-    //pin_asesor: z.string().optional(),
+  const dropshipperSchema = z
+    .object({
+      documento: z.string().min(1, 'Documento requerido'),
+      email: z.string().email('Email inválido'),
+      nombre: z.string().min(1, 'Nombre requerido'),
+      telefono: z.string().min(7, 'Teléfono inválido'),
+      medioComision: z.string().min(1, 'Seleccione un medio'),
+      pin_asesor: z.string().optional(),
+      valor: z.coerce.number().min(1, 'Debe ingresar un valor válido'),
+    })
+    .refine(
+      (data) => data.valor == totalPrice,
+      {
+        message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
+        path: ['valor'],
+      }
+    );
 
+  const baseSchema = z
+    .object({
+      otroMedio: z.string().optional(),
 
-    clienteNombre: z.string().min(1, "Nombre del cliente requerido"),
-    clienteDocumento: z.string().min(1, "Documento requerida"),
-    clienteCelular: z.string().min(7, "Celular inválido"),
-    clienteTransportadora: z.string().min(7, "Celular transportadora inválido"),
+      clienteNombre: z.string().min(1, 'Nombre del cliente requerido'),
+      clienteDocumento: z.string().min(1, 'Documento requerida'),
+      clienteCelular: z.string().min(7, 'Celular inválido'),
+      clienteTransportadora: z
+        .string()
+        .min(7, 'Celular transportadora inválido'),
 
-    fechaDespacho: z.date({ required_error: "Fecha requerida" }),
-    // franjaEntrega: z.string().min(1, "Franja requerida"),
-    franjaEntrega: z.array(z.string()).min(1, "Seleccione al menos una franja"),
+      fechaDespacho: z.date({ required_error: 'Fecha requerida' }),
+      franjaEntrega: z
+        .array(z.string())
+        .min(1, 'Seleccione al menos una franja'),
 
-    departamento: z.number().min(1, "Departamento requerido"),
-    ciudad: z.number().min(1, "Ciudad requerida"),
-    direccion: z.string().min(1, "Dirección requerida"),
-    barrio: z.string().min(1, "Barrio requerido"),
-    notas: z.string().max(1000).optional(),
+      departamento: z.number().min(1, 'Departamento requerido'),
+      ciudad: z.number().min(1, 'Ciudad requerida'),
+      direccion: z.string().min(1, 'Dirección requerida'),
+      barrio: z.string().min(1, 'Barrio requerido'),
+      notas: z.string().max(1000).optional(),
 
-    contraentrega: z.enum(["Sí", "No"]),
-    metodoPago: z.string().optional(),
-    otroMetodoPago: z.string().optional(),
-    transferencia: z.enum(["Sí", "No"]),
+      contraentrega: z.enum(['Sí', 'No']),
+      metodoPago: z.string().optional(),
+      otroMetodoPago: z.string().optional(),
+      transferencia: z.enum(['Sí', 'No']),
+    })
+    .refine(
+      (data) => {
+        if (data.transferencia === 'Sí') return true;
+        if (data.contraentrega === 'No' && !data.metodoPago) return false;
+        if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
+        return true;
+      },
+      {
+        message: 'Debe seleccionar el medio de pago',
+        path: ['metodoPago'],
+      }
+    );
 
-
-
-  }).refine((data) => {
-    if (data.transferencia === "Sí") return true;
-    if (data.contraentrega === "No" && !data.metodoPago) return false;
-    if (data.metodoPago === 'Otro' && !data.otroMetodoPago) return false;
-    return true;
-  }, {
-    message: "Debe seleccionar el medio de pago",
-    path: ["metodoPago"]
-  })
-  // .refine(
-  //   (data) => data.valor == totalPrice,
-  //   {
-  //     message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
-  //     path: ['valor'],
-  //   }
-  // );
-
-  // 3) El esquema FINAL, según sea catálogo o dropshipper
   const schema = isCatalog
     ? baseSchema
-     : z.intersection(baseSchema, dropshipperSchema);
+    : z.intersection(baseSchema, dropshipperSchema);
 
-
-  const { control, setValue, register, handleSubmit, watch, formState: { errors } } = useForm({
+  const {
+    control,
+    setValue,
+    register,
+    handleSubmit,
+    watch,
+    formState: { errors },
+  } = useForm({
     resolver: zodResolver(schema),
     defaultValues: {
-      documento: '', email: '', nombre: '', telefono: '', valor: isCatalog ? undefined : '',
-       incluyeEnvio: isCatalog ? 'Sí' : 'No', medioComision: '', otroMedio: '',
-      clienteNombre: '', clienteDocumento: '', clienteCelular: '', clienteTransportadora: '',
-      fechaDespacho: new Date(), franjaEntrega: ["08:00-08:00 PM"], departamento: '', ciudad: '', direccion: '', barrio: '',
-      contraentrega: 'Sí', metodoPago: '', otroMetodoPago: '', transferencia: 'Sí', notas: '', pin_asesor: ''
-
-
-    }
+      documento: '',
+      email: '',
+      nombre: '',
+      telefono: '',
+      valor: isCatalog ? undefined : '',
+      incluyeEnvio: isCatalog ? 'Sí' : 'No',
+      medioComision: '',
+      otroMedio: '',
+      clienteNombre: '',
+      clienteDocumento: '',
+      clienteCelular: '',
+      clienteTransportadora: '',
+      fechaDespacho: new Date(),
+      franjaEntrega: ['08:00-08:00 PM'],
+      departamento: '',
+      ciudad: '',
+      direccion: '',
+      barrio: '',
+      contraentrega: 'Sí',
+      metodoPago: '',
+      otroMetodoPago: '',
+      transferencia: 'Sí',
+      notas: '',
+      pin_asesor: '',
+    },
   });
+
   const contraentrega = watch('contraentrega');
   const metodoPago = watch('metodoPago');
   const transferencia = watch('transferencia');
-
-
   const medioComisionSeleccionado = watch('medioComision');
+  const documento = watch('documento');
 
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showErrorsDialog, setShowErrorsDialog] = useState(false);
+  const [isFinalSubmit, setIsFinalSubmit] = useState(false);
 
-useEffect(() => {
-  fetch(`${baseURL}/tiendaGet.php`)
-    .then(res => res.json())
-    .then(data => {
-      const telefono = data.tienda?.[0]?.telefono || '';
-      setTelefonoTienda(telefono);
-    })
-    .catch(error => console.error('Error al cargar la tienda:', error));
-}, []);
+  useEffect(() => {
+    fetch(`${baseURL}/tiendaGet.php`)
+      .then((res) => res.json())
+      .then((data) => {
+        const telefono = data.tienda?.[0]?.telefono || '';
+        setTelefonoTienda(telefono);
+      })
+      .catch((error) => console.error('Error al cargar la tienda:', error));
+  }, []);
+
+    const [departamentos, setDepartamentos] = useState([]);
+  const [ciudades, setCiudades] = useState([]);
+  const departamentoSeleccionado = watch('departamento');
 
   const onSubmit = async (data) => {
-    setIsFinalSubmit(false); // reset state after successful submit
-    setShowErrorsDialog(false); // just in case
-    const resumenPedido = {
-      tipo_pedido: "catalogo",
-      // doc_asesor: data.documento,
-      // pin_asesor: data.pin_asesor,
-      // nombre_asesor: data.nombre,
-      // telefono_asesor: data.telefono,
-      // telefono_whatsapp: data.telefono,
-      // medio_pago_asesor: data.medioComision,
-      // email: data.email,
+    setIsFinalSubmit(false);
+    setShowErrorsDialog(false);
 
-      productos: cartItems.map(item => ({
+    const resumenPedido = {
+      tipo_pedido: isDropshipper ? 'dropshipper' : 'catalogo',
+
+      ...(isDropshipper && {
+        doc_asesor: data.documento,
+        pin_asesor: data.pin_asesor,
+        nombre_asesor: data.nombre,
+        telefono_asesor: data.telefono,
+        telefono_whatsapp: data.telefono,
+        medio_pago_asesor: data.medioComision,
+        email: data.email,
+      }),
+
+      productos: cartItems.map((item) => ({
         idProducto: item.idProducto,
         idCategoria: item.idCategoria,
         titulo: item.titulo,
         cantidad: item.cantidad,
         items: item.items || [],
         precio: item.precio,
-        imagen: item.imagen1 || item.imagen2 || item.imagen3 || item.imagen4 || ''
+        imagen:
+          item.imagen1 ||
+          item.imagen2 ||
+          item.imagen3 ||
+          item.imagen4 ||
+          '',
       })),
 
-      // productos: [{ "items": [], "imagen": "", "precio": 99900, "titulo": "Consola Juegos M8 Inalámbrica Game Stick Lite 64gb Ps1 Emuladores", "cantidad": 1, "idProducto": 47, "idCategoria": 17 }, { "items": [], "imagen": "", "precio": 167900, "titulo": "Roku Express Hd Convertidor Tv En Smart A Tv Streaming", "cantidad": 1, "idProducto": 3, "idCategoria": 14 }, { "items": [], "imagen": "", "precio": 119900, "titulo": "Marcadores Doble Punta Set 168 Colores Dibujo Base De Alcohol", "cantidad": 1, "idProducto": 40, "idCategoria": 12 }],
-      //total_pedido: data.valor,
       total_pedido: isCatalog ? totalPrice : data.valor,
       nombre_cliente: data.clienteNombre,
       telefono_cliente: data.clienteCelular,
       telefono_tran: data.clienteTransportadora,
-
-
       direccion_entrega: data.direccion,
-      country_id: 48, // Colombia
+      country_id: 48,
       state_id: data.departamento,
       city_id: data.ciudad,
-      // fecha_despacho: data.fechaDespacho?.toISOString().split('T')[0] || null,
 
+      fecha_despacho: isDropshipper
+        ? data.fechaDespacho
+            ?.toISOString()
+            .replace('T', ' ')
+            .substring(0, 19)
+        : null,
 
-      fecha_despacho: "2025-06-05 21:01:00",
+      franja_horario: isDropshipper
+        ? (data.franjaEntrega || []).join(',')
+        : '08:00-08:00 PM',
 
-      //fecha_despacho: new Date().toISOString().replace('T', ' ').substring(0, 19),
-      // franja_horario: data.franjaEntrega,
-      // franja_horario: "05:00-10:00 AM,03:00-07:00 pm",
-      // franja_horario: data.franjaEntrega.join(','),
-      franja_horario: "08:00-08:00 PM",
-
-
-      // nota: `Pedido realizado por el asesor ${data.nombre} con documento ${data.documento}`,
       nota: data.notas || 'Esta es una nota automatizada del pedido',
       pago_recibir: isCatalog ? totalPrice : data.valor,
-      medio_pago: "efectivo",
-      forma_pago: "Nequi"
-
-
-
-
+      medio_pago: 'efectivo',
+      forma_pago: 'Nequi',
     };
 
-    console.log("Objeto listo para enviar:", resumenPedido);
+    console.log('Objeto listo para enviar:', resumenPedido);
 
     try {
-
-
       const formData = new FormData();
 
       for (const key in resumenPedido) {
         const value = resumenPedido[key];
-
-        // ⚠️ Campo productos debe ser enviado como JSON.string
         if (key === 'productos') {
           formData.append(key, JSON.stringify(value));
         } else {
-          // ✅ Asegura que todos los valores sean string
           formData.append(key, String(value));
         }
       }
-
 
       for (const pair of formData.entries()) {
         console.log(`${pair[0]}: ${pair[1]}`);
@@ -281,150 +276,38 @@ useEffect(() => {
 
       const response = await fetch(`${baseURL}/pedidosPost.php`, {
         method: 'POST',
-        body: formData
+        body: formData,
       });
 
       const result = await response.json();
-      console.log("Respuesta del servidor:", result);
+      console.log('Respuesta del servidor:', result);
 
       if (result.success) {
-        //toast.success("Pedido enviado correctamente.");
-        console.log("Pedido enviado exitosamente:", result);
+        console.log('Pedido enviado exitosamente:', result);
 
-        // if (typeof onPedidoSuccess === 'function') {
-        //   onPedidoSuccess();
-        // }
+        const datosWhatsapp = {
+          idPedido: result?.data?.idPedido,
+          nombre: data?.clienteNombre,
+          telefono: data?.clienteCelular,
+          entrega: data?.direccion,
+          pago: data?.metodoPago,
+          codigo: '',
+          total: totalPrice,
+          nota: data?.notas,
+          productos: cartItems,
+          pagoRecibir: isCatalog ? totalPrice : data.valor,
+        };
 
-/*               const datosWhatsapp = {
-        idPedido: data.idPedido,
-        nombre: formData.nombre,
-        telefono: formData.telefono,
-        entrega: formData.entrega === 'delivery' ? formData.direccion : 'Retiro en Sucursal',
-        pago: formData.pago,
-        codigo: formData.codigo || '',
-        total: totalPrice,
-        nota: formData.nota,
-        productos: cartItems,
-        pagoRecibir: formData.pagoRecibir
-      }; */
-
-      const datosWhatsapp = {
-  idPedido: result?.data?.idPedido, // o como lo exponga tu API
-  nombre: data?.clienteNombre,
-  telefono: data?.clienteCelular,
-  entrega: data?.direccion,
-  pago: data?.metodoPago,
-  codigo: '',
-  total: totalPrice,
-  nota: data?.notas,
-  productos: cartItems,
-  pagoRecibir: isCatalog ? totalPrice : data.valor
-};
-
-
-      handleWhatsappMessage(datosWhatsapp, telefonoTienda); // ← WhatsApp justo aquí
+        handleWhatsappMessage(datosWhatsapp, telefonoTienda);
         setShowSuccessModal(true);
       } else {
-        toast.error("Error en el envío del pedido. Revisa todos los campos");
-        toast.error("Error: " + result.error || "Error desconocido");
+        toast.error('Error en el envío del pedido. Revisa todos los campos');
+        toast.error('Error: ' + (result.error || 'Error desconocido'));
       }
-
     } catch (error) {
-      console.error("Error en la peticion:", error);
+      console.error('Error en la peticion:', error);
     }
   };
-
-
-
-  // Dentro de tu componente FormularioAsesorZod:
-  const documento = watch('documento');
-  const [departamentos, setDepartamentos] = useState([]);
-  const [ciudades, setCiudades] = useState([]);
-  const departamentoSeleccionado = watch('departamento');
-
-  useEffect(() => {
-    const obtenerDepartamentos = async () => {
-      try {
-        const formData = new FormData();
-        formData.append('country_id', '48');
-
-        const response = await fetch(`${baseURL}/statesGet.php`, {
-          method: 'POST',
-          body: formData
-        });
-
-        console.log("formData", formData);
-
-        const data = await response.json();
-        console.log("Departamentos obtenidos:", data.data.states);
-        const opciones = data.data.states.map((dep) => ({
-          label: dep.name,
-          value: dep.id
-        }));
-
-        setDepartamentos(opciones);
-      } catch (error) {
-        console.error('Error al obtener departamentos:', error);
-      }
-    };
-
-    obtenerDepartamentos();
-  }, []);
-
-
-
-  useEffect(() => {
-    const obtenerCiudades = async () => {
-      if (departamentoSeleccionado) {
-        try {
-          const formData = new FormData();
-          formData.append('country_id', '48');
-          formData.append('state_id', departamentoSeleccionado);
-          //const response = await fetch(`${baseURL}/citiesGet.php?country_id=48&state_id=${departamentoSeleccionado}`);
-          const response = await fetch(`${baseURL}/citiesGet.php?country_id=48&state_id=${departamentoSeleccionado}`, {
-            method: 'POST',
-            body: formData
-          });
-          const data = await response.json();
-          console.log("Respuesta de ciudades:", data.data.states);
-          const opciones = data.data.states.map((ciudad) => ({
-            label: ciudad.name,
-            value: ciudad.id
-          }));
-          setCiudades(opciones);
-          setValue('ciudad', ''); // Reiniciar la ciudad seleccionada
-        } catch (error) {
-          console.error('Error al obtener ciudades:', error);
-        }
-      } else {
-        setCiudades([]);
-        setValue('ciudad', '');
-      }
-    };
-
-    obtenerCiudades();
-  }, [departamentoSeleccionado, setValue]);
-
-
-  const [showErrorsDialog, setShowErrorsDialog] = useState(false);
-
-
-
-  // const onError = (formErrors) => {
-  //   if (Object.keys(formErrors).length > 0) {
-  //     setShowErrorsDialog(true); // Show the dialog ONLY if there are errors
-  //   }
-  // };
-
-  // const onError = (formErrors) => {
-  //   if (Object.keys(formErrors).length > 0) {
-  //     setShowErrorsDialog(true);
-  //     window.scrollTo({ top: 0, behavior: 'smooth' });
-  //   }
-  // };
-
-  const [isFinalSubmit, setIsFinalSubmit] = useState(false);
-
 
   const onError = (formErrors) => {
     if (isFinalSubmit && Object.keys(formErrors).length > 0) {
@@ -432,15 +315,6 @@ useEffect(() => {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
-
-  useEffect(() => {
-    // Solo se ejecuta en desarrollo
-    const isDev = process.env.NODE_ENV !== 'production';
-
-    if (isDev) {
-      // inicializarFormularioDePrueba();
-    }
-  }, []);
 
   const inicializarFormularioDePrueba = () => {
     setValue('documento', '123456789');
@@ -456,16 +330,22 @@ useEffect(() => {
     setValue('clienteCelular', '3107654321');
     setValue('clienteTransportadora', '3107654321');
     setValue('fechaDespacho', new Date());
-    //setValue('franjaEntrega', []);
-    setValue('departamento', 1); // Asegúrate que sea un ID válido en tu sistema
-    setValue('ciudad', 10);      // Igual aquí
+    setValue('departamento', 1);
+    setValue('ciudad', 10);
     setValue('direccion', 'Cra 123 #45-67');
     setValue('barrio', 'El Prado');
-
     setValue('contraentrega', 'No');
     setValue('transferencia', 'Sí');
     setValue('notas', 'Esto es una prueba automatizada');
   };
+
+  useEffect(() => {
+    const isDev = process.env.NODE_ENV !== 'production';
+    if (isDev) {
+      // Puedes descomentar si quieres precargar datos
+      // inicializarFormularioDePrueba();
+    }
+  }, []);
 
   useEffect(() => {
     const consultarAsesor = async () => {
@@ -473,97 +353,168 @@ useEffect(() => {
         const formData = new FormData();
         formData.append('doc_asesor', documento);
         formData.append('tipo_asesor', tipoAsesor);
-        //formData.append('pin_asesor', pinAsesor);
         formData.append('pin_asesor', watch('pin_asesor'));
-        console.log("Consultando asesor con datos:", {
+
+        console.log('Consultando asesor con datos:', {
           documento,
           tipoAsesor,
-          pin_asesor: watch('pin_asesor')
+          pin_asesor: watch('pin_asesor'),
         });
-
 
         try {
           const response = await fetch(`${baseURL}/asesorDocGet.php`, {
             method: 'POST',
-            body: formData
+            body: formData,
           });
-          console.log("Respuesta del servidor:", response);
+          console.log('Respuesta del servidor:', response);
 
           const data = await response.json();
 
           if (data.success) {
-            console.log("Datos recibidos:", data.data);
+            console.log('Datos recibidos:', data.data);
 
             setValue('nombre', data.data.nombre_completo || '');
             setValue('telefono', data.data.telefono || '');
             setValue('email', data.data.email || '');
 
-            console.log("Datos del asesor asignados:", {
+            console.log('Datos del asesor asignados:', {
               nombre: data.nombre_completo,
               telefono: data.telefono,
-              email: data.email
+              email: data.email,
             });
-            // Puedes setear más campos si lo necesitas
-            console.log('Asesor encontrado y datos asignados');
           } else {
             console.log('Asesor no encontrado, será registrado al guardar.');
           }
         } catch (error) {
-          console.error("Error al consultar asesor:", error);
+          console.error('Error al consultar asesor:', error);
         }
       }
     };
 
     consultarAsesor();
-  }, [documento, tipoAsesor]); // Se ejecuta al cambiar documento o tipo asesor
-
-
-
+  }, [documento, tipoAsesor, setValue, watch]);
 
   const resumenPedido = [
-    { campo: "Documento Asesor", valor: watch("documento") },
-    { campo: "PIN Asesor", valor: watch("pin_asesor") },
-    { campo: "Email", valor: watch("email") },
-    { campo: "Nombre Asesor", valor: watch("nombre") },
-    { campo: "Teléfono Asesor", valor: watch("telefono") },
-    { campo: "Medio Comisión", valor: watch("medioComision") },
-    { campo: "Otro Medio", valor: watch("otroMedio") },
-    { campo: "Valor", valor: watch("valor") },
-    { campo: "Incluye Envío", valor: watch("incluyeEnvio") },
+    { campo: 'Documento Asesor', valor: watch('documento') },
+    { campo: 'PIN Asesor', valor: watch('pin_asesor') },
+    { campo: 'Email', valor: watch('email') },
+    { campo: 'Nombre Asesor', valor: watch('nombre') },
+    { campo: 'Teléfono Asesor', valor: watch('telefono') },
+    { campo: 'Medio Comisión', valor: watch('medioComision') },
+    { campo: 'Otro Medio', valor: watch('otroMedio') },
+    { campo: 'Valor', valor: watch('valor') },
+    { campo: 'Incluye Envío', valor: watch('incluyeEnvio') },
 
-    { campo: "Nombre Cliente", valor: watch("clienteNombre") },
-    { campo: "Documento Cliente", valor: watch("clienteDocumento") },
-    { campo: "Celular Cliente", valor: watch("clienteCelular") },
-    { campo: "Cel. Transportadora", valor: watch("clienteTransportadora") },
+    { campo: 'Nombre Cliente', valor: watch('clienteNombre') },
+    { campo: 'Documento Cliente', valor: watch('clienteDocumento') },
+    { campo: 'Celular Cliente', valor: watch('clienteCelular') },
+    { campo: 'Cel. Transportadora', valor: watch('clienteTransportadora') },
 
-    { campo: "Fecha de despacho", valor: watch("fechaDespacho")?.toLocaleDateString() },
-    { campo: "Franja de entrega", valor: (watch("franjaEntrega") || []).join(", ") },
-    { campo: "Departamento", valor: departamentos.find(d => d.value === watch("departamento"))?.label || watch("departamento") },
-    { campo: "Ciudad", valor: ciudades.find(c => c.value === watch("ciudad"))?.label || watch("ciudad") },
-    { campo: "Dirección", valor: watch("direccion") },
-    { campo: "Barrio", valor: watch("barrio") },
-    { campo: "Notas", valor: watch("notas") },
+    {
+      campo: 'Fecha de despacho',
+      valor: watch('fechaDespacho')?.toLocaleDateString(),
+    },
+    {
+      campo: 'Franja de entrega',
+      valor: (watch('franjaEntrega') || []).join(', '),
+    },
+    {
+      campo: 'Departamento',
+      valor:
+        departamentos.find((d) => d.value === watch('departamento'))?.label ||
+        watch('departamento'),
+    },
+    {
+      campo: 'Ciudad',
+      valor:
+        ciudades.find((c) => c.value === watch('ciudad'))?.label ||
+        watch('ciudad'),
+    },
+    { campo: 'Dirección', valor: watch('direccion') },
+    { campo: 'Barrio', valor: watch('barrio') },
+    { campo: 'Notas', valor: watch('notas') },
 
-    { campo: "Transferencia", valor: watch("transferencia") },
-    { campo: "Contraentrega", valor: watch("contraentrega") },
-    { campo: "Medio de Pago", valor: watch("metodoPago") },
-    { campo: "Otro Método de Pago", valor: watch("otroMetodoPago") },
+    { campo: 'Transferencia', valor: watch('transferencia') },
+    { campo: 'Contraentrega', valor: watch('contraentrega') },
+    { campo: 'Medio de Pago', valor: watch('metodoPago') },
+    { campo: 'Otro Método de Pago', valor: watch('otroMetodoPago') },
   ];
-  // At the top of your file or in a useEffect/useMemo
-  const color1 = getComputedStyle(document.documentElement).getPropertyValue('--color1') || '#2ea74e';
+
+
+
+  useEffect(() => {
+    const obtenerDepartamentos = async () => {
+      try {
+        const formData = new FormData();
+        formData.append('country_id', '48');
+
+        const response = await fetch(`${baseURL}/statesGet.php`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        const data = await response.json();
+        const opciones = data.data.states.map((dep) => ({
+          label: dep.name,
+          value: dep.id,
+        }));
+
+        setDepartamentos(opciones);
+      } catch (error) {
+        console.error('Error al obtener departamentos:', error);
+      }
+    };
+
+    obtenerDepartamentos();
+  }, []);
+
+  useEffect(() => {
+    const obtenerCiudades = async () => {
+      if (departamentoSeleccionado) {
+        try {
+          const formData = new FormData();
+          formData.append('country_id', '48');
+          formData.append('state_id', departamentoSeleccionado);
+
+          const response = await fetch(
+            `${baseURL}/citiesGet.php?country_id=48&state_id=${departamentoSeleccionado}`,
+            {
+              method: 'POST',
+              body: formData,
+            }
+          );
+          const data = await response.json();
+          const opciones = data.data.states.map((ciudad) => ({
+            label: ciudad.name,
+            value: ciudad.id,
+          }));
+          setCiudades(opciones);
+          setValue('ciudad', '');
+        } catch (error) {
+          console.error('Error al obtener ciudades:', error);
+        }
+      } else {
+        setCiudades([]);
+        setValue('ciudad', '');
+      }
+    };
+
+    obtenerCiudades();
+  }, [departamentoSeleccionado, setValue]);
+
+  const color1 =
+    getComputedStyle(document.documentElement).getPropertyValue('--color1') ||
+    '#2ea74e';
+
   const numericFields = [
     'documento',
     'telefono',
     'clienteDocumento',
     'clienteCelular',
-    'clienteTransportadora'
+    'clienteTransportadora',
   ];
-  // const numericFields = ['clienteDocumento', 'clienteCelular', 'clienteTransportadora'];
 
   return (
-
-    // <div className="card p-4 surface-50" style={{ maxWidth: '900px', margin: 'auto' }}>
-    // <div className="card flex justify-content-center" style={{ backgroundColor: '#f9f9f9', borderLeft: '5px solid #0c6efd' }}>
     <div
       className="card flex justify-content-center"
       style={{
@@ -571,23 +522,16 @@ useEffect(() => {
         borderLeft: `5px solid ${color1}`,
       }}
     >
-
-
-
-
-      {/* <ScrollPanel style={{ width: '100%', height: 'calc(100vh - 50px)' }}> */}
       <div
         style={{
           height: 'calc(100vh - 50px)',
           overflowY: 'auto',
-          padding: '1rem'            /* opcional, para respirar */
+          padding: '1rem',
         }}
       >
         <div className="hide-on-mobile">
           <InfoCarroPedido pedido={null} />
         </div>
-
-
 
         <Dialog
           header="⚠️ Errores en el formulario⚠️ "
@@ -598,7 +542,10 @@ useEffect(() => {
         >
           {Object.keys(errors).length > 0 && (
             <div className="p-3">
-              <h5 className="text-red-600"> Por favor corrige los siguientes errores:</h5>
+              <h5 className="text-red-600">
+                {' '}
+                Por favor corrige los siguientes errores:
+              </h5>
               <ul className="text-red-500 ml-4 list-disc">
                 {Object.entries(errors).map(([fieldName, errorObj]) => (
                   <li key={fieldName}>:{errorObj.message}</li>
@@ -607,11 +554,6 @@ useEffect(() => {
             </div>
           )}
         </Dialog>
-
-
-
-
-
 
         <Dialog
           header="¡Éxito!"
@@ -627,42 +569,20 @@ useEffect(() => {
           <p>Pedido enviado correctamente.</p>
         </Dialog>
 
-
-
         <form onSubmit={handleSubmit(onSubmit, onError)}>
-
           <Stepper
             orientation="vertical"
             headerPosition="left"
             activeStep={activeIndex}
             onStepChange={(e) => setActiveIndex(e.index)}
           >
-
-
-            {!isCatalog && (
+            {isDropshipper && (
               <StepperPanel header="Datos del Asesor">
-                <Card title="Datos del asesor" className="w-full border border-gray-400 shadow-md rounded-xl">
-
-
+                <Card
+                  title="Datos del asesor"
+                  className="w-full border border-gray-400 shadow-md rounded-xl"
+                >
                   <div className="formgrid grid">
-
-
-                    {/* {[
-                    ['documento', 'Tu Documento'],
-                    ['pin_asesor', 'Tu PIN (* alfanumérico)'],
-
-
-                  ].map(([field, label]) => (
-                    <div key={field} className="col-12 md:col-6">
-                      <label>{label}</label>
-                      <InputText {...register(field)} className="w-full" />
-                      {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
-
-                    </div>
-
-
-                  ))} */}
-
                     {[
                       ['documento', 'Tu Documento'],
                       ['pin_asesor', 'Tu PIN (* alfanumérico)'],
@@ -674,38 +594,29 @@ useEffect(() => {
                           <InputText
                             {...register(field)}
                             className="w-full"
-                            onKeyPress={onlyNumbers
-                              ? e => {
-                                if (!/[0-9]/.test(e.key)) {
-                                  e.preventDefault();
-                                }
-                              }
-                              : undefined
+                            onKeyPress={
+                              onlyNumbers
+                                ? (e) => {
+                                    if (!/[0-9]/.test(e.key)) {
+                                      e.preventDefault();
+                                    }
+                                  }
+                                : undefined
                             }
                           />
                           {errors[field] && (
-                            <small className="p-error">{errors[field]?.message}</small>
+                            <small className="p-error">
+                              {errors[field]?.message}
+                            </small>
                           )}
                         </div>
                       );
                     })}
 
-                    {/* {[
-
-                    ['email', 'Tu email'],
-                    ['nombre', 'Tu Nombre'],
-                    ['telefono', 'Tu Teléfono']
-                  ].map(([field, label]) => (
-                    <div key={field} className="col-12 md:col-6">
-                      <label>{label}</label>
-                      <InputText {...register(field)} className="w-full" />
-                      {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
-                    </div>
-                  ))} */}
                     {[
                       ['email', 'Tu email'],
                       ['nombre', 'Tu Nombre'],
-                      ['telefono', 'Tu Teléfono']
+                      ['telefono', 'Tu Teléfono'],
                     ].map(([field, label]) => {
                       const onlyNumbers = numericFields.includes(field);
                       return (
@@ -714,21 +625,22 @@ useEffect(() => {
                           <InputText
                             {...register(field)}
                             className="w-full"
-                            onKeyPress={onlyNumbers
-                              ? e => {
-                                if (!/[0-9]/.test(e.key)) e.preventDefault();
-                              }
-                              : undefined
+                            onKeyPress={
+                              onlyNumbers
+                                ? (e) => {
+                                    if (!/[0-9]/.test(e.key)) e.preventDefault();
+                                  }
+                                : undefined
                             }
                           />
                           {errors[field] && (
-                            <small className="p-error">{errors[field]?.message}</small>
+                            <small className="p-error">
+                              {errors[field]?.message}
+                            </small>
                           )}
                         </div>
                       );
                     })}
-
-
 
                     <div className="col-12 md:col-6">
                       <label>¿Dónde recibes comisiones?</label>
@@ -736,50 +648,36 @@ useEffect(() => {
                         name="medioComision"
                         control={control}
                         render={({ field }) => (
-                          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
+                          <Dropdown
+                            {...field}
+                            options={medioPagoLista}
+                            placeholder="Seleccione"
+                            className="w-full"
+                          />
                         )}
                       />
-                      {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
-                    </div>
-
-                    <div className="col-12 flex justify-content-end">
-
-
+                      {errors.medioComision && (
+                        <small className="p-error">
+                          {errors.medioComision.message}
+                        </small>
+                      )}
                     </div>
                   </div>
-
                 </Card>
               </StepperPanel>
             )}
 
-
-
             <StepperPanel header="Datos del Cliente">
-              <Card title="Datos del cliente" className="w-full border border-gray-400 shadow-md rounded-xl">
-                {/* <div className="formgrid grid">
-                  {[
-                    ['clienteNombre', 'Nombre de tu cliente'],
-                    ['clienteDocumento', 'Documento de tu cliente'],
-                    ['clienteCelular', 'Celular Llamadas de tu cliente'],
-                    ['clienteTransportadora', 'Celular WhatsApp de tu cliente'],
-                  ].map(([field, label]) => (
-                    <div key={field} className="col-12 md:col-6">
-                      <label>{label}</label>
-                      <InputText {...register(field)} className="w-full" />
-                      {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
-                    </div>
-                  ))}
-                  <div className="col-12 flex justify-content-between">
-
-                  </div>
-                </div> */}
-
+              <Card
+                title="Datos del cliente"
+                className="w-full border border-gray-400 shadow-md rounded-xl"
+              >
                 <div className="formgrid grid">
                   {[
                     ['clienteNombre', 'Nombrel del cliente'],
                     ['clienteDocumento', 'Documento del cliente'],
                     ['clienteCelular', 'Celular Llamadas del cliente'],
-                    ['clienteTransportadora', 'Celular WhatsApp del cliente'],
+                    ['clienteTransportadora', 'WhatsApp del cliente'],
                   ].map(([field, label]) => {
                     const onlyNumbers = numericFields.includes(field);
                     return (
@@ -788,63 +686,75 @@ useEffect(() => {
                         <InputText
                           {...register(field)}
                           className="w-full"
-                          // si es campo numérico, bloquear cualquier tecla que no sea dígito
-                          onKeyPress={onlyNumbers
-                            ? e => {
-                              if (!/[0-9]/.test(e.key)) {
-                                e.preventDefault();
-                              }
-                            }
-                            : undefined
+                          onKeyPress={
+                            onlyNumbers
+                              ? (e) => {
+                                  if (!/[0-9]/.test(e.key)) {
+                                    e.preventDefault();
+                                  }
+                                }
+                              : undefined
                           }
                         />
-                        {errors[field] && <small className="p-error">{errors[field]?.message}</small>}
+                        {errors[field] && (
+                          <small className="p-error">
+                            {errors[field]?.message}
+                          </small>
+                        )}
                       </div>
                     );
                   })}
-                  <div className="col-12 flex justify-content-between" />
                 </div>
               </Card>
             </StepperPanel>
 
             <StepperPanel header="Datos de Entrega">
-
               <Card title="Datos de la entrega" className="w-full">
                 <div className="formgrid grid">
-{/*                   <div className="col-12 md:col-6">
-                    <label>Fecha Despacho</label>
-
-
-
-                    <Controller name="fechaDespacho" control={control} render={({ field }) => (
-                      <Calendar {...field} showIcon dateFormat="dd/mm/yy" className="w-full" />
-
-                    )} />
-                    {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
-
-                  </div>
- */}
-              {/*     <div className="col-12 md:col-6">
-                    <label>Franja de Entrega</label>
-                
-
-                    <Controller
-                      name="franjaEntrega"
-                      control={control}
-                      defaultValue={["08:00-08:00 PM"]}
-                      render={({ field }) => (
-                        <InputText
-                          value={(field.value || []).join(', ')}
-                          readOnly
-                          className="w-full"
-                        />
+                  {isDropshipper && (
+                    <div className="col-12 md:col-6">
+                      <label>Fecha Despacho</label>
+                      <Controller
+                        name="fechaDespacho"
+                        control={control}
+                        render={({ field }) => (
+                          <Calendar
+                            {...field}
+                            showIcon
+                            dateFormat="dd/mm/yy"
+                            className="w-full"
+                          />
+                        )}
+                      />
+                      {errors.fechaDespacho && (
+                        <small className="p-error">
+                          {errors.fechaDespacho.message}
+                        </small>
                       )}
-                    />
-                    {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
-                  </div> */}
+                    </div>
+                  )}
 
-
-
+                  {isDropshipper && (
+                    <div className="col-12 md:col-6">
+                      <label>Franja de Entrega</label>
+                      <Controller
+                        name="franjaEntrega"
+                        control={control}
+                        render={({ field }) => (
+                          <InputText
+                            value={(field.value || []).join(', ')}
+                            readOnly
+                            className="w-full"
+                          />
+                        )}
+                      />
+                      {errors.franjaEntrega && (
+                        <small className="p-error">
+                          {errors.franjaEntrega.message}
+                        </small>
+                      )}
+                    </div>
+                  )}
 
                   <div className="col-12 md:col-6">
                     <label>Dpto. de entrega</label>
@@ -860,7 +770,11 @@ useEffect(() => {
                         />
                       )}
                     />
-                    {errors.departamento && <small className="p-error">{errors.departamento.message}</small>}
+                    {errors.departamento && (
+                      <small className="p-error">
+                        {errors.departamento.message}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-12 md:col-6">
@@ -878,19 +792,31 @@ useEffect(() => {
                         />
                       )}
                     />
-                    {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
+                    {errors.ciudad && (
+                      <small className="p-error">
+                        {errors.ciudad.message}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-12 md:col-6">
                     <label>Dirección de tu cliente</label>
-                    <InputText {...register("direccion")} className="w-full" />
-                    {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
+                    <InputText {...register('direccion')} className="w-full" />
+                    {errors.direccion && (
+                      <small className="p-error">
+                        {errors.direccion.message}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-12 md:col-6">
                     <label>Barrio</label>
-                    <InputText {...register("barrio")} className="w-full" />
-                    {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
+                    <InputText {...register('barrio')} className="w-full" />
+                    {errors.barrio && (
+                      <small className="p-error">
+                        {errors.barrio.message}
+                      </small>
+                    )}
                   </div>
 
                   <div className="col-12">
@@ -908,120 +834,117 @@ useEffect(() => {
                         />
                       )}
                     />
-                    {errors.notas && <small className="p-error">{errors.notas.message}</small>}
-                  </div>
-
-
-
-                  <div className="col-12 flex justify-content-between">
-                    {/* <Button 
-                  label="Atrás" 
-                    onClick={() => setActiveIndex(activeIndex - 1)}
-                      disabled={activeIndex === 0}
-                   /> */}
-                    {/* <Button label="Siguiente" onClick={() => setActiveIndex(3)} /> */}
-                    {/* <Button
-                    label="Siguiente"
-                    type="button"
-                    onClick={() => setActiveIndex(activeIndex + 1)}
-                    disabled={activeIndex === totalSteps - 1}
-
-                  /> */}
-
+                    {errors.notas && (
+                      <small className="p-error">{errors.notas.message}</small>
+                    )}
                   </div>
                 </div>
               </Card>
             </StepperPanel>
 
             <StepperPanel header="Forma de pago">
-
               <Card title="Forma de pago" className="w-full">
-
-
-
-
-                {/* Campo valor, con lógica de habilitación/deshabilitación */}
                 {!isCatalog && (
                   <div className="col-12 md:col-6">
                     <label>Valor a cobrar al cliente</label>
-                    <InputText
-                      {...register("valor")}
-                      className="w-full"
-                    />
-                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
+                    <InputText {...register('valor')} className="w-full" />
+                    {errors.valor && (
+                      <small className="p-error">{errors.valor.message}</small>
+                    )}
                   </div>
                 )}
 
-
-{!isCatalog && (
-  <div className="col-12">
-    <label>¿Incluye Envío?</label>
-    <Controller
-      name="incluyeEnvio"
-      control={control}
-      render={({ field }) => (
-        <div className="flex gap-3">
-          <RadioButton inputId="si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-          <label htmlFor="si">Sí</label>
-          <RadioButton inputId="no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-          <label htmlFor="no">No</label>
-        </div>
-      )}
-    />
-    {errors.incluyeEnvio && <small className="p-error">{errors.incluyeEnvio.message}</small>}
-  </div>
-)}
-
-
-                {(
+                {!isCatalog && (
                   <div className="col-12">
-                    <label>¿Pago Contraentrega?</label>
+                    <label>¿Incluye Envío?</label>
                     <Controller
-                      name="contraentrega"
+                      name="incluyeEnvio"
                       control={control}
                       render={({ field }) => (
                         <div className="flex gap-3">
-                          <RadioButton inputId="contra_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="contra_si">Sí</label>
-                          <RadioButton inputId="contra_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="contra_no">No</label>
+                          <RadioButton
+                            inputId="si"
+                            value="Sí"
+                            checked={field.value === 'Sí'}
+                            onChange={(e) => field.onChange(e.value)}
+                          />
+                          <label htmlFor="si">Sí</label>
+                          <RadioButton
+                            inputId="no"
+                            value="No"
+                            checked={field.value === 'No'}
+                            onChange={(e) => field.onChange(e.value)}
+                          />
+                          <label htmlFor="no">No</label>
                         </div>
                       )}
                     />
-                    {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
+                    {errors.incluyeEnvio && (
+                      <small className="p-error">
+                        {errors.incluyeEnvio.message}
+                      </small>
+                    )}
                   </div>
                 )}
 
+                <div className="col-12">
+                  <label>¿Pago Contraentrega?</label>
+                  <Controller
+                    name="contraentrega"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="flex gap-3">
+                        <RadioButton
+                          inputId="contra_si"
+                          value="Sí"
+                          checked={field.value === 'Sí'}
+                          onChange={(e) => field.onChange(e.value)}
+                        />
+                        <label htmlFor="contra_si">Sí</label>
+                        <RadioButton
+                          inputId="contra_no"
+                          value="No"
+                          checked={field.value === 'No'}
+                          onChange={(e) => field.onChange(e.value)}
+                        />
+                        <label htmlFor="contra_no">No</label>
+                      </div>
+                    )}
+                  />
+                  {errors.contraentrega && (
+                    <small className="p-error">
+                      {errors.contraentrega.message}
+                    </small>
+                  )}
+                </div>
 
                 <div className="formgrid grid">
                   <div className="col-12">
                     <label>¿Pago por transferencia?</label>
                     <Controller
-
                       name="transferencia"
                       control={control}
                       render={({ field }) => (
                         <div className="flex gap-3">
-                          <RadioButton disabled={true} inputId="transfer_si" value="Sí" checked={field.value === 'Sí'} onChange={(e) => field.onChange(e.value)} />
+                          <RadioButton
+                            disabled={true}
+                            inputId="transfer_si"
+                            value="Sí"
+                            checked={field.value === 'Sí'}
+                            onChange={(e) => field.onChange(e.value)}
+                          />
                           <label htmlFor="transfer_si">Sí</label>
-                          {/* <RadioButton  disabled="true" inputId="transfer_no" value="No" checked={field.value === 'No'} onChange={(e) => field.onChange(e.value)} />
-                          <label htmlFor="transfer_no">No</label> */}
                         </div>
                       )}
                     />
                   </div>
 
-                  {/* ¿Otro medio? */}
                   {medioComisionSeleccionado === 'Otro' && (
                     <div className="col-12 md:col-6">
                       <label>¿Cuál?</label>
-                      <InputText {...register("otroMedio")} className="w-full" />
+                      <InputText {...register('otroMedio')} className="w-full" />
                     </div>
                   )}
-
-
-
-
 
                   {transferencia === 'Sí' && contraentrega === 'No' && (
                     <>
@@ -1031,137 +954,156 @@ useEffect(() => {
                           name="metodoPago"
                           control={control}
                           render={({ field }) => (
-                            <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" className="w-full" />
+                            <Dropdown
+                              {...field}
+                              options={medioPagoLista}
+                              placeholder="Seleccione"
+                              className="w-full"
+                            />
                           )}
                         />
-                        {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
+                        {errors.metodoPago && (
+                          <small className="p-error">
+                            {errors.metodoPago.message}
+                          </small>
+                        )}
                       </div>
 
                       {metodoPago === 'Otro' && (
                         <div className="col-12 md:col-6">
                           <label>¿Cuál?</label>
-                          <InputText {...register("otroMetodoPago")} className="w-full" />
-                          {errors.otroMetodoPago && <small className="p-error">{errors.otroMetodoPago.message}</small>}
+                          <InputText
+                            {...register('otroMetodoPago')}
+                            className="w-full"
+                          />
+                          {errors.otroMetodoPago && (
+                            <small className="p-error">
+                              {errors.otroMetodoPago.message}
+                            </small>
+                          )}
                         </div>
                       )}
                     </>
                   )}
-
-                  <div className="col-12 flex justify-content-between">
-
-
-                  </div>
-
                 </div>
               </Card>
             </StepperPanel>
-            <StepperPanel header="Resumen">
 
+            <StepperPanel header="Resumen">
               <div className="formgrid grid">
                 <div className="col-12">
-
-
-                 
-
-                    <Card title="Resumen del pedido" className="w-full" style={{ maxWidth: 600, margin: '0 auto' }}>
-  <div style={{ padding: '1rem', backgroundColor: '#fff', border: '1px solid #ccc', borderRadius: '8px' }}>
-
-    {/* ENCABEZADO DEL TICKET */}
-    <h3 style={{ marginBottom: '1rem', textAlign: 'center', fontWeight: 'bold' }}>🧾 Resumen del Pedido</h3>
-
-    {/* INFORMACIÓN GENERAL */}
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.5rem' }}>
-      {resumenPedido
-        .filter(item => item.valor && item.valor !== "")
-        .map((item, index) => (
-          <div key={index} style={{ display: 'flex', justifyContent: 'space-between' }}>
-            <span style={{ fontWeight: 'bold' }}>{item.campo}</span>
-            <span>{item.valor}</span>
-          </div>
-      ))}
-    </div>
-
-    {/* PRODUCTOS */}
-    <h4 style={{ marginBottom: '1rem', borderTop: '1px dashed #aaa', paddingTop: '1rem' }}>🛒 Productos Seleccionados</h4>
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {cartItems.map((item, index) => (
-        <div key={index} style={{ borderBottom: '1px solid #eee', paddingBottom: '0.5rem' }}>
-          <strong>{item.titulo}</strong><br />
-          Cantidad: {item.cantidad}<br />
-          Precio Unitario: ${Number(item.precio).toLocaleString()}<br />
-          Subtotal: <strong>${Number(item.precio * item.cantidad).toLocaleString()}</strong>
-        </div>
-      ))}
-    </div>
-
-    {/* TOTAL */}
-    <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: '1.1rem', marginTop: '1.5rem' }}>
-      Total: ${Number(totalPrice).toLocaleString()}
-    </div>
-  </div>
-</Card>
-
-
-                    {/* <ScrollPanel style={{ width: '100%', overflowX: 'scroll'  }}> */}
- <div style={{ minWidth: '1200px' }}>
-{/*                       <DataTable
-                        value={resumenPedido.filter(item => item.valor && item.valor !== "")}
-                        showGridlines
-                        size="small"
-                        responsiveLayout="scroll"
-                        style={{ marginBottom: 20 }}
+                  <Card
+                    title="Resumen del pedido"
+                    className="w-full"
+                    style={{ maxWidth: 600, margin: '0 auto' }}
+                  >
+                    <div
+                      style={{
+                        padding: '1rem',
+                        backgroundColor: '#fff',
+                        border: '1px solid #ccc',
+                        borderRadius: '8px',
+                      }}
+                    >
+                      <h3
+                        style={{
+                          marginBottom: '1rem',
+                          textAlign: 'center',
+                          fontWeight: 'bold',
+                        }}
                       >
-                        <Column field="campo" header="Campo" />
-                        <Column field="valor" header="Valor" />
-                      </DataTable> */}
+                        🧾 Resumen del Pedido
+                      </h3>
 
-                      {/* <h3 className="mt-4 mb-3">Resumen del pedido</h3> */}
-
-
-
-
-                      {/* You can also add the product summary here, if you want */}
-{/*                       <h3 className="mt-4 mb-3">Productos Seleccionados</h3>
-                      <DataTable
-                        value={cartItems}
-                        showGridlines
-                        size="small"
-                        responsiveLayout="scroll"
-                        style={{ marginBottom: 20 }}
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '0.5rem',
+                          marginBottom: '1.5rem',
+                        }}
                       >
-                        <Column field="titulo" header="Producto" />
-                        <Column field="cantidad" header="Cantidad" style={{ width: 80, textAlign: 'center' }} />
-                        <Column
-                          field="precio"
-                          header="Precio Unitario"
-                          body={(row) => `$${Number(row.precio).toLocaleString()}`}
-                          style={{ width: 120, textAlign: 'right' }}
-                        />
-                        <Column
-                          header="Subtotal"
-                          body={(row) => `$${(row.precio * row.cantidad).toLocaleString()}`}
-                          style={{ width: 120, textAlign: 'right', fontWeight: 600 }}
-                        />
-                      </DataTable> */}
-
-
+                        {resumenPedido
+                          .filter((item) => item.valor && item.valor !== '')
+                          .map((item, index) => (
+                            <div
+                              key={index}
+                              style={{
+                                display: 'flex',
+                                justifyContent: 'space-between',
+                              }}
+                            >
+                              <span style={{ fontWeight: 'bold' }}>
+                                {item.campo}
+                              </span>
+                              <span>{item.valor}</span>
+                            </div>
+                          ))}
                       </div>
 
-                    {/* </ScrollPanel> */}
-                      {/* <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
-                        Total: ${Number(totalPrice).toLocaleString()}
-                      </div> */}
+                      <h4
+                        style={{
+                          marginBottom: '1rem',
+                          borderTop: '1px dashed #aaa',
+                          paddingTop: '1rem',
+                        }}
+                      >
+                        🛒 Productos Seleccionados
+                      </h4>
+                      <div
+                        style={{
+                          display: 'flex',
+                          flexDirection: 'column',
+                          gap: '1rem',
+                        }}
+                      >
+                        {cartItems.map((item, index) => (
+                          <div
+                            key={index}
+                            style={{
+                              borderBottom: '1px solid #eee',
+                              paddingBottom: '0.5rem',
+                            }}
+                          >
+                            <strong>{item.titulo}</strong>
+                            <br />
+                            Cantidad: {item.cantidad}
+                            <br />
+                            Precio Unitario: $
+                            {Number(item.precio).toLocaleString()}
+                            <br />
+                            Subtotal:{' '}
+                            <strong>
+                              $
+                              {Number(
+                                item.precio * item.cantidad
+                              ).toLocaleString()}
+                            </strong>
+                          </div>
+                        ))}
+                      </div>
 
-        
+                      <div
+                        style={{
+                          textAlign: 'right',
+                          fontWeight: 'bold',
+                          fontSize: '1.1rem',
+                          marginTop: '1.5rem',
+                        }}
+                      >
+                        Total: ${Number(totalPrice).toLocaleString()}
+                      </div>
+                    </div>
+                  </Card>
                 </div>
               </div>
-
             </StepperPanel>
           </Stepper>
+
           <Button
             type="submit"
             label="Guardar"
-            className="p-button-success"
+            className="btn"
             onClick={() => setIsFinalSubmit(true)}
           />
         </form>

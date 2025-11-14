@@ -130,23 +130,31 @@ export default function Navbar() {
                             <Anchor to={`/dashboard/lista-precios`} className={location.pathname === '/dashboard/lista-precios' ? 'activeLink' : ''}>
                                 <FontAwesomeIcon icon={faMoneyBill} /> Lista de precios
                             </Anchor>
-
-                            <Anchor to={`/dashboard/pedidos`} className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}>
-                                <FontAwesomeIcon icon={faRectangleList} /> Pedidos
+                            
+                            <Anchor
+                            to="/dashboard/pedidos"
+                            className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}>
+                            <FontAwesomeIcon icon={faRectangleList} /> Pedidos
                             </Anchor>
 
-                            <Anchor to={`/dashboard/pedidos/dropshipper/view?`} className={location.pathname === '/dashboard/pedidos/dropshipper/view?' ? 'activeLink' : ''}>
-                                <FontAwesomeIcon icon={faRectangleList} /> Pedidos Dropshipper
+                            <Anchor
+                            to="/dashboard/pedidos-dropshipper"
+                            className={location.pathname === '/dashboard/pedidos-dropshipper' ? 'activeLink' : ''}>
+                            <FontAwesomeIcon icon={faRectangleList} /> Pedidos Dropshipper
                             </Anchor>
 
-
-                            <Anchor to={`/dashboard/pedidos/catalogo/view?`} className={location.pathname === '/dashboard/pedidos/catalogo/view?' ? 'activeLink' : ''}>
-                                <FontAwesomeIcon icon={faRectangleList} /> Pedidos Catálogo
+                            <Anchor
+                            to="/dashboard/pedidos-catalogo"
+                            className={location.pathname === '/dashboard/pedidos-catalogo' ? 'activeLink' : ''}>
+                            <FontAwesomeIcon icon={faRectangleList} /> Pedidos Catálogo
                             </Anchor>
 
-                            <Anchor to={`/dashboard/liquidacion/dropshipper/view?`} className={location.pathname === '/dashboard/liquidacion/dropshipper/view?' ? 'activeLink' : ''}>
-                                <FontAwesomeIcon icon={faProductHunt} /> Liquidación Dropshipper
+                            <Anchor
+                            to="/dashboard/liquidacion-dropshipper"
+                            className={location.pathname === '/dashboard/liquidacion-dropshipper' ? 'activeLink' : ''}>
+                            <FontAwesomeIcon icon={faProductHunt} /> Liquidación Dropshipper
                             </Anchor>
+
 
 
                             <Anchor to={`/dashboard/banners`} className={location.pathname === '/dashboard/banners' ? 'activeLink' : ''}>

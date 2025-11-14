@@ -1,3 +1,9 @@
+/* Botón del icono de calendario */
+.p-calendar .p-button {
+  border-radius: 0 6px 6px 0;  /* o 4px, lo que prefieras */
+  padding: 0.5rem;             /* mucho más pequeño */
+  width: auto;
+}
 
 
 .modal-cart {
@@ -379,14 +385,36 @@
     width: 100%;
 }
 
+/* Dropdown igual a los InputText */
 .p-dropdown {
-    /* background-color: var(--gris2); */
-
-    border-radius: 6px;
-    border: none;
-    
-    width: 100%;
+    background-color: #ffffff !important;   /* blanco */
+    border-radius: 6px !important;
+    border: 1px solid #ccc !important;
+    width: 100% !important;
+    padding: 0 !important;
 }
+
+/* Texto */
+.p-dropdown .p-dropdown-label {
+    padding: 12px !important;
+    background-color: transparent !important;
+    font-size: 0.9rem;
+}
+
+/* Trigger (botón de la flecha) al mismo color que el input */
+.p-dropdown .p-dropdown-trigger {
+    width: 2.5rem !important;
+    background-color: #ffffff !important; /* blanco */
+    border-left: 1px solid #ccc !important;
+    border-radius: 0 6px 6px 0 !important;
+}
+
+/* Focus limpio, como inputs */
+.p-dropdown:not(.p-disabled).p-focus {
+    box-shadow: none !important;
+    border-color: var(--color1) !important;
+}
+
 
 .p-calendar {
     width: 100%;
@@ -394,14 +422,17 @@
 }
 
 .p-button {
-    background-color: var(--color1);
-    border: none;
-    border-radius: 60px;
-    padding: 0.75rem 2rem;
+    background-color: var(--color1) !important;
+    border: none !important;
+    border-radius: 60px !important;
+    padding: 0.75rem 2rem !important;
+    color: var(--blanco) !important;     /* <-- ESTE ES EL QUE FALTABA */
+    font-weight: 500;
 }
 
+
 .p-button:hover {
-    background-color: var(--color1); /* más oscuro que color1 si quieres */
+    background-color: #1d8a3b !important;
 }
 
 .p-error {
