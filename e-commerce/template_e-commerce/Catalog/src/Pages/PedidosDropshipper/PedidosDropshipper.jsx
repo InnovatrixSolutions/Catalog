@@ -12,7 +12,7 @@ export default function PedidosDropshipper() {
 
                 <HeaderDash />
                 <div className='container'>
-                    {/* <PedidosData /> */}
+                     <PedidosData /> 
                 </div>
             </section>
         </div>

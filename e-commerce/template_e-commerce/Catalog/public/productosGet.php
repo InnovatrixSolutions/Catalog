@@ -47,6 +47,7 @@ try {
         $sqlSelect = "
             SELECT 
                 p.idProducto,
+                p.precio as costoCompra,
                 lp_actual.precio AS precio,
                 lp_anterior.precio AS precioAnterior,
                 lp_actual.tipoLista AS  tipoLista,

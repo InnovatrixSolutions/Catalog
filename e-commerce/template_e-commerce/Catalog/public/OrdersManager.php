@@ -103,6 +103,7 @@ class OrdersManager {
                 ':estado' =>ucfirst(strtolower(htmlspecialchars($datos['estado'], ENT_QUOTES, 'UTF-8'))),
                 ':productos' => $datos['productos'],
                 ':total' => (float)$datos['total_pedido'],
+                ':total_costo_compra' => (float)$datos['total_costo_compra'],
                 ':nombre' =>strtolower(htmlspecialchars($datos['nombre_cliente'], ENT_QUOTES, 'UTF-8')),
                 ':telefono' => filter_var($datos['telefono_cliente'], FILTER_SANITIZE_NUMBER_INT),
                 ':telefono_tran' => filter_var($datos['telefono_tran'], FILTER_SANITIZE_NUMBER_INT),
@@ -123,12 +124,12 @@ class OrdersManager {
 
             // ========== CONSULTA SQL ACTUALIZADA ==========
             $sql = "INSERT INTO pedidos (
-                tipo_pedido, estado, productos, total, total_productos, nota, 
+                tipo_pedido, estado, productos, total, total_costo_compra,  total_productos, nota, 
                 nombre, codigo, entrega, city_id, state_id, country_id, 
                 fecha_despacho, franja_horario, telefono, 
                 telefono_tran, pago,forma_pago, pagado, pagoRecibir, createdAt
             ) VALUES (
-                :tipo, :estado, :productos, :total, :total_productos, :nota, 
+                :tipo, :estado, :productos, :total, :total_costo_compra, :total_productos, :nota, 
                 :nombre, :codigo, :entrega, :city_id, :state_id, :country_id, 
                  :fechaDespacho, :franja_horario, :telefono, 
                 :telefono_tran, :pago,:formaPago, :pagado, :pagoRecibir, NOW()
