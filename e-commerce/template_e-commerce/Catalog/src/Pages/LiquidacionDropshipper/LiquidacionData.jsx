@@ -14,7 +14,6 @@ import jsPDF from 'jspdf';
 import 'jspdf-autotable';
 import { useLocation } from 'react-router-dom';
 import { Link as Anchor } from 'react-router-dom';
-import NewPedido from '../../Components/Admin/NewPedido/NewPedido';
 import contador from '../../Components/contador'
 import 'primereact/resources/themes/lara-light-blue/theme.css';
 import { DataTable } from 'primereact/datatable';
@@ -30,7 +29,14 @@ import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { Divider } from 'primereact/divider';
 import { TabView, TabPanel } from 'primereact/tabview';
+import { Calendar } from 'primereact/calendar';
 
+const formatDateParam = (date) => {
+  if (!date) return null;
+  // la Calendar de PrimeReact devuelve un Date
+  const iso = date.toISOString();
+  return iso.slice(0, 10); // 'YYYY-MM-DD'
+};
 
 
 export default function LiquidacionData() {
@@ -43,6 +49,10 @@ export default function LiquidacionData() {
     // === Filtros TABLA RESUMEN ===
     const [filtersResumen, setFiltersResumen] = useState(null);
     const [globalFilterResumen, setGlobalFilterResumen] = useState('');
+
+    const [periodoDesde, setPeriodoDesde] = useState(null);
+    const [periodoHasta, setPeriodoHasta] = useState(null);
+
 
     const [pedidos, setPedidos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -158,17 +168,36 @@ const dynamicColumns = [
     ];
 
 
-    const cargarPedidos = () => {
-        fetch(`${baseURL}/pedidoAsesoresGet.php`, {
-            method: 'GET',
-        })
-            .then(response => response.json())
-            .then(data => {
-                setPedidos(data.pedidos_asesores.reverse() || []);
-                console.log(data.pedidos_asesores)
-            })
-            .catch(error => console.error('Error al cargar pedidos:', error));
-    };
+const cargarPedidos = (opciones = {}) => {
+  const params = new URLSearchParams();
+
+  if (opciones.fecha_desde) {
+    params.append('fecha_desde', opciones.fecha_desde);
+  }
+  if (opciones.fecha_hasta) {
+    params.append('fecha_hasta', opciones.fecha_hasta);
+  }
+  if (opciones.idAsesor) {
+    params.append('idAsesor', opciones.idAsesor);
+  }
+  if (opciones.estado_comision) {
+    params.append('estado_comision', opciones.estado_comision);
+  }
+
+  const qs = params.toString();
+  const url = `${baseURL}/pedidoAsesoresGet.php${qs ? `?${qs}` : ''}`;
+
+  fetch(url, { method: 'GET' })
+    .then((response) => response.json())
+    .then((data) => {
+      setPedidos((data.pedidos_asesores || []).reverse());
+      console.log(data.pedidos_asesores);
+    })
+    .catch((error) =>
+      console.error('Error al cargar pedidos:', error)
+    );
+};
+
 
 
     const cargarTienda = () => {
@@ -289,6 +318,18 @@ const dynamicColumns = [
             });
     };
 
+const aplicarPeriodo = () => {
+  const desde = formatDateParam(periodoDesde);
+  const hasta = formatDateParam(periodoHasta);
+
+  cargarPedidos({
+    fecha_desde: desde,
+    fecha_hasta: hasta,
+    // si luego quieres añadir filtros:
+    // idAsesor: algunId,
+    // estado_comision: 'Pendiente',
+  });
+};
 
 
     const handleSectionChange = (section) => {
@@ -327,84 +368,6 @@ const dynamicColumns = [
     const recargar = () => {
         cargarPedidos();
     };
-    const invertirOrden = () => {
-        setPedidos([...pedidos].reverse());
-        setOrdenInvertido(!ordenInvertido);
-    };
-    // const descargarExcel = () => {
-    //     let totalGeneral = 0;
-    //     let totalComision = 0;
-    //     let totalValorEnvio = 0;
-        
-    //     const data = filtrados.map(item => {
-    //         const total = parseFloat(item.total);
-    //         const comision = parseFloat(item.comision) || 0;
-    //         const valorEnvio = parseFloat(item.valorEnvio) || 0;
-        
-    //         totalGeneral += total;
-    //         totalComision += comision;
-    //         totalValorEnvio += valorEnvio;
-        
-    //         const productos = JSON.parse(item.productos);
-    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}`);
-        
-    //         return {
-    //             'ID Pedido': item.idPedido,
-    //             'Estado': item.estado,
-    //             'Pagado': item.pagado,
-    //             'Nombre': item.nombre,
-    //             'Telefono': item.telefono,
-    //             'Pago': item.pago,
-    //             'Nota': item.nota,
-    //             'Pago al recibirlo': item.pagoRecibir || '',
-    //             'Entrega': item.entrega,
-    //             'Lista Precio': item.listaPrecio,
-    //             'Comisión': comision.toFixed(2),
-    //             'Método de Pago': item.metodoPago,
-    //             'Envio': item.envio,
-    //             'Valor Envío': valorEnvio.toFixed(2),
-    //             'Productos': infoProductos.join('\n'),
-    //             'Código': item.codigo,
-    //             'Total': `${moneda} ${total.toFixed(2)}`,
-    //             'Fecha': item.createdAt,
-    //         };
-    //     });
-        
-        
-
-    //     // Formatear el total general
-    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
-
-    //     // Agregar fila con el total general
-    //     const totalRow = {
-    //         'ID Pedido': '',
-    //         'Estado': '',
-    //         'Pagado': '',
-    //         'Nombre': '',
-    //         'Telefono': '',
-    //         'Pago': '',
-    //         'Nota': '',
-    //         'Pago al recibirlo': '',
-    //         'Entrega': '',
-    //         'Lista Precio': '',
-    //         'Comisión': totalComision.toFixed(2),
-    //         'Método de Pago': '',
-    //         'Envio': '',
-    //         'Valor Envío': totalValorEnvio.toFixed(2),
-    //         'Productos': '',
-    //         'Código': 'Total General:',
-    //         'Total': `${moneda} ${totalGeneral.toFixed(2)}`,
-    //         'Fecha': '',
-    //     };
-        
-
-    //     data.push(totalRow);
-
-    //     const ws = XLSX.utils.json_to_sheet(data);
-    //     const wb = XLSX.utils.book_new();
-    //     XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
-    //     XLSX.writeFile(wb, 'pedidos.xlsx');
-    // };
 
 
 const schemaPedidoEdit = z.object({
@@ -482,185 +445,97 @@ const schemaPedidoEdit = z.object({
 };
 const getPrettyHeader = (key) => pedidoPrettyHeaders[key] || key;
 
+function descargarExcel() {
+  if (!pedidos.length && !resumenAsesores.length) {
+    toast.warn("No hay datos para exportar");
+    return;
+  }
 
-const descargarExcel = (pedidosData = filtrados) => {
-
-    console.log("descargarExcel called", pedidosData); // Add this line
-  if (!Array.isArray(pedidosData) || !pedidosData.length) return;
-
-  // 1. Collect all unique keys across all pedidos
-  const allKeys = Array.from(
-    new Set(pedidosData.flatMap(item => Object.keys(item)))
-  );
-
-  // 2. Always include 'Productos' as a readable string
-  if (!allKeys.includes('Productos')) allKeys.push('Productos');
-
-  // 3. Format rows for Excel
-  const rows = pedidosData.map(item => {
-    const row = {};
-    allKeys.forEach(key => {
-      if (key === 'Productos') {
-        // Productos as string
-        try {
-          const productos = JSON.parse(item.productos || '[]');
-          row['Productos'] = productos.map(p => `${p.titulo} x${p.cantidad} - $${p.precio}`).join('; ');
-        } catch {
-          row['Productos'] = '';
-        }
-      } else {
-        row[key] = item[key] ?? '';
-      }
-    });
-    return row;
-  });
-
-  // 4. Use pretty headers for columns
-  const headers = allKeys.map(getPrettyHeader);
-  const ws = XLSX.utils.json_to_sheet(rows, { header: allKeys });
-  // Replace keys with pretty headers in first row
-  XLSX.utils.sheet_add_aoa(ws, [headers], { origin: 'A1' });
-
-  // 5. Export file
   const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
-  XLSX.writeFile(wb, 'pedidos.xlsx');
-};
+  
 
-
-
-
-    // const descargarPDF = () => {
-    //     const pdf = new jsPDF('landscape'); // Orientación horizontal
-    //     pdf.text('Lista de Pedidos', 10, 10);
-
-    //     const columns = [
-    //         { title: 'ID Pedido', dataKey: 'idPedido' },
-    //         { title: 'Estado', dataKey: 'estado' },
-    //         { title: 'Pagado', dataKey: 'pagado' },
-    //         { title: 'Nombre', dataKey: 'nombre' },
-    //         { title: 'Telefono', dataKey: 'telefono' },
-    //         { title: 'Pago', dataKey: 'pago' },
-    //         { title: 'Entrega', dataKey: 'entrega' },
-    //         { title: 'Lista Precio', dataKey: 'listaPrecio' },
-    //         { title: 'Comisión', dataKey: 'comision' },
-    //         { title: 'Envío', dataKey: 'envio' },
-    //         { title: 'Valor Envío', dataKey: 'valorEnvio' },
-    //         { title: 'Productos', dataKey: 'productos' },
-    //         { title: 'Código', dataKey: 'codigo' },
-    //         { title: 'Total', dataKey: 'total' },
-    //         { title: 'Fecha', dataKey: 'createdAt' },
-    //     ];
-        
-        
-
-    //     let totalGeneral = 0;
-
-    //     const data = filtrados.map(item => {
-    //         const total = parseFloat(item.total); // Convertir a número
-    //         totalGeneral += total;
-    //         const productos = JSON.parse(item.productos);
-    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}  `);
-    //         return {
-    //             idPedido: item.idPedido,
-    //             estado: item.estado,
-    //             pagado: item.pagado,
-    //             nombre: item.nombre,
-    //             telefono: item.telefono,
-    //             pago: item.pago,
-    //             entrega: item.entrega,
-    //             listaPrecio: item.listaPrecio,
-    //             comision: item.comision,
-    //             envio: item.envio,
-    //             valorEnvio: item.valorEnvio,
-    //             productos: infoProductos.join('\n'),
-    //             codigo: item.codigo,
-    //             total: `${moneda} ${total.toFixed(2)}`,
-    //             createdAt: item.createdAt,
-    //         };
-            
-    //     });
-
-    //     // Formatear el total general
-    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
-
-    //     // Agregar fila con el total general
-    //     const totalRow = {
-    //         idPedido: '',
-    //         estado: '',
-    //         nombre: '',
-    //         telefono: '',
-    //         pago: '',
-    //         entrega: '',
-    //         nota: '',
-    //         productos: '',
-    //         codigo: 'Total General:',
-    //         total: formattedTotal,
-    //         createdAt: '',
-    //     };
-
-    //     data.push(totalRow);
-
-    //     pdf.autoTable({
-    //         head: [columns.map(col => col.title)],
-    //         body: data.map(item => Object.values(item)),
-    //     });
-
-    //     pdf.save('pedidos.pdf');
-    // };
-    
-const descargarPDF = (pedidosData = filtrados) => {
-      console.log("descargarPDF called", pedidosData); // Add this line
-  if (!Array.isArray(pedidosData) || !pedidosData.length) return;
-
-  // 1. Collect all unique keys across all pedidos
-  const allKeys = Array.from(
-    new Set(pedidosData.flatMap(item => Object.keys(item)))
-  );
-  if (!allKeys.includes('Productos')) allKeys.push('Productos');
-
-  // 2. Prepare data for autoTable
-  const data = pedidosData.map(item => {
-    const row = {};
-    allKeys.forEach(key => {
-      if (key === 'Productos') {
-        try {
-          const productos = JSON.parse(item.productos || '[]');
-          row['Productos'] = productos.map(p => `${p.titulo} x${p.cantidad} - $${p.precio}`).join('; ');
-        } catch {
-          row['Productos'] = '';
-        }
-      } else {
-        row[key] = item[key] ?? '';
-      }
+  // -------- Hoja 1: Detalle de pedidos --------
+  if (pedidos.length) {
+    const rowsDetalle = pedidos.map((p) => {
+      const row = {};
+      dynamicColumns.forEach((col) => {
+        row[col.header] = p[col.field] ?? "";
+      });
+      return row;
     });
-    return row;
-  });
 
-  // 3. Prepare pretty headers
-  const prettyHeaders = allKeys.map(getPrettyHeader);
+    const wsDetalle = XLSX.utils.json_to_sheet(rowsDetalle);
+    XLSX.utils.book_append_sheet(wb, wsDetalle, "DetallePedidos");
+  }
 
-  // 4. Prepare rows (ordered by allKeys)
-  const rows = data.map(row =>
-    allKeys.map(key => row[key])
-  );
+  // -------- Hoja 2: Resumen por asesor --------
+  if (resumenAsesores.length) {
+    const rowsResumen = resumenAsesores.map((r) => {
+      const row = {};
+      resumenColumns.forEach((col) => {
+        row[col.header] = r[col.field] ?? "";
+      });
+      return row;
+    });
 
-  // 5. Generate PDF
-  const pdf = new jsPDF('landscape', 'pt', 'a4');
-  pdf.setFontSize(12);
-  pdf.text('Lista de Pedidos', 40, 30);
+    const wsResumen = XLSX.utils.json_to_sheet(rowsResumen);
+    XLSX.utils.book_append_sheet(wb, wsResumen, "ResumenAsesores");
+  }
 
-  pdf.autoTable({
-    startY: 50,
-    head: [prettyHeaders],
-    body: rows,
-    styles: { fontSize: 9, cellWidth: 'wrap' },
-    theme: 'grid',
-    headStyles: { fillColor: [22, 160, 133] }
-  });
+  XLSX.writeFile(wb, "liquidacion_pedidos.xlsx");
+}
 
-  pdf.save('pedidos.pdf');
-};
+function descargarPDF() {
+  if (!pedidos.length && !resumenAsesores.length) {
+    toast.warn("No hay datos para exportar");
+    return;
+  }
+
+  const pdf = new jsPDF("landscape", "pt", "a4");
+
+  // -------- Tabla 1: Detalle de pedidos --------
+  pdf.setFontSize(14);
+  pdf.text("Detalle de pedidos", 40, 30);
+
+  if (pedidos.length) {
+    const headDetalle = [dynamicColumns.map((c) => c.header)];
+    const bodyDetalle = pedidos.map((p) =>
+      dynamicColumns.map((col) => p[col.field] ?? "")
+    );
+
+    pdf.autoTable({
+      startY: 40,
+      head: headDetalle,
+      body: bodyDetalle,
+      styles: { fontSize: 8, cellWidth: "wrap" },
+      theme: "grid",
+    });
+  }
+
+  // -------- Tabla 2: Resumen por asesor --------
+  if (resumenAsesores.length) {
+    const startYResumen =
+      (pdf.lastAutoTable && pdf.lastAutoTable.finalY + 30) || 40;
+
+    pdf.setFontSize(14);
+    pdf.text("Resumen por asesor", 40, startYResumen - 10);
+
+    const headResumen = [resumenColumns.map((c) => c.header)];
+    const bodyResumen = resumenAsesores.map((r) =>
+      resumenColumns.map((col) => r[col.field] ?? "")
+    );
+
+    pdf.autoTable({
+      startY: startYResumen,
+      head: headResumen,
+      body: bodyResumen,
+      styles: { fontSize: 8, cellWidth: "wrap" },
+      theme: "grid",
+    });
+  }
+
+  pdf.save("liquidacion_pedidos.pdf");
+}
 
 
     const handleDownloadPDF = () => {
@@ -733,107 +608,6 @@ const descargarPDF = (pedidosData = filtrados) => {
 
         // Guardar el PDF
         pdf.save('pedido.pdf');
-    };
-
-    const imprimirTicket = () => {
-        let totalGeneral = 0;
-
-        const pdf = new jsPDF({
-            unit: 'mm',
-            format: [80, 150], // Tamaño de ticket estándar
-        });
-
-        // Recorrer los pedidos filtrados y sumar los totales
-        filtrados.forEach((item, index) => {
-            // Si no es el primer pedido, agregar una nueva página
-            if (index > 0) {
-                pdf.addPage();
-            }
-
-            const total = parseFloat(item.total); // Convertir a número
-            totalGeneral += total;
-
-            // Extraer productos y formatearlos
-            const productos = JSON.parse(item.productos);
-
-            // Encabezado del ticket
-            pdf.setFontSize(11);
-            pdf.text(`${tienda?.nombre}`, 40, 10, { align: 'center' });
-            pdf.setFontSize(10);
-            pdf.text(`Tel: ${tienda?.telefono}`, 40, 16, { align: 'center' });
-            const fechaFormateada = `${new Date(item?.createdAt)?.toLocaleDateString('es-ES', {
-                day: '2-digit',
-                month: '2-digit',
-                year: 'numeric'
-            })} ${new Date(item?.createdAt)?.toLocaleTimeString('es-ES', {
-                hour: '2-digit',
-                minute: '2-digit'
-            })}`;
-
-            pdf.text(`Fecha: ${fechaFormateada}`, 40, 22, { align: 'center' });
-
-            let y = 35; // Posición inicial para los datos de los pedidos
-
-            // Añadir información del pedido al PDF
-            pdf.setFontSize(9);
-            pdf.text(`ID Pedido: ${item.idPedido}`, 5, y);
-            pdf.text(`Cliente: ${item.nombre}`, 5, y + 5);
-            pdf.text(`Teléfono: ${item.telefono}`, 5, y + 10);
-            pdf.text(`Entrega: ${item.entrega}`, 5, y + 15);
-            pdf.text(`Pago: ${item.pago}`, 5, y + 20);
-            pdf.text(`Pago al recibirlo: ${item.pagoRecibir || ''}`, 5, y + 25);
-            pdf.text(`Estado: ${item.estado}`, 5, y + 30);
-            pdf.text(`Pagado: ${item.pagado}`, 5, y + 35);
-            pdf.text(`Código descuento: ${item.codigo}`, 5, y + 40);
-            pdf.text(`Nota: ${item.nota}`, 5, y + 45);
-            pdf.text(`------------------------------------------------------------------`, 5, y + 50);
-            pdf.text(`Productos:`, 5, y + 54);
-
-            // Añadir productos del pedido
-            let yProductos = y + 59;
-            productos.forEach((producto) => {
-                // Unir los items en una sola línea, separados por comas
-                const itemsTexto = producto.items && producto.items.length > 0
-                    ? producto.items.join(', ')
-                    : ''; // Si no hay items, mostrar una cadena vacía
-
-                // Agregar título, precio, cantidad
-                pdf.setFontSize(9); // Mantener el tamaño de fuente de 10 para el producto
-                const tituloTexto = `- ${producto.titulo} x${producto.cantidad} - ${moneda}${producto.precio}`;
-                pdf.text(tituloTexto, 5, yProductos);
-                yProductos += 5;
-
-                // Cambiar a un tamaño de fuente de 8 para los items
-                if (itemsTexto) {
-                    pdf.setFontSize(8); // Cambiar el tamaño de fuente a 8
-                    // Ajustar el texto de items para que se respete el ancho del ticket
-                    const itemsArray = pdf.splitTextToSize(`${itemsTexto}`, 75); // 75 es el ancho del ticket - márgenes
-                    itemsArray.forEach(line => {
-                        pdf.text(line, 5, yProductos);
-                        yProductos += 5;
-                    });
-                }
-
-                // Verificar si se necesita agregar nueva página
-                if (yProductos > 145) { // Ajusta este número si es necesario, 145 es el límite de altura de la página
-                    pdf.addPage();
-                    yProductos = 10; // Reiniciar la posición vertical
-                }
-            });
-
-            // Total del pedido
-            y = yProductos + 5;
-            pdf.text(`-----------------------------------------------------`, 5, y - 5);
-            pdf.setFontSize(10);
-            pdf.text(`Total: ${moneda}${total.toFixed(2)}`, 5, y);
-
-            // Mensaje de agradecimiento
-            y += 10;
-            pdf.text("¡Gracias por su compra!", 40, y, { align: 'center' });
-        });
-
-        // Imprimir el ticket
-        window.open(pdf.output('bloburl'), '_blank'); // Abre el ticket en una nueva pestaña para imprimir
     };
 
 
@@ -937,11 +711,12 @@ const descargarPDF = (pedidosData = filtrados) => {
 
 
 
-    const pedidosAgrupados = filtrados?.reduce((acc, item) => {
-        acc[item.estado] = acc[item.estado] || [];
-        acc[item.estado].push(item);
-        return acc;
-    }, {});
+const pedidosAgrupados = filtrados?.reduce((acc, item) => {
+    acc[item.estado] = acc[item.estado] || [];
+    acc[item.estado].push(item);
+    return acc;
+}, {});
+
 
     // Filtramos los estados que deseas mostrar
     const estados = ['Pendiente', 'Preparacion', 'Terminado', 'Entregado'];
@@ -951,24 +726,39 @@ const descargarPDF = (pedidosData = filtrados) => {
             [idPedido]: !prev[idPedido], // Alterna la visibilidad para este idPedido
         }));
     };
-    const fechaActual = new Date();
-    const diaActual = fechaActual.getDate();
-    const mesActual = fechaActual.getMonth() + 1; // Los meses son indexados desde 0
-    const anioActual = fechaActual.getFullYear();
-    const pedidosFiltrados = Object.keys(pedidosAgrupados)?.reduce((acc, estado) => {
-        const pedidosDelEstado = pedidosAgrupados[estado]?.filter(item => {
-            const fechaPedido = new Date(item.createdAt);
-            return (
-                fechaPedido.getDate() === diaActual &&
-                fechaPedido.getMonth() + 1 === mesActual &&
-                fechaPedido.getFullYear() === anioActual
-            );
-        });
-        if (pedidosDelEstado?.length > 0) {
-            acc[estado] = pedidosDelEstado;
-        }
-        return acc;
-    }, {});
+
+const pedidosFiltrados = Object.keys(pedidosAgrupados || {}).reduce(
+  (acc, estado) => {
+    const pedidosDelEstado = (pedidosAgrupados[estado] || []).filter((item) => {
+      const fechaPedido = new Date(item.createdAt);
+
+      // 🔹 Si NO hay periodo definido → NO filtramos por fecha
+      if (!periodoDesde && !periodoHasta) {
+        return true;
+      }
+
+      // 🔹 Si hay "desde", normalizamos a comienzo de día
+      if (periodoDesde) {
+        const desde = new Date(periodoDesde);
+        desde.setHours(0, 0, 0, 0);
+        if (fechaPedido < desde) return false;
+      }
+
+      // 🔹 Si hay "hasta", normalizamos a final del día
+      if (periodoHasta) {
+        const hasta = new Date(periodoHasta);
+        hasta.setHours(23, 59, 59, 999);
+        if (fechaPedido > hasta) return false;
+      }
+
+      return true;
+    });
+
+    acc[estado] = pedidosDelEstado;
+    return acc;
+  },
+  {}
+);
 
     //Contador de recarga de pedidos
     const [counter, setCounter] = useState(contador);
@@ -992,18 +782,20 @@ const descargarPDF = (pedidosData = filtrados) => {
 
 // Inicializar filtros de la tabla de PEDIDOS
 const initFiltersPedidos = () => {
-    setFiltersPedidos({
-        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        idPedido: { value: null, matchMode: FilterMatchMode.EQUALS },
-        tipo_pedido: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        estado: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        pagado: { value: null, matchMode: FilterMatchMode.EQUALS },
-        nombre: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        telefono: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        entrega: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        pago: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    });
+  const baseFilters = {
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+  };
+
+  dynamicColumns.forEach((col) => {
+    baseFilters[col.field] = {
+      value: null,
+      matchMode: FilterMatchMode.CONTAINS, // o EQUALS según el caso
+    };
+  });
+
+  setFiltersPedidos(baseFilters);
 };
+
 
 // Inicializar filtros de la tabla RESUMEN
 const initFiltersResumen = () => {
@@ -1079,6 +871,40 @@ const headerResumen = renderHeader(
   onGlobalFilterChangeResumen
 );
 
+useEffect(() => {
+  // Agrupa los registros por idAsesor
+  const mapa = {};
+
+  pedidos.forEach(item => {
+    if (!item.idAsesor) return;
+
+    const id = item.idAsesor;
+
+    if (!mapa[id]) {
+      mapa[id] = {
+        idAsesor: id,
+        asesor_nombre: item.asesor_nombre || '',
+        asesor_whatsapp: item.asesor_whatsapp || '',
+        asesor_medio_pago: item.asesor_medio_pago || '',
+        total_pedidos: 0,
+        total_comision: 0,
+        total_a_pagar: 0,
+      };
+    }
+
+    const comision = parseFloat(item.comision_valor || 0);
+    const aPagar   = parseFloat(item.valor_a_pagar_asesor || 0);
+
+    mapa[id].total_pedidos += 1;
+    mapa[id].total_comision += isNaN(comision) ? 0 : comision;
+    mapa[id].total_a_pagar  += isNaN(aPagar) ? 0 : aPagar;
+  });
+
+  setResumenAsesores(Object.values(mapa));
+}, [pedidos]);
+
+
+
 return (
   <div>
     <ToastContainer />
@@ -1088,16 +914,7 @@ return (
     {/* Barra superior: botones y links */}
     <div className="deFlexContent2">
       <div className="deFlex2">
-        <NewPedido
-          onPedidoCreado={() => {
-            toast.success("Pedido creado correctamente.");
-            cargarPedidos();
-          }}
-        />
-
-        <button className="pdf" onClick={() => imprimirTicket(pedido)}>
-          <FontAwesomeIcon icon={faPrint} /> Tickets
-        </button>
+ 
 
         <button className="excel" onClick={descargarExcel}>
           <FontAwesomeIcon icon={faArrowDown} /> Excel
@@ -1108,23 +925,7 @@ return (
         </button>
       </div>
 
-      <div className="filtrosContain">
-        <div className="deFlexLink">
-          <Anchor
-            to="/dashboard/pedidos"
-            className={location.pathname === "/dashboard/pedidos" ? "activeLin" : ""}
-          >
-            Cuadrícula
-          </Anchor>
 
-          <Anchor
-            to="/dashboard/pedidos/view"
-            className={location.pathname === "/dashboard/pedidos/view" ? "activeLin" : ""}
-          >
-            Lista
-          </Anchor>
-        </div>
-      </div>
     </div>
 
     {/* Vista de tarjetas o tabla principal */}
@@ -1252,7 +1053,7 @@ return (
         scrollHeight="400px"
         stripedRows
         paginator
-        rows={5}
+        rows={25}
         tableStyle={{ minWidth: "50rem" }}
       >
         {dynamicColumns.map((col) => (
@@ -1272,42 +1073,101 @@ return (
   </TabPanel>
 
   {/* TABLA 2 — RESUMEN POR ASESOR */}
-  <TabPanel header="Resumen por asesor">
-    <div className="table-container">
-      <DataTable
-        className="tabla-resumen"
-        value={resumenAsesores}
-        filters={filtersResumen}
-        filterDisplay="row"
-        globalFilterFields={[
-          "idAsesor",
-          "asesor_nombre",
-          "asesor_whatsapp",
-          "asesor_medio_pago",
-        ]}
-        header={headerResumen}
-        onFilter={(e) => setFiltersResumen(e.filters)}
-        scrollable
-        scrollHeight="400px"
-        stripedRows
-        paginator
-        rows={5}
-        tableStyle={{ minWidth: "50rem" }}
-      >
-        {resumenColumns.map((col) => (
-          <Column
-            key={col.field}
-            field={col.field}
-            header={col.header}
-            style={{ minWidth: col.minWidth }}
-            sortable
-            filter
-            filterPlaceholder="Search by column"
-          />
-        ))}
-      </DataTable>
-    </div>
-  </TabPanel>
+<TabPanel header="Resumen por asesor">
+  <div className="table-container">
+
+    {/* Filtros de periodo para la liquidación */}
+<div className="flex gap-2 mb-3 align-items-center">
+  <span>Periodo de liquidación:</span>
+
+  <Calendar
+    value={periodoDesde}
+    onChange={(e) => setPeriodoDesde(e.value)}
+    dateFormat="dd/mm/yy"
+    placeholder="Desde"
+    showIcon
+  />
+
+  <Calendar
+    value={periodoHasta}
+    onChange={(e) => setPeriodoHasta(e.value)}
+    dateFormat="dd/mm/yy"
+    placeholder="Hasta"
+    showIcon
+  />
+
+  <Button
+    type="button"
+    label="Semana actual"
+    onClick={() => {
+      const hoy = new Date();
+      const diaSemana = hoy.getDay(); // 0 = domingo, 1 = lunes...
+      const lunes = new Date(hoy);
+      lunes.setDate(hoy.getDate() - (diaSemana === 0 ? 6 : diaSemana - 1));
+      const domingo = new Date(lunes);
+      domingo.setDate(lunes.getDate() + 6);
+      setPeriodoDesde(lunes);
+      setPeriodoHasta(domingo);
+    }}
+    className="p-button-sm p-button-outlined"
+  />
+
+  <Button
+    type="button"
+    label="Quitar periodo"
+    onClick={() => {
+      setPeriodoDesde(null);
+      setPeriodoHasta(null);
+      cargarPedidos(); // volvemos a traer todo sin filtro
+    }}
+    className="p-button-sm p-button-text"
+  />
+
+  {/* 👇 NUEVO: aplica las fechas actuales contra el backend */}
+  <Button
+    type="button"
+    label="Aplicar periodo"
+    onClick={aplicarPeriodo}
+    className="p-button-sm p-button-help"
+  />
+</div>
+
+
+    <DataTable
+      className="tabla-resumen"
+      value={resumenAsesores}
+      filters={filtersResumen}
+      filterDisplay="row"
+      globalFilterFields={[
+        "idAsesor",
+        "asesor_nombre",
+        "asesor_whatsapp",
+        "asesor_medio_pago",
+      ]}
+      header={headerResumen}
+      onFilter={(e) => setFiltersResumen(e.filters)}
+      scrollable
+      scrollHeight="400px"
+      stripedRows
+      paginator
+      rows={5}
+      tableStyle={{ minWidth: "50rem" }}
+    >
+      {resumenColumns.map((col) => (
+        <Column
+          key={col.field}
+          field={col.field}
+          header={col.header}
+          style={{ minWidth: col.minWidth }}
+          sortable
+          filter
+          filterPlaceholder="Search by column"
+        />
+      ))}
+    </DataTable>
+  </div>
+</TabPanel>
+
 
 </TabView>
 

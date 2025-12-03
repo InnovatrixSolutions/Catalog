@@ -13,6 +13,7 @@ export default function LiquidacionDropshipper() {
                 <HeaderDash />
                 <div className='container'>
                     
+                    
                     <LiquidacionData /> 
                 </div>
             </section>

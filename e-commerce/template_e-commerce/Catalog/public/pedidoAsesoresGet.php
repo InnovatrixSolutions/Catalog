@@ -36,7 +36,12 @@ try {
         $idPedido       = isset($_GET['idPedido']) ? (int) $_GET['idPedido'] : null;
         $estadoComision = isset($_GET['estado_comision']) ? trim($_GET['estado_comision']) : null;
 
-        $where = [];
+        // NUEVO: filtros de fecha para la liquidación (por fecha_pago_comision)
+        // Formato esperado: YYYY-MM-DD
+        $fechaDesde     = isset($_GET['fecha_desde']) ? $_GET['fecha_desde'] : null;
+        $fechaHasta     = isset($_GET['fecha_hasta']) ? $_GET['fecha_hasta'] : null;
+
+        $where  = [];
         $params = [];
 
         if ($idAsesor) {
@@ -52,6 +57,27 @@ try {
         if ($estadoComision) {
             $where[] = 'pa.estado_comision = :estado_comision';
             $params[':estado_comision'] = $estadoComision;
+        }
+
+        // 🔑 AQUÍ definimos la columna de fecha que se usa para la liquidación
+        // Si quisieras usar otra, la cambias aquí.
+        // Opciones típicas:
+        //   - Solo por fecha de pago de comisión:
+        //       $columnaFecha = 'pa.fecha_pago_comision';
+        //
+        //   - Fallback: fecha de pago o, si no existe, fecha de creación del pedido:
+        //       $columnaFecha = 'COALESCE(pa.fecha_pago_comision, p.createdAt)';
+        //
+        $columnaFecha = 'pa.fecha_pago_comision';
+
+        if ($fechaDesde) {
+            $where[] = "DATE($columnaFecha) >= :fecha_desde";
+            $params[':fecha_desde'] = $fechaDesde;
+        }
+
+        if ($fechaHasta) {
+            $where[] = "DATE($columnaFecha) <= :fecha_hasta";
+            $params[':fecha_hasta'] = $fechaHasta;
         }
 
         $whereSql = empty($where) ? '' : 'WHERE ' . implode(' AND ', $where);
@@ -136,14 +162,14 @@ try {
             $resultado = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 
             echo json_encode([
-                "ok" => true,
-                "total" => count($resultado),
+                "ok"             => true,
+                "total"          => count($resultado),
                 "pedidos_asesores" => $resultado,
             ]);
         } else {
             http_response_code(500);
             echo json_encode([
-                "ok" => false,
+                "ok"    => false,
                 "error" => implode(', ', $sentencia->errorInfo())
             ]);
         }
@@ -151,7 +177,7 @@ try {
     } else {
         http_response_code(405);
         echo json_encode([
-            "ok" => false,
+            "ok"    => false,
             "error" => "Método no permitido"
         ]);
     }
@@ -159,14 +185,14 @@ try {
 } catch (PDOException $error) {
     http_response_code(500);
     echo json_encode([
-        "ok" => false,
+        "ok"    => false,
         "error" => "Error de conexión: " . $error->getMessage()
     ]);
 
 } catch (Exception $error) {
     http_response_code(500);
     echo json_encode([
-        "ok" => false,
+        "ok"    => false,
         "error" => "Error desconocido: " . $error->getMessage()
     ]);
 }
