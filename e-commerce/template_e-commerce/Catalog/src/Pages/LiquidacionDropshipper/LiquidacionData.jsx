@@ -64,43 +64,38 @@ export default function LiquidacionData() {
     const [numeroGuia, setNumeroGuia] = useState(pedido.numeroGuia || '');
     const [valorFlete, setValorFlete] = useState(pedido.valorFlete || '');
 
-    
+    const [resumenAsesores, setResumenAsesores] = useState([]);
+
 
 
 const scaleFactor = 2; // rems to add
- /* const dynamicColumns = [
-  { field: 'idPedido', header: 'ID Pedido', minWidth: '16vw' },
-  { field: 'tipo_pedido', header: 'Tipo Pedido', minWidth: '16vw' },
-  { field: 'estado', header: 'Estado', minWidth: '16vw' },
-  { field: 'createdAt', header: 'Fecha Creación', minWidth: '16vw' },
-  { field: 'fecha_despacho', header: 'Fecha Despacho', minWidth: '16vw' },
-  { field: 'pagado', header: 'Pagado', minWidth: '16vw' },
-  { field: 'pagoRecibir', header: 'Pago al Recibir', minWidth: '16vw' },
-  
-  { field: 'nombre', header: 'Nombre', minWidth: '16vw' },
-  { field: 'telefono', header: 'Teléfono', minWidth: '16vw' },
-  { field: 'telefono_tran', header: 'Tel. Transportador', minWidth: '16vw' },
-  { field: 'entrega', header: 'Entrega', minWidth: '16vw' },
-  { field: 'country_id', header: 'País', minWidth: '16vw' },
-  { field: 'state_id', header: 'Departamento', minWidth: '16vw' },
-  { field: 'city_id', header: 'Ciudad', minWidth: '16vw' },
-  { field: 'franja_horario', header: 'Franja Horaria', minWidth: '16vw' },
-  { field: 'nota', header: 'Nota', minWidth: '16vw' },
-
-  
-  { field: 'pago', header: 'Pago', minWidth: '16vw' },
-  { field: 'forma_pago', header: 'Forma de Pago', minWidth: '16vw' },
-  { field: 'valor_cupon', header: 'Valor Cupón', minWidth: '16vw' },
-  { field: 'tipo_cupon', header: 'Tipo Cupón', minWidth: '16vw' },
-  { field: 'total_cupon', header: 'Total Cupón', minWidth: '16vw' },
-  { field: 'total', header: 'Total', minWidth: '16vw' },
-  { field: 'total_productos', header: 'Total Productos', minWidth: '16vw' },
-]; */
-
 const dynamicColumns = [
-  { field: 'comision_tipo', header: 'Comision Tipo', minWidth: '16vw' },
-  
+  // Identificadores
+  { field: 'idPedido',             header: 'Pedido',            minWidth: '7rem'  },
+  { field: 'idAsesor',             header: 'ID Asesor',         minWidth: '7rem'  },
+
+  // Asesor
+  { field: 'asesor_nombre',        header: 'Asesor',            minWidth: '14rem' },
+  { field: 'asesor_whatsapp',      header: 'WhatsApp',          minWidth: '12rem' },
+
+  // Cliente / pedido
+  { field: 'pedido_cliente_nombre', header: 'Cliente',          minWidth: '14rem' },
+  { field: 'pedido_total',          header: 'Total Pedido',     minWidth: '10rem' },
+
+  // Liquidación
+  { field: 'base_calculo',         header: 'Base cálculo',      minWidth: '10rem' },
+  { field: 'porcentaje_comision',  header: '% Comisión',        minWidth: '8rem'  },
+  { field: 'comision_valor',       header: 'Valor comisión',    minWidth: '10rem' },
+  { field: 'valor_a_pagar_asesor', header: 'A pagar asesor',    minWidth: '12rem' },
+
+  // Estado de pago
+  { field: 'medio_pago_comision',  header: 'Medio pago comisión', minWidth: '14rem' },
+  { field: 'estado_comision',      header: 'Estado comisión',   minWidth: '10rem' },
+  { field: 'fecha_pago_comision',  header: 'Fecha pago',        minWidth: '10rem' },
 ];
+
+
+
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -111,14 +106,60 @@ const dynamicColumns = [
     }, []);
 
 
+    useEffect(() => {
+  // Agrupa los registros por idAsesor
+  const mapa = {};
+
+  pedidos.forEach(item => {
+    if (!item.idAsesor) return;
+
+    const id = item.idAsesor;
+
+    if (!mapa[id]) {
+      mapa[id] = {
+        idAsesor: id,
+        asesor_nombre: item.asesor_nombre || '',
+        asesor_whatsapp: item.asesor_whatsapp || '',
+        asesor_medio_pago: item.asesor_medio_pago || '',
+        total_pedidos: 0,
+        total_comision: 0,
+        total_a_pagar: 0,
+      };
+    }
+
+
+
+    const comision = parseFloat(item.comision_valor || 0);
+    const aPagar   = parseFloat(item.valor_a_pagar_asesor || 0);
+
+    mapa[id].total_pedidos += 1;
+    mapa[id].total_comision += isNaN(comision) ? 0 : comision;
+    mapa[id].total_a_pagar  += isNaN(aPagar) ? 0 : aPagar;
+  });
+
+  setResumenAsesores(Object.values(mapa));
+}, [pedidos]);
+
+    const resumenColumns = [
+      { field: 'idAsesor',          header: 'ID Asesor',       minWidth: '7rem'  },
+      { field: 'asesor_nombre',     header: 'Asesor',          minWidth: '14rem' },
+      { field: 'asesor_whatsapp',   header: 'WhatsApp',        minWidth: '12rem' },
+      { field: 'asesor_medio_pago', header: 'Medio de Pago',   minWidth: '12rem' },
+
+      { field: 'total_pedidos',     header: '# Pedidos',       minWidth: '8rem'  },
+      { field: 'total_comision',    header: 'Total Comisión',  minWidth: '10rem' },
+      { field: 'total_a_pagar',     header: 'Total a Pagar',   minWidth: '10rem' },
+    ];
+
+
     const cargarPedidos = () => {
-        fetch(`${baseURL}/pedidoGet.php`, {
+        fetch(`${baseURL}/pedidoAsesoresGet.php`, {
             method: 'GET',
         })
             .then(response => response.json())
             .then(data => {
-                setPedidos(data.pedidos.reverse() || []);
-                console.log(data.pedidos)
+                setPedidos(data.pedidos_asesores.reverse() || []);
+                console.log(data.pedidos_asesores)
             })
             .catch(error => console.error('Error al cargar pedidos:', error));
     };
@@ -988,336 +1029,510 @@ const renderHeader = () => (
 
 const header = renderHeader();
 
-    return (
-        <div>
+return (
+  <div>
+    <ToastContainer />
 
-            <ToastContainer />
-            <h1 className='titles-text-heading'>Liquidacion Dropshipper</h1>
-            
-            <div className='deFlexContent2'>
-                <div className='deFlex2'>
-                    <NewPedido onPedidoCreado={() => {
-                        toast.success("Pedido creado correctamente.");
-                        cargarPedidos(); // O el nombre de tu función para recargar la lista
-                      }} />
-                    <button className='pdf' onClick={() => imprimirTicket(pedido)}>  <FontAwesomeIcon icon={faPrint} /> Tickets</button>
-                    <button className='excel' onClick={descargarExcel}><FontAwesomeIcon icon={faArrowDown} /> Excel</button>
-                    <button className='pdf' onClick={descargarPDF}><FontAwesomeIcon icon={faArrowDown} /> PDF</button>
-                </div>
-                <div className='filtrosContain'>
-                    <div className='deFlexLink'>
-                        <Anchor to={`/dashboard/pedidos`} className={location.pathname === '/dashboard/pedidos' ? 'activeLin' : ''}> Cuadrícula</Anchor>
+    <h1 className="titles-text-heading">Liquidacion Dropshipper</h1>
 
-                        <Anchor to={`/dashboard/pedidos/view`} className={location.pathname === '/dashboard/pedidos/view' ? 'activeLin' : ''}> Lista</Anchor>
-                    </div>
+    {/* Barra superior: botones y links */}
+    <div className="deFlexContent2">
+      <div className="deFlex2">
+        <NewPedido
+          onPedidoCreado={() => {
+            toast.success("Pedido creado correctamente.");
+            cargarPedidos();
+          }}
+        />
 
-                </div>
+        <button className="pdf" onClick={() => imprimirTicket(pedido)}>
+          <FontAwesomeIcon icon={faPrint} /> Tickets
+        </button>
 
-            </div>
-            {location?.pathname === '/dashboard/pedidos' ? (
-                <div className='cards-container'>
-                    
-                    {estados?.map(estado => (
-                            
-                        <div key={estado} className='estado-container'>
-                            
-                            <h2>{estado} ({pedidosFiltrados[estado]?.length || 0})</h2>
+        <button className="excel" onClick={descargarExcel}>
+          <FontAwesomeIcon icon={faArrowDown} /> Excel
+        </button>
 
-                            <div className='cards-row'>
-                                {pedidosFiltrados[estado]?.map(item => (
-                                    
-                                    <div key={item.idPedido} className='card'>
-                                        <h3>Id Pedido: {item.idPedido}</h3>
-                                        <span style={{
-                                            color: item.estado === 'Pendiente' ? '#DAA520' :
-                                                item.estado === 'Preparacion' ? '#0000FF' :
-                                                    item.estado === 'Rechazado' ? '#FF0000' :
-                                                        item.estado === 'Entregado' ? '#008000' :
-                                                            '#3366FF '
-                                        }}>
-                                            {item.estado}
-                                            
-                                        </span>
-                                        <span style={{ color: '#008000' }}> {item.tipo_pedido}</span>
+        <button className="pdf" onClick={descargarPDF}>
+          <FontAwesomeIcon icon={faArrowDown} /> PDF
+        </button>
+      </div>
 
-                                        <div className='card-actions'>
-                                            <span style={{ color: '#008000' }}>{moneda} {item.total}</span>
-                                            <span>{new Date(item?.createdAt)?.toLocaleString('es-ES', {
-                                                hour: '2-digit',
-                                                minute: '2-digit',
-                                                day: '2-digit',
-                                                month: '2-digit',
-                                                year: 'numeric'
-                                            })}</span>
-                                            <span style={{ color: '#008000' }}>{moneda} {item.total}</span>
-                                        </div>
-                                        <span>Entrega:  {item?.entrega}</span>
-                                        <span>Pagado:  {item?.pagado}</span>
-                                        {detallesVisibles[item.idPedido] && (
-                                            <>
-                                                <span>Nombre: {item.nombre}</span>
-                                                <span>Teléfono: {item.telefono}</span>
-                                                <span>Pago: {item.pago}</span>
-                                            </>
-                                        )}
-                                        <button onClick={() => toggleDetalles(item.idPedido)} className='moreBtn'>
-                                            {detallesVisibles[item.idPedido] ? 'Mostrar menos' : `Mostrar más`}
-                                        </button>
-                                        <div className='card-actions'>
-                                            <button className='eliminar' onClick={() => eliminar(item.idPedido)}>
-                                                <FontAwesomeIcon icon={faTrash} />
-                                            </button>
-                                            <button className='editar' onClick={() => abrirModal(item)}>
-                                                <FontAwesomeIcon icon={faEye} />
-                                            </button>
-                                            <button onClick={() => imprimirTicket2(item)} className='editar'>
-                                                <FontAwesomeIcon icon={faPrint} />
-                                            </button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <div className='table-container'>
-                    
-                                        <DataTable 
-                                            value={pedidos}
-                                            filters={filters}
-                                            filterDisplay="row"
-                                            globalFilterFields={[
-                                            'idPedido',
-                                            'tipo_pedido',  
-                                            'estado',
-                                            'pagado',
-                                            'nombre',
-                                            'telefono',
-                                            'entrega',
-                                            'pago',
-                                            
-                                            ]}
-                                            header={header}
-                                            onFilter={(e) => setFilters(e.filters)}
-                                            scrollable
-                                            scrollHeight="400px"
-                                            stripedRows
-                                            
-                                            paginator 
-                                            rows={5} 
-                                            // rowsPerPageOptions={[5, 10, 25, 50]}
-                                            tableStyle={{ minWidth: '50rem'}}
-                                            
-                                        
-                                        >
-  {dynamicColumns.map((col) => (
-    <Column
-    
-    frozen={col.frozen}
-      key={col.field}
-      field={col.field}
-      header={col.header}
-      style={{ minWidth: col.minWidth }}
-      sortable
-      filter 
-      filterPlaceholder="Search by column"
-      
-      
-    />
-  ))}
+      <div className="filtrosContain">
+        <div className="deFlexLink">
+          <Anchor
+            to="/dashboard/pedidos"
+            className={location.pathname === "/dashboard/pedidos" ? "activeLin" : ""}
+          >
+            Cuadrícula
+          </Anchor>
 
-  {/* Columna estática para Acciones */}
-<Column
-  header="Acciones"
-  frozenRight
-  sortMode="multiple"
-  body={(rowData) => (
-    <div className="flex gap-2">
-      <Button
-        className='editar'
-        onClick={() => abrirModal(rowData)}
-        icon="pi pi-eye"
-        aria-label="Ver"
-      />
-      <Button
-        className='eliminar'
-        onClick={() => eliminar(rowData.idPedido)}
-        icon="pi pi-trash"
-        aria-label="Eliminar"
-      />
-      <Button
-        className='imprimir'
-        onClick={() => imprimirTicket2(rowData)}
-        icon="pi pi-print"
-        aria-label="Imprimir"
-      />
+          <Anchor
+            to="/dashboard/pedidos/view"
+            className={location.pathname === "/dashboard/pedidos/view" ? "activeLin" : ""}
+          >
+            Lista
+          </Anchor>
+        </div>
+      </div>
     </div>
-  )}
-  style={{ minWidth: '12rem' }}
-/>
 
-</DataTable>
+    {/* Vista de tarjetas o tabla principal */}
+    {location?.pathname === "/dashboard/pedidos" ? (
+      // === Vista de tarjetas (kanban por estado) ===
+      <div className="cards-container">
+        {estados?.map((estado) => (
+          <div key={estado} className="estado-container">
+            <h2>
+              {estado} ({pedidosFiltrados[estado]?.length || 0})
+            </h2>
 
+            <div className="cards-row">
+              {pedidosFiltrados[estado]?.map((item) => (
+                <div key={item.idPedido} className="card">
+                  <h3>Id Pedido: {item.idPedido}</h3>
+
+                  <span
+                    style={{
+                      color:
+                        item.estado === "Pendiente"
+                          ? "#DAA520"
+                          : item.estado === "Preparacion"
+                          ? "#0000FF"
+                          : item.estado === "Rechazado"
+                          ? "#FF0000"
+                          : item.estado === "Entregado"
+                          ? "#008000"
+                          : "#3366FF ",
+                    }}
+                  >
+                    {item.estado}
+                  </span>
+
+                  <span style={{ color: "#008000" }}> {item.tipo_pedido}</span>
+
+                  <div className="card-actions">
+                    <span style={{ color: "#008000" }}>
+                      {moneda} {item.total}
+                    </span>
+                    <span>
+                      {new Date(item?.createdAt)?.toLocaleString("es-ES", {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        day: "2-digit",
+                        month: "2-digit",
+                        year: "numeric",
+                      })}
+                    </span>
+                    <span style={{ color: "#008000" }}>
+                      {moneda} {item.total}
+                    </span>
+                  </div>
+
+                  <span>Entrega: {item?.entrega}</span>
+                  <span>Pagado: {item?.pagado}</span>
+
+                  {detallesVisibles[item.idPedido] && (
+                    <>
+                      <span>Nombre: {item.nombre}</span>
+                      <span>Teléfono: {item.telefono}</span>
+                      <span>Pago: {item.pago}</span>
+                    </>
+                  )}
+
+                  <button
+                    onClick={() => toggleDetalles(item.idPedido)}
+                    className="moreBtn"
+                  >
+                    {detallesVisibles[item.idPedido]
+                      ? "Mostrar menos"
+                      : "Mostrar más"}
+                  </button>
+
+                  <div className="card-actions">
+                    <button
+                      className="eliminar"
+                      onClick={() => eliminar(item.idPedido)}
+                    >
+                      <FontAwesomeIcon icon={faTrash} />
+                    </button>
+
+                    <button
+                      className="editar"
+                      onClick={() => abrirModal(item)}
+                    >
+                      <FontAwesomeIcon icon={faEye} />
+                    </button>
+
+                    <button
+                      onClick={() => imprimirTicket2(item)}
+                      className="editar"
+                    >
+                      <FontAwesomeIcon icon={faPrint} />
+                    </button>
+                  </div>
                 </div>
-
-
-            )}
-
-
-{modalVisible && (
-
-<Dialog
-  header="Detalle del Pedido"
-  visible={modalVisible}
-  onHide={cerrarModal}
-  style={{ width: '95vw', maxWidth: '920px' }}
-  contentStyle={{ padding: 0 }}
-  modal
-  draggable={false}
-  dismissableMask
->
-  {/* Top meta */}
-  <div className="modal-topbar">
-    <div className="modal-topbar__left">
-      <h3># {pedido?.idPedido ?? '—'}</h3>
-      <span className="badge">{pedido?.estado ?? '—'}</span>
-      <span className={`badge ${pedido?.pagado === 'Si' ? 'ok' : 'warn'}`}>
-        Pagado: {pedido?.pagado ?? '—'}
-      </span>
-      {pedido?.tipo_pedido && <span className="badge subtle">{pedido.tipo_pedido}</span>}
-    </div>
-    <div className="modal-topbar__right">
-      <small className="muted">Creado: {pedido?.createdAt ?? '—'}</small>
-      {pedido?.fecha_despacho && <small className="muted"> • Despacho: {pedido.fecha_despacho}</small>}
-    </div>
-  </div>
-
-  {/* Productos */}
-  <div className="section">
-    <h4 className="section-title">Productos del pedido</h4>
-    <div className="products-grid">
-      {Array.isArray(JSON.parse(pedido?.productos || '[]')) &&
-        JSON.parse(pedido.productos).map((producto, i) => (
-          <div className="product-card" key={`${producto.titulo}-${i}`}>
-            <img src={producto?.imagen1 || producto?.imagen} alt={producto?.titulo} />
-            <div className="body">
-              <div className="title" title={producto?.titulo}>{producto?.titulo}</div>
-              {!!(producto?.items?.length) && <div className="items">{producto.items.join(', ')}</div>}
-              <div className="footer">
-                <span className="price">{moneda} {producto?.precio}</span>
-                <span className="qty">x{producto?.cantidad}</span>
-              </div>
+              ))}
             </div>
           </div>
         ))}
-    </div>
-  </div>
+      </div>
+    ) : (
+      // === Vista de tabla principal (detalle pedido_asesores) ===
+      <div className="table-container">
+        <DataTable
+          value={pedidos}
+          filters={filters}
+          filterDisplay="row"
+          globalFilterFields={[
+            "idPedido",
+            "idAsesor",
+            "asesor_nombre",
+            "pedido_cliente_nombre",
+            "medio_pago_comision",
+            "estado_comision",
+          ]}
+          header={header}
+          onFilter={(e) => setFilters(e.filters)}
+          scrollable
+          scrollHeight="400px"
+          stripedRows
+          paginator
+          rows={5}
+          tableStyle={{ minWidth: "50rem" }}
+        >
+          {dynamicColumns.map((col) => (
+            <Column
+              key={col.field}
+              field={col.field}
+              header={col.header}
+              style={{ minWidth: col.minWidth }}
+              frozen={col.frozen}
+              sortable
+              filter
+              filterPlaceholder="Search by column"
+            />
+          ))}
 
-  {/* Información completa */}
-  <div className="section">
-    <h4 className="section-title">Información completa del pedido</h4>
-    <div className="info-grid">
-      {[
-        ['ID Pedido', pedido.idPedido],
-        ['Fecha de creación', pedido.createdAt],
-        ['Nombre', pedido.nombre],
-        ['Teléfono', pedido.telefono],
-        ['Entrega', pedido.entrega],
-        ['Estado', pedido.estado],
-        ['Tipo de Pedido', pedido.tipo_pedido],
-        ['Pago', pedido.pago],
-        ['¿Pagado?', pedido.pagado],
-        ['Pago al Recibir', pedido.pagoRecibir],
-        ['Total', pedido.total],
-        ['Total Productos', pedido.total_productos],
-        ['Código Descuento', pedido.codigo],
-        ['Forma de Pago', pedido.forma_pago],
-        ['Tipo de Cupón', pedido.tipo_cupon],
-        ['Valor del Cupón', pedido.valor_cupon],
-        ['Total Cupón', pedido.total_cupon],
-        ['Franja Horaria', pedido.franja_horario],
-        ['Fecha Despacho', pedido.fecha_despacho],
-        ['País (ID)', pedido.country_id],
-        ['Departamento (ID)', pedido.state_id],
-        ['Ciudad (ID)', pedido.city_id],
-        ['Teléfono Transportador', pedido.telefono_tran],
-      ].map(([label, val], idx) => (
-        <div key={idx} className="info-row">
-          <label>{label}</label><span>{val ?? '—'}</span>
-        </div>
-      ))}
-      <div className="info-row span-2">
-        <label>Nota</label><span>{pedido.nota ?? '—'}</span>
-      </div>
-    </div>
-  </div>
-
-  {/* Edición */}
-  <div className="section">
-    <h4 className="section-title">Actualizar pedido</h4>
-    <form onSubmit={handleSubmit(onSubmitEdit)} className="form-grid">
-      <div>
-        <Controller name="transportadora" control={control}
-          render={({ field }) => <InputText {...field} placeholder="Transportadora" className="w-full" />} />
-      </div>
-      <div>
-        <Controller name="numeroGuia" control={control}
-          render={({ field }) => <InputText {...field} placeholder="Número de Guía" className="w-full" />} />
-      </div>
-      <div>
-        <Controller name="valorFlete" control={control}
-          render={({ field }) => <InputText {...field} placeholder="Valor del Flete" className="w-full" />} />
-      </div>
-
-      <div>
-        <Controller name="estado" control={control} render={({ field }) =>
-          <Dropdown {...field} className="w-full"
-            placeholder="Estado"
-            options={[
-              { label: 'Pendiente', value: 'Pendiente' },
-              { label: 'Entregado', value: 'Entregado' },
-              { label: 'Devolución', value: 'Devolución' },
-              { label: 'Cancelado', value: 'Cancelado' }
-            ]}
+          {/* Columna Acciones */}
+          <Column
+            header="Acciones"
+            frozenRight
+            body={(rowData) => (
+              <div className="flex gap-2">
+                <Button
+                  className="editar"
+                  onClick={() => abrirModal(rowData)}
+                  icon="pi pi-eye"
+                  aria-label="Ver"
+                />
+                <Button
+                  className="eliminar"
+                  onClick={() => eliminar(rowData.idPedido)}
+                  icon="pi pi-trash"
+                  aria-label="Eliminar"
+                />
+                <Button
+                  className="imprimir"
+                  onClick={() => imprimirTicket2(rowData)}
+                  icon="pi pi-print"
+                  aria-label="Imprimir"
+                />
+              </div>
+            )}
+            style={{ minWidth: "12rem" }}
           />
-        }/>
-        {errors.estado && <small className="p-error">{errors.estado.message}</small>}
+        </DataTable>
       </div>
+    )}
 
-      <div>
-        <Controller name="pagado" control={control} render={({ field }) =>
-          <Dropdown {...field} className="w-full"
-            placeholder="¿Pagado?"
-            options={[{ label: 'Sí', value: 'Si' }, { label: 'No', value: 'No' }]}
+    {/* ==== SEGUNDA TABLA: RESUMEN POR ASESOR ==== */}
+    <h2 className="titles-text-heading" style={{ marginTop: "2rem" }}>
+      Resumen por asesor
+    </h2>
+
+    <div className="table-container">
+      <DataTable
+        value={resumenAsesores}
+        header={header} // mismo header (buscar / limpiar) para mantener estética
+        scrollable
+        scrollHeight="400px"
+        stripedRows
+        paginator
+        rows={10}
+        tableStyle={{ minWidth: "50rem" }}
+      >
+        {resumenColumns.map((col) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            style={{ minWidth: col.minWidth }}
+            sortable
           />
-        }/>
-        {errors.pagado && <small className="p-error">{errors.pagado.message}</small>}
-      </div>
+        ))}
+      </DataTable>
+    </div>
 
-      {(watch('estado') === 'Devolución' || watch('estado') === 'Cancelado') && (
-        <div className="span-2">
-          <Controller name="notaPedidoInterna" control={control}
-            render={({ field }) => <InputText {...field} placeholder="Motivo" className="w-full" />} />
-          {errors.notaPedidoInterna && <small className="p-error">{errors.notaPedidoInterna.message}</small>}
+    {/* ==== MODAL DETALLE PEDIDO ==== */}
+    {modalVisible && (
+      <Dialog
+        header="Detalle del Pedido"
+        visible={modalVisible}
+        onHide={cerrarModal}
+        style={{ width: "95vw", maxWidth: "920px" }}
+        contentStyle={{ padding: 0 }}
+        modal
+        draggable={false}
+        dismissableMask
+      >
+        {/* Top meta */}
+        <div className="modal-topbar">
+          <div className="modal-topbar__left">
+            <h3># {pedido?.idPedido ?? "—"}</h3>
+            <span className="badge">{pedido?.estado ?? "—"}</span>
+            <span
+              className={`badge ${
+                pedido?.pagado === "Si" ? "ok" : "warn"
+              }`}
+            >
+              Pagado: {pedido?.pagado ?? "—"}
+            </span>
+            {pedido?.tipo_pedido && (
+              <span className="badge subtle">{pedido.tipo_pedido}</span>
+            )}
+          </div>
+          <div className="modal-topbar__right">
+            <small className="muted">
+              Creado: {pedido?.createdAt ?? "—"}
+            </small>
+            {pedido?.fecha_despacho && (
+              <small className="muted">
+                {" "}
+                • Despacho: {pedido.fecha_despacho}
+              </small>
+            )}
+          </div>
         </div>
-      )}
 
-      <div className="actions span-2">
-        <Button type="button" label="Imprimir Ticket" icon="pi pi-print" className="p-button-text"
-          onClick={() => imprimirTicket2(pedido)} />
-        <Button type="button" label="Descargar PDF" icon="pi pi-download" className="p-button-text"
-          onClick={handleDownloadPDF} />
-        <span className="spacer" />
-        <Button type="submit" label="Guardar" className="p-button-success" />
-      </div>
-    </form>
+        {/* Productos */}
+        <div className="section">
+          <h4 className="section-title">Productos del pedido</h4>
+          <div className="products-grid">
+            {Array.isArray(JSON.parse(pedido?.productos || "[]")) &&
+              JSON.parse(pedido.productos).map((producto, i) => (
+                <div className="product-card" key={`${producto.titulo}-${i}`}>
+                  <img
+                    src={producto?.imagen1 || producto?.imagen}
+                    alt={producto?.titulo}
+                  />
+                  <div className="body">
+                    <div className="title" title={producto?.titulo}>
+                      {producto?.titulo}
+                    </div>
+                    {!!producto?.items?.length && (
+                      <div className="items">
+                        {producto.items.join(", ")}
+                      </div>
+                    )}
+                    <div className="footer">
+                      <span className="price">
+                        {moneda} {producto?.precio}
+                      </span>
+                      <span className="qty">x{producto?.cantidad}</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+          </div>
+        </div>
+
+        {/* Información completa */}
+        <div className="section">
+          <h4 className="section-title">Información completa del pedido</h4>
+          <div className="info-grid">
+            {[
+              ["ID Pedido", pedido.idPedido],
+              ["Fecha de creación", pedido.createdAt],
+              ["Nombre", pedido.nombre],
+              ["Teléfono", pedido.telefono],
+              ["Entrega", pedido.entrega],
+              ["Estado", pedido.estado],
+              ["Tipo de Pedido", pedido.tipo_pedido],
+              ["Pago", pedido.pago],
+              ["¿Pagado?", pedido.pagado],
+              ["Pago al Recibir", pedido.pagoRecibir],
+              ["Total", pedido.total],
+              ["Total Productos", pedido.total_productos],
+              ["Código Descuento", pedido.codigo],
+              ["Forma de Pago", pedido.forma_pago],
+              ["Tipo de Cupón", pedido.tipo_cupon],
+              ["Valor del Cupón", pedido.valor_cupon],
+              ["Total Cupón", pedido.total_cupon],
+              ["Franja Horaria", pedido.franja_horario],
+              ["Fecha Despacho", pedido.fecha_despacho],
+              ["País (ID)", pedido.country_id],
+              ["Departamento (ID)", pedido.state_id],
+              ["Ciudad (ID)", pedido.city_id],
+              ["Teléfono Transportador", pedido.telefono_tran],
+            ].map(([label, val], idx) => (
+              <div key={idx} className="info-row">
+                <label>{label}</label>
+                <span>{val ?? "—"}</span>
+              </div>
+            ))}
+
+            <div className="info-row span-2">
+              <label>Nota</label>
+              <span>{pedido.nota ?? "—"}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Form de edición */}
+        <div className="section">
+          <h4 className="section-title">Actualizar pedido</h4>
+          <form
+            onSubmit={handleSubmit(onSubmitEdit)}
+            className="form-grid"
+          >
+            <div>
+              <Controller
+                name="transportadora"
+                control={control}
+                render={({ field }) => (
+                  <InputText
+                    {...field}
+                    placeholder="Transportadora"
+                    className="w-full"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Controller
+                name="numeroGuia"
+                control={control}
+                render={({ field }) => (
+                  <InputText
+                    {...field}
+                    placeholder="Número de Guía"
+                    className="w-full"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Controller
+                name="valorFlete"
+                control={control}
+                render={({ field }) => (
+                  <InputText
+                    {...field}
+                    placeholder="Valor del Flete"
+                    className="w-full"
+                  />
+                )}
+              />
+            </div>
+
+            <div>
+              <Controller
+                name="estado"
+                control={control}
+                render={({ field }) => (
+                  <Dropdown
+                    {...field}
+                    className="w-full"
+                    placeholder="Estado"
+                    options={[
+                      { label: "Pendiente", value: "Pendiente" },
+                      { label: "Entregado", value: "Entregado" },
+                      { label: "Devolución", value: "Devolución" },
+                      { label: "Cancelado", value: "Cancelado" },
+                    ]}
+                  />
+                )}
+              />
+              {errors.estado && (
+                <small className="p-error">{errors.estado.message}</small>
+              )}
+            </div>
+
+            <div>
+              <Controller
+                name="pagado"
+                control={control}
+                render={({ field }) => (
+                  <Dropdown
+                    {...field}
+                    className="w-full"
+                    placeholder="¿Pagado?"
+                    options={[
+                      { label: "Sí", value: "Si" },
+                      { label: "No", value: "No" },
+                    ]}
+                  />
+                )}
+              />
+              {errors.pagado && (
+                <small className="p-error">{errors.pagado.message}</small>
+              )}
+            </div>
+
+            {(watch("estado") === "Devolución" ||
+              watch("estado") === "Cancelado") && (
+              <div className="span-2">
+                <Controller
+                  name="notaPedidoInterna"
+                  control={control}
+                  render={({ field }) => (
+                    <InputText
+                      {...field}
+                      placeholder="Motivo"
+                      className="w-full"
+                    />
+                  )}
+                />
+                {errors.notaPedidoInterna && (
+                  <small className="p-error">
+                    {errors.notaPedidoInterna.message}
+                  </small>
+                )}
+              </div>
+            )}
+
+            <div className="actions span-2">
+              <Button
+                type="button"
+                label="Imprimir Ticket"
+                icon="pi pi-print"
+                className="p-button-text"
+                onClick={() => imprimirTicket2(pedido)}
+              />
+              <Button
+                type="button"
+                label="Descargar PDF"
+                icon="pi pi-download"
+                className="p-button-text"
+                onClick={handleDownloadPDF}
+              />
+
+              <span className="spacer" />
+
+              <Button
+                type="submit"
+                label="Guardar"
+                className="p-button-success"
+              />
+            </div>
+          </form>
+        </div>
+      </Dialog>
+    )}
   </div>
-</Dialog>
+);
 
-)}
-            
-            
-        </div>
-    );
 };
