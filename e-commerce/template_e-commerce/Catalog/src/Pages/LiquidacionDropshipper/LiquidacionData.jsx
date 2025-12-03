@@ -29,14 +29,20 @@ import { InputText } from 'primereact/inputtext';
 import { Dropdown } from 'primereact/dropdown';
 import { Dialog } from 'primereact/dialog';
 import { Divider } from 'primereact/divider';
+import { TabView, TabPanel } from 'primereact/tabview';
+
 
 
 export default function LiquidacionData() {
     const userType = process.env.REACT_APP_USER_TYPE;
-    const [filters, setFilters] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [globalFilterValue, setGlobalFilterValue] = useState('');
+    
+    // === Filtros TABLA PEDIDOS ===
+    const [filtersPedidos, setFiltersPedidos] = useState(null);
+    const [globalFilterPedidos, setGlobalFilterPedidos] = useState('');
 
+    // === Filtros TABLA RESUMEN ===
+    const [filtersResumen, setFiltersResumen] = useState(null);
+    const [globalFilterResumen, setGlobalFilterResumen] = useState('');
 
     const [pedidos, setPedidos] = useState([]);
     const [modalVisible, setModalVisible] = useState(false);
@@ -983,27 +989,10 @@ const descargarPDF = (pedidosData = filtrados) => {
         return () => clearInterval(interval);
     }, [isPaused]);
 
-        const clearFilter = () => {
-        initFilters();
-    };
 
-    const onGlobalFilterChange = (e) => {
-        const value = e.target.value;
-        let _filters = { ...filters };
-
-        _filters['global'].value = value;
-
-        setFilters(_filters);
-        setGlobalFilterValue(value);
-    };
-
-    useEffect(() => {
-  initFilters();
-}, []);
-
-
-const initFilters = () => {
-    setFilters({
+// Inicializar filtros de la tabla de PEDIDOS
+const initFiltersPedidos = () => {
+    setFiltersPedidos({
         global: { value: null, matchMode: FilterMatchMode.CONTAINS },
         idPedido: { value: null, matchMode: FilterMatchMode.EQUALS },
         tipo_pedido: { value: null, matchMode: FilterMatchMode.CONTAINS },
@@ -1013,21 +1002,82 @@ const initFilters = () => {
         telefono: { value: null, matchMode: FilterMatchMode.CONTAINS },
         entrega: { value: null, matchMode: FilterMatchMode.CONTAINS },
         pago: { value: null, matchMode: FilterMatchMode.CONTAINS },
-        // ...add more fields as needed
     });
 };
 
-const renderHeader = () => (
-    <div className="flex justify-content-between">
-        <Button type="button" icon="pi pi-filter-slash" label="Limpiar filtros"  onClick={clearFilter} />
-        <span className="p-input-icon-left">
-            <i className="pi pi-search" />
-            <input type="text" value={globalFilterValue} onChange={onGlobalFilterChange} placeholder="  Buscar..." className="p-inputtext p-component" />
-        </span>
-    </div>
+// Inicializar filtros de la tabla RESUMEN
+const initFiltersResumen = () => {
+    setFiltersResumen({
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        idAsesor: { value: null, matchMode: FilterMatchMode.EQUALS },
+        asesor_nombre: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        asesor_whatsapp: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        asesor_medio_pago: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    });
+};
+
+// Lanzar inicialización una sola vez
+useEffect(() => {
+    initFiltersPedidos();
+    initFiltersResumen();
+}, []);
+
+
+const renderHeader = (onClear, value, onChange) => (
+  <div className="flex justify-content-between">
+    <Button
+      type="button"
+      icon="pi pi-filter-slash"
+      label="Limpiar filtros"
+      onClick={onClear}
+    />
+    <span className="p-input-icon-left">
+      <i className="pi pi-search" />
+      <input
+        type="text"
+        value={value}
+        onChange={onChange}
+        placeholder="  Buscar..."
+        className="p-inputtext p-component"
+      />
+    </span>
+  </div>
 );
 
-const header = renderHeader();
+// Handlers PEDIDOS
+const clearFilterPedidos = () => initFiltersPedidos();
+
+const onGlobalFilterChangePedidos = (e) => {
+  const value = e.target.value;
+  let _filters = { ...filtersPedidos };
+  _filters['global'].value = value;
+  setFiltersPedidos(_filters);
+  setGlobalFilterPedidos(value);
+};
+
+// Handlers RESUMEN
+const clearFilterResumen = () => initFiltersResumen();
+
+const onGlobalFilterChangeResumen = (e) => {
+  const value = e.target.value;
+  let _filters = { ...filtersResumen };
+  _filters['global'].value = value;
+  setFiltersResumen(_filters);
+  setGlobalFilterResumen(value);
+};
+
+// Headers finales
+const headerPedidos = renderHeader(
+  clearFilterPedidos,
+  globalFilterPedidos,
+  onGlobalFilterChangePedidos
+);
+
+const headerResumen = renderHeader(
+  clearFilterResumen,
+  globalFilterResumen,
+  onGlobalFilterChangeResumen
+);
 
 return (
   <div>
@@ -1178,88 +1228,70 @@ return (
         ))}
       </div>
     ) : (
-      // === Vista de tabla principal (detalle pedido_asesores) ===
-      <div className="table-container">
-        <DataTable
-          value={pedidos}
-          filters={filters}
-          filterDisplay="row"
-          globalFilterFields={[
-            "idPedido",
-            "idAsesor",
-            "asesor_nombre",
-            "pedido_cliente_nombre",
-            "medio_pago_comision",
-            "estado_comision",
-          ]}
-          header={header}
-          onFilter={(e) => setFilters(e.filters)}
-          scrollable
-          scrollHeight="400px"
-          stripedRows
-          paginator
-          rows={5}
-          tableStyle={{ minWidth: "50rem" }}
-        >
-          {dynamicColumns.map((col) => (
-            <Column
-              key={col.field}
-              field={col.field}
-              header={col.header}
-              style={{ minWidth: col.minWidth }}
-              frozen={col.frozen}
-              sortable
-              filter
-              filterPlaceholder="Search by column"
-            />
-          ))}
+<TabView scrollable className="mt-4">
 
-          {/* Columna Acciones */}
-          <Column
-            header="Acciones"
-            frozenRight
-            body={(rowData) => (
-              <div className="flex gap-2">
-                <Button
-                  className="editar"
-                  onClick={() => abrirModal(rowData)}
-                  icon="pi pi-eye"
-                  aria-label="Ver"
-                />
-                <Button
-                  className="eliminar"
-                  onClick={() => eliminar(rowData.idPedido)}
-                  icon="pi pi-trash"
-                  aria-label="Eliminar"
-                />
-                <Button
-                  className="imprimir"
-                  onClick={() => imprimirTicket2(rowData)}
-                  icon="pi pi-print"
-                  aria-label="Imprimir"
-                />
-              </div>
-            )}
-            style={{ minWidth: "12rem" }}
-          />
-        </DataTable>
-      </div>
-    )}
-
-    {/* ==== SEGUNDA TABLA: RESUMEN POR ASESOR ==== */}
-    <h2 className="titles-text-heading" style={{ marginTop: "2rem" }}>
-      Resumen por asesor
-    </h2>
-
+  {/* TABLA 1 — DETALLE DE PEDIDOS */}
+  <TabPanel header="Detalle de pedidos">
     <div className="table-container">
       <DataTable
-        value={resumenAsesores}
-        header={header} // mismo header (buscar / limpiar) para mantener estética
+        className="tabla-pedidos"
+        value={pedidos}
+        filters={filtersPedidos}
+        filterDisplay="row"
+        globalFilterFields={[
+          "idPedido",
+          "idAsesor",
+          "asesor_nombre",
+          "pedido_cliente_nombre",
+          "medio_pago_comision",
+          "estado_comision",
+        ]}
+        header={headerPedidos}
+        onFilter={(e) => setFiltersPedidos(e.filters)}
         scrollable
         scrollHeight="400px"
         stripedRows
         paginator
-        rows={10}
+        rows={5}
+        tableStyle={{ minWidth: "50rem" }}
+      >
+        {dynamicColumns.map((col) => (
+          <Column
+            key={col.field}
+            field={col.field}
+            header={col.header}
+            style={{ minWidth: col.minWidth }}
+            frozen={col.frozen}
+            sortable
+            filter
+            filterPlaceholder="Search by column"
+          />
+        ))}
+      </DataTable>
+    </div>
+  </TabPanel>
+
+  {/* TABLA 2 — RESUMEN POR ASESOR */}
+  <TabPanel header="Resumen por asesor">
+    <div className="table-container">
+      <DataTable
+        className="tabla-resumen"
+        value={resumenAsesores}
+        filters={filtersResumen}
+        filterDisplay="row"
+        globalFilterFields={[
+          "idAsesor",
+          "asesor_nombre",
+          "asesor_whatsapp",
+          "asesor_medio_pago",
+        ]}
+        header={headerResumen}
+        onFilter={(e) => setFiltersResumen(e.filters)}
+        scrollable
+        scrollHeight="400px"
+        stripedRows
+        paginator
+        rows={5}
         tableStyle={{ minWidth: "50rem" }}
       >
         {resumenColumns.map((col) => (
@@ -1269,10 +1301,19 @@ return (
             header={col.header}
             style={{ minWidth: col.minWidth }}
             sortable
+            filter
+            filterPlaceholder="Search by column"
           />
         ))}
       </DataTable>
     </div>
+  </TabPanel>
+
+</TabView>
+
+    )}
+
+
 
     {/* ==== MODAL DETALLE PEDIDO ==== */}
     {modalVisible && (
