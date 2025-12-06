@@ -1,155 +1,183 @@
 <?php
 require_once 'Utils.php';
-class OrdersManager {
 
-    public static function calcularTotalProductos(string $productosJson): float {
-            $productos = json_decode($productosJson, true);
-            
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                throw new InvalidArgumentException("Formato de productos inválido");
-            }
+class OrdersManager
+{
+    /* ============================================================
+       CALCULAR TOTAL PRODUCTOS
+    ============================================================ */
+    public static function calcularTotalProductos(string $productosJson): float
+    {
+        $productos = json_decode($productosJson, true);
 
-            $total = 0;
-            foreach ($productos as $producto) {
-                if (!isset($producto['precio']) || !isset($producto['cantidad'])) {
-                    throw new InvalidArgumentException("Producto sin precio o cantidad");
-                }
-                if ($producto['precio'] < 0 || $producto['cantidad'] < 1) {
-                    throw new InvalidArgumentException("Precio o cantidad inválidos");
-                }
-                $total += ($producto['precio'] * $producto['cantidad']);
-            }
-
-            return $total;
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            throw new InvalidArgumentException("Formato de productos inválido");
         }
 
-   
-        // Asegúrate que el parámetro esté bien nombrado
-    public static function crearRelacionPedidoAsesor(PDO $conexion,int $idPedido, string $docAsesor): void {
-            // 1. Buscar el ID del asesor
-            $sql = "SELECT idAsesor,medio_pago_comision FROM asesores WHERE documento = :doc";
-            $stmt = $conexion->prepare($sql);
-            $stmt->execute([':doc' => $docAsesor]);
-            $asesor = $stmt->fetch(PDO::FETCH_ASSOC);
+        $total = 0;
 
-            if (!$asesor) {
-                throw new RuntimeException("Asesor no encontrado con documento: $docAsesor");
+        foreach ($productos as $producto) {
+            if (!isset($producto['precio']) || !isset($producto['cantidad'])) {
+                throw new InvalidArgumentException("Producto sin precio o cantidad");
+            }
+            if ($producto['precio'] < 0 || $producto['cantidad'] < 1) {
+                throw new InvalidArgumentException("Precio o cantidad inválidos");
             }
 
-            // 2. Valores por defecto (internos, no dependen del POST)
-            $defaults = [
-                'comision_estado' => 'pendiente',
-                'tipo_comision' => 'manual',
-                'valor_comision' => 0,
-                'medio_pago_comision' => 'por definir'
-            ];
+            $total += ($producto['precio'] * $producto['cantidad']);
+        }
 
-            // 3. Insertar con valores por defecto
-            $sql = "INSERT INTO pedido_asesores (
-                idPedido, 
-                idAsesor, 
-                comision_tipo, 
-                comision_valor, 
-                medio_pago_comision, 
+        return $total;
+    }
+
+    /* ============================================================
+       CREAR RELACIÓN pedido_asesores
+    ============================================================ */
+    public static function crearRelacionPedidoAsesor(PDO $conexion, int $idPedido, string $docAsesor, array $datos): void
+    {
+        // 1. Buscar asesor
+        $stmt = $conexion->prepare("
+            SELECT idAsesor, medio_pago_comision
+            FROM asesores
+            WHERE documento = :doc
+        ");
+        $stmt->execute([':doc' => $docAsesor]);
+        $asesor = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$asesor) {
+            throw new RuntimeException("Asesor no encontrado con documento: $docAsesor");
+        }
+
+        // 2. Tomar datos del pedido enviados desde el front
+        $valorPedido = isset($datos['total_pedido']) ? (float)$datos['total_pedido'] : 0;
+        $valorEnvio  = isset($datos['costo_envio']) ? (float)$datos['costo_envio'] : 0;
+        $totalCupon  = isset($datos['total_cupon']) ? (float)$datos['total_cupon'] : 0;
+
+        $totalProductos = isset($datos['total_productos'])
+            ? (float)$datos['total_productos']
+            : 0;
+
+        // Base de cálculo real:
+        $baseCalculo = max(0, $valorPedido - $valorEnvio - $totalCupon);
+
+        // Comisión fija del 10%
+        $porcentajeComision = 10;
+
+        $comisionValor = round($baseCalculo * ($porcentajeComision / 100), 2);
+
+        $valorAPagarAsesor = $comisionValor;
+
+        $medioPagoComision = !empty($asesor['medio_pago_comision'])
+            ? $asesor['medio_pago_comision']
+            : "por definir";
+
+        $sql = "
+            INSERT INTO pedido_asesores (
+                idPedido, idAsesor, base_calculo, valor_pedido, valor_envio,
+                comision_tipo, porcentaje_comision, comision_valor,
+                valor_a_pagar_asesor, total_cupon, medio_pago_comision,
                 estado_comision
-            ) VALUES (
-                :pedido, 
-                :asesor, 
-                :tipo_comision, 
-                :valor_comision,
-                :medio_pago,
-                :estado_comision
-            )";
+            )
+            VALUES (
+                :idPedido, :idAsesor, :base_calculo, :valor_pedido, :valor_envio,
+                'porcentaje', :porcentaje, :comision_valor,
+                :valor_a_pagar_asesor, :total_cupon, :medio_pago_comision,
+                'pendiente'
+            )
+        ";
 
-            $stmt = $conexion->prepare($sql);
-            $stmt->execute([
-                ':pedido' => $idPedido,
-                ':asesor' => $asesor['idAsesor'],
-                ':tipo_comision' => $defaults['tipo_comision'],
-                ':valor_comision' => $defaults['valor_comision'],
-                ':medio_pago' => empty($asesor['medio_pago_comision']) ? $defaults['medio_pago_comision'] : $asesor['medio_pago_comision'],
-                ':estado_comision' => $defaults['comision_estado']
-            ]);
-        }
+        $stmt = $conexion->prepare($sql);
 
- 
- 
-    public static function crearPedido(PDO $conexion, array $datos): int {
+        $stmt->execute([
+            ':idPedido'              => $idPedido,
+            ':idAsesor'              => $asesor['idAsesor'],
+            ':base_calculo'          => $baseCalculo,
+            ':valor_pedido'          => $valorPedido,
+            ':valor_envio'           => $valorEnvio,
+            ':porcentaje'            => $porcentajeComision,
+            ':comision_valor'        => $comisionValor,
+            ':valor_a_pagar_asesor'  => $valorAPagarAsesor,
+            ':total_cupon'           => $totalCupon,
+            ':medio_pago_comision'   => $medioPagoComision,
+        ]);
+    }
+
+    /* ============================================================
+       CREAR PEDIDO
+    ============================================================ */
+    public static function crearPedido(PDO $conexion, array $datos): int
+    {
         try {
-            // ========== VALORES POR DEFECTO ==========
-            // 'franja_horario' => 'sin especificar',
+
             $forma_pago = strtolower($datos['forma_pago']);
-            $forma_pago_otro =empty($datos['forma_pago_otro']) ? 'vacio' : strtolower($datos['forma_pago_otro']);
-            $pago_recibir =empty($datos['pago_recibir']) ? 'no' : strtolower($datos['pago_recibir']);
-            if(strtolower($datos['forma_pago'])=='otro'){
-                $forma_pago=strtolower($datos['forma_pago']).":".strtolower($forma_pago_otro);
+            $forma_pago_otro = empty($datos['forma_pago_otro']) ? 'vacio' : strtolower($datos['forma_pago_otro']);
+
+            if ($forma_pago === 'otro') {
+                $forma_pago = "otro:" . $forma_pago_otro;
             }
-            
-            
+
             $defaults = [
-                'estado' => 'Pendiente',
-                'pagado' => 'No', //por defecto no, en admin se cambia
-                'pagoRecibir' =>ucfirst(strtolower($pago_recibir)),
-                'codigo' => '',
-                'pago' =>strtolower($datos['medio_pago']),
-                'formaPago' =>strtolower($forma_pago)
+                'estado'      => 'Pendiente',
+                'pagado'      => 'No',
+                'codigo'      => '',
+                'pago'        => strtolower($datos['medio_pago']),
+                'formaPago'   => strtolower($forma_pago)
             ];
-            
+
             $datos = array_merge($defaults, $datos);
 
-            // ========== SANITIZACIÓN SEGURA ==========
             $sanitizedData = [
-                ':tipo' =>strtolower(htmlspecialchars($datos['tipo_pedido'], ENT_QUOTES, 'UTF-8')),
-                ':estado' =>ucfirst(strtolower(htmlspecialchars($datos['estado'], ENT_QUOTES, 'UTF-8'))),
-                ':productos' => $datos['productos'],
-                ':total' => (float)$datos['total_pedido'],
-                ':total_costo_compra' => (float)$datos['total_costo_compra'],
-                ':nombre' =>strtolower(htmlspecialchars($datos['nombre_cliente'], ENT_QUOTES, 'UTF-8')),
-                ':telefono' => filter_var($datos['telefono_cliente'], FILTER_SANITIZE_NUMBER_INT),
-                ':telefono_tran' => filter_var($datos['telefono_tran'], FILTER_SANITIZE_NUMBER_INT),
-                ':entrega' => htmlspecialchars($datos['direccion_entrega'], ENT_QUOTES, 'UTF-8'),
-                ':nota' =>strtolower(htmlspecialchars($datos['nota'], ENT_QUOTES, 'UTF-8')),
-                ':codigo' => htmlspecialchars($datos['codigo'], ENT_QUOTES, 'UTF-8'),
-                ':pago' => htmlspecialchars($datos['pago'], ENT_QUOTES, 'UTF-8'),
-                ':formaPago' => htmlspecialchars($forma_pago, ENT_QUOTES, 'UTF-8'),
-                ':pagado' => htmlspecialchars($datos['pagado'], ENT_QUOTES, 'UTF-8'),
-                ':pagoRecibir' => htmlspecialchars($datos['pagoRecibir'], ENT_QUOTES, 'UTF-8'),
-                ':fechaDespacho' => htmlspecialchars($datos['fecha_despacho'], ENT_QUOTES, 'UTF-8'),
-                ':franja_horario' => htmlspecialchars($datos['franja_horario'], ENT_QUOTES, 'UTF-8'),
-                ':city_id' => $datos['city_id'] ?? null,
-                ':state_id' => $datos['state_id'] ?? null,
-                ':country_id' => $datos['country_id'] ?? null,
-                ':total_productos' => (float)$datos['total_productos'] // Nuevo campo
+                ':tipo'              => strtolower($datos['tipo_pedido']),
+                ':estado'            => $datos['estado'],
+                ':productos'         => $datos['productos'],
+                ':total'             => (float)$datos['total_pedido'],
+                ':total_productos'   => (float)$datos['total_productos'],
+                ':costo_envio'       => isset($datos['costo_envio']) ? (float)$datos['costo_envio'] : 0,
+                ':nota'              => strtolower($datos['nota']),
+                ':nombre'            => strtolower($datos['nombre_cliente']),
+                ':codigo'            => $datos['codigo'] ?? '',
+                ':entrega'           => $datos['direccion_entrega'],
+                ':city_id'           => $datos['city_id'],
+                ':state_id'          => $datos['state_id'],
+                ':country_id'        => $datos['country_id'],
+                ':fechaDespacho'     => $datos['fecha_despacho'],
+                ':franja_horario'    => $datos['franja_horario'],
+                ':telefono'          => $datos['telefono_cliente'],
+                ':telefono_tran'     => $datos['telefono_tran'],
+                ':pago'              => strtolower($datos['medio_pago']),
+                ':formaPago'         => $datos['formaPago'],
+                ':pagado'            => $datos['pagado'],
+                ':pagoRecibir'       => $datos['pago_recibir'] ?? 'no',
+                ':transportadora'    => $datos['transportadora'] ?? null,
+                ':numero_guia'       => $datos['numero_guia'] ?? null
             ];
 
-            // ========== CONSULTA SQL ACTUALIZADA ==========
-            $sql = "INSERT INTO pedidos (
-                tipo_pedido, estado, productos, total, total_costo_compra,  total_productos, nota, 
-                nombre, codigo, entrega, city_id, state_id, country_id, 
-                fecha_despacho, franja_horario, telefono, 
-                telefono_tran, pago,forma_pago, pagado, pagoRecibir, createdAt
-            ) VALUES (
-                :tipo, :estado, :productos, :total, :total_costo_compra, :total_productos, :nota, 
-                :nombre, :codigo, :entrega, :city_id, :state_id, :country_id, 
-                 :fechaDespacho, :franja_horario, :telefono, 
-                :telefono_tran, :pago,:formaPago, :pagado, :pagoRecibir, NOW()
-            )";
+            $sql = "
+                INSERT INTO pedidos (
+                    tipo_pedido, estado, productos, total,
+                    total_productos, costo_envio, nota,
+                    nombre, codigo, entrega, city_id, state_id, country_id,
+                    fecha_despacho, franja_horario, telefono, telefono_tran,
+                    pago, forma_pago, pagado, pagoRecibir,
+                    transportadora, numero_guia, createdAt
+                )
+                VALUES (
+                    :tipo, :estado, :productos, :total,
+                    :total_productos, :costo_envio, :nota,
+                    :nombre, :codigo, :entrega, :city_id, :state_id, :country_id,
+                    :fechaDespacho, :franja_horario, :telefono, :telefono_tran,
+                    :pago, :formaPago, :pagado, :pagoRecibir,
+                    :transportadora, :numero_guia, NOW()
+                )
+            ";
 
             $stmt = $conexion->prepare($sql);
             $stmt->execute($sanitizedData);
+
             return $conexion->lastInsertId();
 
         } catch (PDOException $e) {
             throw new RuntimeException("Error al crear pedido: " . $e->getMessage());
         }
-
-
-   
-
+    }
 }
-
-}
-       
-    
-
-?>

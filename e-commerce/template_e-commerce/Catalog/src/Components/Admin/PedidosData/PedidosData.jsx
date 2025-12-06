@@ -93,9 +93,10 @@ const scaleFactor = 2; // rems to add
   { field: 'valor_cupon', header: 'Valor Cupón', minWidth: '16vw' },
   { field: 'tipo_cupon', header: 'Tipo Cupón', minWidth: '16vw' },
   { field: 'total_cupon', header: 'Total Cupón', minWidth: '16vw' },
-//   { field: 'comision', header: 'Comisión', minWidth: '10rem' },
-//   { field: 'envio', header: 'Envío', minWidth: '8rem' },
-//   { field: 'valorEnvio', header: 'Valor Envío', minWidth: '10rem' },
+    { field: 'transportadora', header: 'Transportadora', minWidth: '16vw' },
+    { field: 'numero_guia', header: 'Número Guía', minWidth: '16vw' },
+    { field: 'costo_envio', header: 'Costo Envío', minWidth: '16vw' },
+
   { field: 'total', header: 'Total', minWidth: '16vw' },
   { field: 'total_productos', header: 'Total Productos', minWidth: '16vw' },
 ];
@@ -283,82 +284,7 @@ const scaleFactor = 2; // rems to add
         setPedidos([...pedidos].reverse());
         setOrdenInvertido(!ordenInvertido);
     };
-    // const descargarExcel = () => {
-    //     let totalGeneral = 0;
-    //     let totalComision = 0;
-    //     let totalValorEnvio = 0;
-        
-    //     const data = filtrados.map(item => {
-    //         const total = parseFloat(item.total);
-    //         const comision = parseFloat(item.comision) || 0;
-    //         const valorEnvio = parseFloat(item.valorEnvio) || 0;
-        
-    //         totalGeneral += total;
-    //         totalComision += comision;
-    //         totalValorEnvio += valorEnvio;
-        
-    //         const productos = JSON.parse(item.productos);
-    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}`);
-        
-    //         return {
-    //             'ID Pedido': item.idPedido,
-    //             'Estado': item.estado,
-    //             'Pagado': item.pagado,
-    //             'Nombre': item.nombre,
-    //             'Telefono': item.telefono,
-    //             'Pago': item.pago,
-    //             'Nota': item.nota,
-    //             'Pago al recibirlo': item.pagoRecibir || '',
-    //             'Entrega': item.entrega,
-    //             'Lista Precio': item.listaPrecio,
-    //             'Comisión': comision.toFixed(2),
-    //             'Método de Pago': item.metodoPago,
-    //             'Envio': item.envio,
-    //             'Valor Envío': valorEnvio.toFixed(2),
-    //             'Productos': infoProductos.join('\n'),
-    //             'Código': item.codigo,
-    //             'Total': `${moneda} ${total.toFixed(2)}`,
-    //             'Fecha': item.createdAt,
-    //         };
-    //     });
-        
-        
-
-    //     // Formatear el total general
-    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
-
-    //     // Agregar fila con el total general
-    //     const totalRow = {
-    //         'ID Pedido': '',
-    //         'Estado': '',
-    //         'Pagado': '',
-    //         'Nombre': '',
-    //         'Telefono': '',
-    //         'Pago': '',
-    //         'Nota': '',
-    //         'Pago al recibirlo': '',
-    //         'Entrega': '',
-    //         'Lista Precio': '',
-    //         'Comisión': totalComision.toFixed(2),
-    //         'Método de Pago': '',
-    //         'Envio': '',
-    //         'Valor Envío': totalValorEnvio.toFixed(2),
-    //         'Productos': '',
-    //         'Código': 'Total General:',
-    //         'Total': `${moneda} ${totalGeneral.toFixed(2)}`,
-    //         'Fecha': '',
-    //     };
-        
-
-    //     data.push(totalRow);
-
-    //     const ws = XLSX.utils.json_to_sheet(data);
-    //     const wb = XLSX.utils.book_new();
-    //     XLSX.utils.book_append_sheet(wb, ws, 'pedidos');
-    //     XLSX.writeFile(wb, 'pedidos.xlsx');
-    // };
-
-
+    
 const schemaPedidoEdit = z.object({
   estado: z.string().min(1, "Estado requerido"),
   pagado: z.enum(["Si", "No"]),
@@ -371,37 +297,89 @@ const schemaPedidoEdit = z.object({
 
 
   // Edit handler
-  const onSubmitEdit = (data) => {
-    // Aquí haces tu fetch/PUT con data validada
-    // handleUpdateText con valores de data
-  };
+const onSubmitEdit = (data) => {
+  // 1. Resolver estado final (misma lógica que tenías en handleUpdateText)
+  const estadoFinal =
+    (
+      data.estado === 'Entregado' ||
+      data.estado === 'Solicitado' ||
+      pedido.estado === 'Entregado' ||
+      pedido.estado === 'Solicitado'
+    ) &&
+    (data.pagado === 'Si' || pedido.pagado === 'Si')
+      ? 'Finalizado'
+      : (data.estado || pedido.estado);
+
+  // 2. Armar el payload que espera tu pedidoPut.php
+const payload = {
+  estado: estadoFinal,
+  pagado: data.pagado || pedido.pagado,
+
+  // 👇 estos nombres deben coincidir con lo que usa pedidoPut.php
+  transportadora: data.transportadora || '',
+  numero_guia: data.numeroGuia || '',
+  costo_envio: data.valorFlete ? parseFloat(data.valorFlete) : null,
+
+  // nota externa (la que ya existía en pedidos)
+  nota: pedido.nota,
+
+  // si luego creas columna en BD para esta nota interna,
+  // aquí ya la estás enviando
+  notaPedidoInterna: data.notaPedidoInterna || '',
+};
+
+
+
+  fetch(`${baseURL}/pedidoPut.php?idPedido=${pedido.idPedido}`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  })
+    .then((response) => response.json())
+    .then((dataResponse) => {
+      if (dataResponse.error) {
+        Swal.fire('Error!', dataResponse.error, 'error');
+      } else {
+        Swal.fire('Editado!', dataResponse.mensaje, 'success');
+        cargarPedidos();
+        cerrarModal();
+      }
+    })
+    .catch((error) => {
+      console.log(error.message);
+      toast.error(error.message);
+    });
+};
+
 
 
   const { control, handleSubmit, formState: { errors }, reset, watch } = useForm({
     resolver: zodResolver(schemaPedidoEdit),
-    defaultValues: {
-      estado: pedido?.estado || "",
-      pagado: pedido?.pagado || "",
-      transportadora: pedido?.transportadora || "",
-      numeroGuia: pedido?.numeroGuia || "",
-      valorFlete: pedido?.valorFlete || "",
-      notaPedidoInterna: pedido?.notaPedidoInterna || "",
-    }
+        defaultValues: {
+        estado: pedido?.estado || "",
+        pagado: pedido?.pagado || "",
+        transportadora: pedido?.transportadora || "",
+        numeroGuia: pedido?.numero_guia || "",
+        valorFlete: pedido?.costo_envio?.toString() || "",
+        notaPedidoInterna: pedido?.notaPedidoInterna || "",
+        }
+
   });
 
    // Sync form with pedido when modal opens
   useEffect(() => {
-    if (modalVisible) {
-      reset({
-        estado: pedido?.estado || "",
-        pagado: pedido?.pagado || "",
-        transportadora: pedido?.transportadora || "",
-        numeroGuia: pedido?.numeroGuia || "",
-        valorFlete: pedido?.valorFlete || "",
-        notaPedidoInterna: pedido?.notaPedidoInterna || "",
-      });
-    }
-  }, [modalVisible, pedido, reset]);
+  if (modalVisible) {
+    reset({
+      estado: pedido?.estado || "",
+      pagado: pedido?.pagado || "",
+      transportadora: pedido?.transportadora || "",
+      numeroGuia: pedido?.numero_guia || "",
+      valorFlete: pedido?.costo_envio?.toString() || "",
+      notaPedidoInterna: pedido?.notaPedidoInterna || "",
+    });
+  }
+}, [modalVisible, pedido, reset]);
+
 
 
   const pedidoPrettyHeaders = {
@@ -1549,6 +1527,10 @@ const header = renderHeader();
         ['Departamento (ID)', pedido.state_id],
         ['Ciudad (ID)', pedido.city_id],
         ['Teléfono Transportador', pedido.telefono_tran],
+        ['Transportadora', pedido.transportadora],
+        ['Número de Guía', pedido.numero_guia],
+        ['Costo de Envío', pedido.costo_envio],
+
       ].map(([label, val], idx) => (
         <div key={idx} className="info-row">
           <label>{label}</label><span>{val ?? '—'}</span>

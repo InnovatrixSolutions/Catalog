@@ -86,7 +86,7 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
       valor: z.coerce.number().min(1, 'Debe ingresar un valor válido'),
     })
     .refine(
-      (data) => data.valor == totalPrice,
+      (data) => data.valor >= totalPrice,
       {
         message: `El valor debe ser igual o mayor al total: $${totalPrice}`,
         path: ['valor'],
@@ -198,116 +198,134 @@ export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const [ciudades, setCiudades] = useState([]);
   const departamentoSeleccionado = watch('departamento');
 
-  const onSubmit = async (data) => {
-    setIsFinalSubmit(false);
-    setShowErrorsDialog(false);
+const onSubmit = async (data) => {
+  setIsFinalSubmit(false);
+  setShowErrorsDialog(false);
 
-    const resumenPedido = {
-      tipo_pedido: isDropshipper ? 'dropshipper' : 'catalogo',
+  const resumenPedido = {
+    tipo_pedido: isDropshipper ? 'dropshipper' : 'catalogo',
 
-      ...(isDropshipper && {
-        doc_asesor: data.documento,
-        pin_asesor: data.pin_asesor,
-        nombre_asesor: data.nombre,
-        telefono_asesor: data.telefono,
-        telefono_whatsapp: data.telefono,
-        medio_pago_asesor: data.medioComision,
-        email: data.email,
-      }),
+    ...(isDropshipper && {
+      doc_asesor: data.documento,
+      pin_asesor: data.pin_asesor,
+      nombre_asesor: data.nombre,
+      telefono_asesor: data.telefono,
+      telefono_whatsapp: data.telefono,
+      medio_pago_asesor: data.medioComision,
+      email: data.email,
+    }),
 
-      productos: cartItems.map((item) => ({
-        idProducto: item.idProducto,
-        idCategoria: item.idCategoria,
-        titulo: item.titulo,
-        cantidad: item.cantidad,
-        items: item.items || [],
-        precio: item.precio,
-        imagen:
-          item.imagen1 ||
-          item.imagen2 ||
-          item.imagen3 ||
-          item.imagen4 ||
-          '',
-      })),
+    productos: cartItems.map((item) => ({
+      idProducto: item.idProducto,
+      idCategoria: item.idCategoria,
+      titulo: item.titulo,
+      cantidad: item.cantidad,
+      items: item.items || [],
+      precio: item.precio,
+      imagen:
+        item.imagen1 ||
+        item.imagen2 ||
+        item.imagen3 ||
+        item.imagen4 ||
+        '',
+    })),
 
-      total_pedido: isCatalog ? totalPrice : data.valor,
-      nombre_cliente: data.clienteNombre,
-      telefono_cliente: data.clienteCelular,
-      telefono_tran: data.clienteTransportadora,
-      direccion_entrega: data.direccion,
-      country_id: 48,
-      state_id: data.departamento,
-      city_id: data.ciudad,
+    total_pedido: isCatalog ? totalPrice : data.valor,
+    nombre_cliente: data.clienteNombre,
+    telefono_cliente: data.clienteCelular,
+    telefono_tran: data.clienteTransportadora,
+    direccion_entrega: data.direccion,
+    country_id: 48,
+    state_id: data.departamento,
+    city_id: data.ciudad,
 
-      fecha_despacho: isDropshipper
-        ? data.fechaDespacho
-            ?.toISOString()
-            .replace('T', ' ')
-            .substring(0, 19)
-        : null,
+    fecha_despacho: isDropshipper
+      ? data.fechaDespacho?.toISOString().replace('T', ' ').substring(0, 19)
+      : null,
 
-      franja_horario: isDropshipper
-        ? (data.franjaEntrega || []).join(',')
-        : '08:00-08:00 PM',
+    franja_horario: isDropshipper
+      ? (data.franjaEntrega || []).join(',')
+      : '08:00-08:00 PM',
 
-      nota: data.notas || 'Esta es una nota automatizada del pedido',
-      pago_recibir: isCatalog ? totalPrice : data.valor,
-      medio_pago: 'efectivo',
-      forma_pago: 'Nequi',
-    };
-
-    console.log('Objeto listo para enviar:', resumenPedido);
-
-    try {
-      const formData = new FormData();
-
-      for (const key in resumenPedido) {
-        const value = resumenPedido[key];
-        if (key === 'productos') {
-          formData.append(key, JSON.stringify(value));
-        } else {
-          formData.append(key, String(value));
-        }
-      }
-
-      for (const pair of formData.entries()) {
-        console.log(`${pair[0]}: ${pair[1]}`);
-      }
-
-      const response = await fetch(`${baseURL}/pedidosPost.php`, {
-        method: 'POST',
-        body: formData,
-      });
-
-      const result = await response.json();
-      console.log('Respuesta del servidor:', result);
-
-      if (result.success) {
-        console.log('Pedido enviado exitosamente:', result);
-
-        const datosWhatsapp = {
-          idPedido: result?.data?.idPedido,
-          nombre: data?.clienteNombre,
-          telefono: data?.clienteCelular,
-          entrega: data?.direccion,
-          pago: data?.metodoPago,
-          codigo: '',
-          total: totalPrice,
-          nota: data?.notas,
-          productos: cartItems,
-          pagoRecibir: isCatalog ? totalPrice : data.valor,
-        };
-
-        handleWhatsappMessage(datosWhatsapp, telefonoTienda);
-        setShowSuccessModal(true);
-      } else {
-        toast.error('Error en el envío del pedido. Revisa todos los campos');
-        toast.error('Error: ' + (result.error || 'Error desconocido'));
-      }
-    } catch (error) {
-      console.error('Error en la peticion:', error);
-    }
+    nota: data.notas || 'Esta es una nota automatizada del pedido',
+    pago_recibir: isCatalog ? totalPrice : data.valor,
+    medio_pago: 'efectivo',
+    forma_pago: 'Nequi',
   };
+
+  console.log('Objeto listo para enviar:', resumenPedido);
+
+  try {
+    const formData = new FormData();
+
+    for (const key in resumenPedido) {
+      const value = resumenPedido[key];
+      if (key === 'productos') {
+        formData.append(key, JSON.stringify(value));
+      } else if (value !== undefined && value !== null) {
+        formData.append(key, String(value));
+      }
+    }
+
+    for (const pair of formData.entries()) {
+      console.log(`${pair[0]}: ${pair[1]}`);
+    }
+
+    const response = await fetch(`${baseURL}/pedidosPost.php`, {
+      method: 'POST',
+      body: formData,
+    });
+
+    // 👇 Leemos siempre como texto primero
+    const rawText = await response.text();
+    console.log('Respuesta RAW del servidor:', rawText);
+
+    let result;
+    try {
+      result = rawText ? JSON.parse(rawText) : null;
+    } catch (e) {
+      console.error('La respuesta NO es JSON válido:', e);
+      toast.error('Error en el servidor. La respuesta no es JSON.');
+      return;
+    }
+
+    if (!response.ok) {
+      console.error('Respuesta HTTP no OK:', response.status, result);
+      toast.error('Error en el envío del pedido. Revisa todos los campos');
+      toast.error('Error: ' + (result?.error || 'Error desconocido'));
+      return;
+    }
+
+    console.log('Respuesta JSON del servidor:', result);
+
+    if (result.success) {
+      console.log('Pedido enviado exitosamente:', result);
+
+      const datosWhatsapp = {
+        idPedido: result?.data?.id || result?.data?.idPedido,
+        nombre: data?.clienteNombre,
+        telefono: data?.clienteCelular,
+        entrega: data?.direccion,
+        pago: data?.metodoPago,
+        codigo: '',
+        total: totalPrice,
+        nota: data?.notas,
+        productos: cartItems,
+        pagoRecibir: isCatalog ? totalPrice : data.valor,
+      };
+
+      handleWhatsappMessage(datosWhatsapp, telefonoTienda);
+      setShowSuccessModal(true);
+    } else {
+      toast.error('Error en el envío del pedido. Revisa todos los campos');
+      toast.error('Error: ' + (result.error || 'Error desconocido'));
+    }
+  } catch (error) {
+    console.error('Error en la petición:', error);
+    toast.error('Error de conexión con el servidor.');
+  }
+};
+
 
   const onError = (formErrors) => {
     if (isFinalSubmit && Object.keys(formErrors).length > 0) {
