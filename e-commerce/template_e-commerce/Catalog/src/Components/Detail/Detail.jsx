@@ -260,6 +260,12 @@ export default function Detail() {
         return <DetailLoading />;
     }
 
+function linkify(text) {
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text?.replace(urlRegex, (url) => {
+        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+    });
+}
 
     return (
 
@@ -431,7 +437,12 @@ export default function Detail() {
 
 
                     </div>
-                    <p className="descripcion">{producto.descripcion}</p>
+                      <p
+                        className="descripcion"
+                        dangerouslySetInnerHTML={{
+                            __html: linkify(producto.descripcion || "")
+                        }}
+                        />
                     {
                         producto?.verItems === 'Si' && (
                             <div className="itemsDetail">

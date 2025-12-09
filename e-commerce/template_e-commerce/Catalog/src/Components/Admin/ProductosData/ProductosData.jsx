@@ -344,11 +344,12 @@ export default function ProductosData() {
       verItems: verItems !== '' ? verItems : producto.verItems,
     };
 
-    fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    })
+fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
+  method: 'PUT',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(payload),
+})
+
       .then(response => response.json())
       .then(data => {
         if (data.error) {

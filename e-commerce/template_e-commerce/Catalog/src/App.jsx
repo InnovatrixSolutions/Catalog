@@ -13,6 +13,8 @@ function App() {
     const mode = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
     console.log('App mode detected:', mode);
 
+    console.log("BUILD VERSION 2025-12-06 23:15");
+
     const root = document.documentElement;
 
     // Colores según el modo

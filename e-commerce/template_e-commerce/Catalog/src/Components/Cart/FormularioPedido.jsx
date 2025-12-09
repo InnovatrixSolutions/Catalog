@@ -44,7 +44,7 @@ function resolveMode() {
 
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   const isDropshipperDomain =
-    /^drop\./i.test(host) || host === 'drop.mercadoyepes.co';
+    /^drop\./i.test(host) || host === 'catalogo.mercadoyepes.co';
   let mode = isDropshipperDomain ? 'dropshipper' : 'catalog';
 
   try {
