@@ -101,6 +101,18 @@ const scaleFactor = 2; // rems to add
   { field: 'total_productos', header: 'Total Productos', minWidth: '16vw' },
 ];
 
+const toNumber = (v) => {
+  if (v === null || v === undefined) return 0;
+  const s = String(v).replace(/\./g, "").replace(",", ".");
+  const n = Number(s);
+  return isNaN(n) ? 0 : n;
+};
+
+const formatCOP = (v) => {
+  const n = toNumber(v);
+  return `${moneda} ${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+};
+
     const handleShowMore = () => {
         setVisibleCount(prevCount => prevCount + 20);
     };
@@ -289,16 +301,32 @@ const schemaPedidoEdit = z.object({
   estado: z.string().min(1, "Estado requerido"),
   pagado: z.enum(["Si", "No"]),
   transportadora: z.string().optional(),
+  transportadoraOtra: z.string().optional(),
   numeroGuia: z.string().optional(),
   valorFlete: z.string().optional(),
   notaPedidoInterna: z.string().optional(),
-  // Add more fields as necessary
+}).superRefine((data, ctx) => {
+  const estado = data.estado;
+  const flete = toNumber(data.valorFlete);
+
+  // si es Cancelado/Devolución -> motivo obligatorio
+  if ((estado === "Cancelado" || estado === "Devolución") && (!data.notaPedidoInterna || data.notaPedidoInterna.trim().length < 3)) {
+    ctx.addIssue({ code: "custom", path: ["notaPedidoInterna"], message: "Motivo obligatorio" });
+  }
+
+  // si hay transportadora -> guía y flete recomendados
+  const t = (data.transportadora === "Otra" ? data.transportadoraOtra : data.transportadora) || "";
+  if (t && (!data.numeroGuia || data.numeroGuia.trim().length < 3)) {
+    ctx.addIssue({ code: "custom", path: ["numeroGuia"], message: "Número de guía requerido" });
+  }
+  if (t && flete <= 0) {
+    ctx.addIssue({ code: "custom", path: ["valorFlete"], message: "Costo de envío debe ser mayor a 0" });
+  }
 });
 
 
-  // Edit handler
+
 const onSubmitEdit = (data) => {
-  // 1. Resolver estado final (misma lógica que tenías en handleUpdateText)
   const estadoFinal =
     (
       data.estado === 'Entregado' ||
@@ -310,47 +338,39 @@ const onSubmitEdit = (data) => {
       ? 'Finalizado'
       : (data.estado || pedido.estado);
 
-  // 2. Armar el payload que espera tu pedidoPut.php
-const payload = {
-  estado: estadoFinal,
-  pagado: data.pagado || pedido.pagado,
+  const transportadoraFinal =
+    data.transportadora === "Otra"
+      ? (data.transportadoraOtra || "")
+      : (data.transportadora || "");
 
-  // 👇 estos nombres deben coincidir con lo que usa pedidoPut.php
-  transportadora: data.transportadora || '',
-  numero_guia: data.numeroGuia || '',
-  costo_envio: data.valorFlete ? parseFloat(data.valorFlete) : null,
+  const payload = {
+    estado: estadoFinal,
+    pagado: data.pagado || pedido.pagado,
 
-  // nota externa (la que ya existía en pedidos)
-  nota: pedido.nota,
+    transportadora: transportadoraFinal,
+    numero_guia: data.numeroGuia || "",
+    costo_envio: data.valorFlete ? toNumber(data.valorFlete) : 0,
 
-  // si luego creas columna en BD para esta nota interna,
-  // aquí ya la estás enviando
-  notaPedidoInterna: data.notaPedidoInterna || '',
-};
-
-
+    nota: pedido.nota,
+    notaPedidoInterna: data.notaPedidoInterna || "",
+  };
 
   fetch(`${baseURL}/pedidoPut.php?idPedido=${pedido.idPedido}`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   })
-    .then((response) => response.json())
-    .then((dataResponse) => {
-      if (dataResponse.error) {
-        Swal.fire('Error!', dataResponse.error, 'error');
-      } else {
-        Swal.fire('Editado!', dataResponse.mensaje, 'success');
+    .then(r => r.json())
+    .then(resp => {
+      if (resp.error) Swal.fire('Error!', resp.error, 'error');
+      else {
+        Swal.fire('Editado!', resp.mensaje, 'success');
         cargarPedidos();
         cerrarModal();
       }
     })
-    .catch((error) => {
-      console.log(error.message);
-      toast.error(error.message);
-    });
+    .catch(err => toast.error(err.message));
 };
-
 
 
   const { control, handleSubmit, formState: { errors }, reset, watch } = useForm({
@@ -360,8 +380,10 @@ const payload = {
         pagado: pedido?.pagado || "",
         transportadora: pedido?.transportadora || "",
         numeroGuia: pedido?.numero_guia || "",
-        valorFlete: pedido?.costo_envio?.toString() || "",
+        valorFlete: (toNumber(pedido?.costo_envio) > 0 ? String(toNumber(pedido?.costo_envio)) : ""),
         notaPedidoInterna: pedido?.notaPedidoInterna || "",
+        transportadora: pedido?.transportadora || "",
+        transportadoraOtra: "",
         }
 
   });
@@ -460,84 +482,20 @@ const descargarExcel = (pedidosData = filtrados) => {
 
 
 
-    // const descargarPDF = () => {
-    //     const pdf = new jsPDF('landscape'); // Orientación horizontal
-    //     pdf.text('Lista de Pedidos', 10, 10);
+const TRANSPORTADORAS_CO = [
+  { label: 'Servientrega', value: 'Servientrega' },
+  { label: 'Coordinadora', value: 'Coordinadora' },
+  { label: 'Inter Rapidísimo', value: 'Inter Rapidísimo' },
+  { label: 'Envía', value: 'Envía' },
+  { label: 'TCC', value: 'TCC' },
+  { label: 'Deprisa', value: 'Deprisa' },
+  { label: 'DHL', value: 'DHL' },
+  { label: 'FedEx', value: 'FedEx' },
+  { label: 'UPS', value: 'UPS' },
+  { label: 'Mensajeros Urbanos', value: 'Mensajeros Urbanos' },
+  { label: 'Otra', value: 'Otra' },
+];
 
-    //     const columns = [
-    //         { title: 'ID Pedido', dataKey: 'idPedido' },
-    //         { title: 'Estado', dataKey: 'estado' },
-    //         { title: 'Pagado', dataKey: 'pagado' },
-    //         { title: 'Nombre', dataKey: 'nombre' },
-    //         { title: 'Telefono', dataKey: 'telefono' },
-    //         { title: 'Pago', dataKey: 'pago' },
-    //         { title: 'Entrega', dataKey: 'entrega' },
-    //         { title: 'Lista Precio', dataKey: 'listaPrecio' },
-    //         { title: 'Comisión', dataKey: 'comision' },
-    //         { title: 'Envío', dataKey: 'envio' },
-    //         { title: 'Valor Envío', dataKey: 'valorEnvio' },
-    //         { title: 'Productos', dataKey: 'productos' },
-    //         { title: 'Código', dataKey: 'codigo' },
-    //         { title: 'Total', dataKey: 'total' },
-    //         { title: 'Fecha', dataKey: 'createdAt' },
-    //     ];
-        
-        
-
-    //     let totalGeneral = 0;
-
-    //     const data = filtrados.map(item => {
-    //         const total = parseFloat(item.total); // Convertir a número
-    //         totalGeneral += total;
-    //         const productos = JSON.parse(item.productos);
-    //         const infoProductos = productos.map(producto => `${producto.titulo} - ${moneda}${producto.precio} - x${producto.cantidad}  `);
-    //         return {
-    //             idPedido: item.idPedido,
-    //             estado: item.estado,
-    //             pagado: item.pagado,
-    //             nombre: item.nombre,
-    //             telefono: item.telefono,
-    //             pago: item.pago,
-    //             entrega: item.entrega,
-    //             listaPrecio: item.listaPrecio,
-    //             comision: item.comision,
-    //             envio: item.envio,
-    //             valorEnvio: item.valorEnvio,
-    //             productos: infoProductos.join('\n'),
-    //             codigo: item.codigo,
-    //             total: `${moneda} ${total.toFixed(2)}`,
-    //             createdAt: item.createdAt,
-    //         };
-            
-    //     });
-
-    //     // Formatear el total general
-    //     const formattedTotal = `${moneda} ${totalGeneral.toFixed(2)}`;
-
-    //     // Agregar fila con el total general
-    //     const totalRow = {
-    //         idPedido: '',
-    //         estado: '',
-    //         nombre: '',
-    //         telefono: '',
-    //         pago: '',
-    //         entrega: '',
-    //         nota: '',
-    //         productos: '',
-    //         codigo: 'Total General:',
-    //         total: formattedTotal,
-    //         createdAt: '',
-    //     };
-
-    //     data.push(totalRow);
-
-    //     pdf.autoTable({
-    //         head: [columns.map(col => col.title)],
-    //         body: data.map(item => Object.values(item)),
-    //     });
-
-    //     pdf.save('pedidos.pdf');
-    // };
     
 const descargarPDF = (pedidosData = filtrados) => {
       console.log("descargarPDF called", pedidosData); // Add this line
@@ -963,6 +921,9 @@ const renderHeader = () => (
     </div>
 );
 
+
+
+
 const header = renderHeader();
 
     return (
@@ -1202,252 +1163,6 @@ const header = renderHeader();
             )}
 
 
-            {/* {modalVisible && (
-                <div className="modal">
-                    <div className="modal-content" id='modal-content'>
-                        <div className='deFlexBtnsModal'>
-                            <div className='deFlexBtnsModal'>
-                                <button
-                                    className={selectedSection === 'texto' ? 'selected' : ''}
-                                    onClick={() => handleSectionChange('texto')}
-                                >
-                                    Pedido
-                                </button>
-                                <button onClick={() => imprimirTicket2(pedido)} className='texto'>
-                                    Imprimir Ticket
-                                </button>
-                                <button onClick={handleDownloadPDF} className='texto'>Descargar PDF</button>
-                            </div>
-
-                            <span className="close" onClick={cerrarModal}>
-                                &times;
-                            </span>
-                        </div>
-                        <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
-
-                            <div id='cardsProductData'>
-                                {JSON.parse(pedido.productos).map(producto => (
-                                    <div key={producto.titulo} className='cardProductData'>
-                                        <img src={producto.imagen} alt="imagen" />
-                                        <div className='cardProductDataText'>
-                                            <h3>{producto.titulo}</h3>
-                                            <strong>{moneda} {producto.precio} <span>x{producto.cantidad}</span></strong>
-                                            <span>
-                                                {producto?.items?.map((sabor, index) => (
-                                                    <span key={index}>{sabor}, </span>
-                                                ))}
-                                            </span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-
-                            <div className='recibirAbsolute'>
-                                {
-                                    (pedido?.entrega === 'Sucursal' || pedido?.entrega === 'Retiro en Sucursal') ? (
-                                        <span>Retira Personalmente</span>
-                                    ) : (
-                                        <span >Delivery</span>
-                                    )
-
-                                }
-
-                                {
-                                    pedido?.pagoRecibir === 'Si' ? (
-                                        <span>Pago al recibirlo</span>
-                                    ) : pedido?.pagado === 'No' || (!pedido?.pagoRecibir && pedido?.pagado === 'No') ? (
-                                        <span>Falta Comprobante</span>
-                                    ) : pedido?.pagado === 'Si' ? (
-                                        <></>
-                                    ) : (
-                                        <></>
-                                    )
-                                }
-
-                            </div>
-                            <div className='flexGrap'>
-                                <fieldset>
-                                    <legend>ID Pedido</legend>
-                                    <input
-                                        value={pedido.idPedido}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Fecha </legend>
-                                    <input
-                                        value={new Date(pedido?.createdAt)?.toLocaleString('es-ES', {
-                                            hour: '2-digit',
-                                            minute: '2-digit',
-                                            day: '2-digit',
-                                            month: '2-digit',
-                                            year: 'numeric'
-                                        })}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Nombre</legend>
-                                    <input
-                                        value={pedido.nombre}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Telefono</legend>
-                                    <input
-                                        value={pedido.telefono}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Pago</legend>
-                                    <input
-                                        value={pedido.pago}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Entrega</legend>
-                                    <input
-                                        value={pedido.entrega}
-                                        disabled
-
-                                    />
-                                </fieldset>
-
-                                <fieldset>
-                                    <legend>Codigo</legend>
-                                    <input
-                                        value={pedido.codigo}
-                                        disabled
-
-                                    />
-                                </fieldset>
-                                <fieldset>
-                                    <legend>Nota</legend>
-                                    <input
-                                        value={pedido.nota}
-                                        disabled
-
-                                    />
-                                </fieldset>
-
-                                <fieldset>
-                                    <legend>Total </legend>
-                                    <input
-                                        value={pedido.total}
-                                        disabled
-
-                                    />
-                                </fieldset>
-
-
-                                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-    <fieldset style={{ flex: 1, minWidth: '200px' }}>
-        <legend>Transportadora</legend>
-        <input
-            value={transportadora}
-            onChange={(e) => setTransportadora(e.target.value)}
-        />
-    </fieldset>
-
-    <fieldset style={{ flex: 1, minWidth: '200px' }}>
-        <legend>Número de Guía</legend>
-        <input
-            value={numeroGuia}
-            onChange={(e) => setNumeroGuia(e.target.value)}
-        />
-    </fieldset>
-
-    <fieldset style={{ flex: 1, minWidth: '200px' }}>
-        <legend>Valor del Flete</legend>
-        <input
-            value={valorFlete}
-            onChange={(e) => setValorFlete(e.target.value)}
-        />
-    </fieldset>
-</div>
-
-         
-
-
-
-
-<fieldset>
-  <legend>Estado</legend>
-  <div className='deFlexBtnsFilset'>
-    {['Pendiente', 'Entregado', 'Devolución', 'Cancelado'].map((estado) => (
-      <button
-        key={estado}
-        type="button"
-        className={
-          nuevoEstado === estado ||
-          (nuevoEstado === '' && pedido.estado === estado)
-            ? 'activo'
-            : 'Noactivo'
-        }
-        onClick={() => setNuevoEstado(estado)}
-      >
-        {estado}
-      </button>
-    ))}
-  </div>
-</fieldset>
-
-{(nuevoEstado === 'Devolución' || nuevoEstado === 'Cancelado') && (
-  <fieldset>
-    <legend>Motivo</legend>
-    <input
-      type="text"
-      value={pedido.notaPedidoInterna || ''}
-      onChange={(e) =>
-        setPedido((prev) => ({ ...prev, notaPedidoInterna: e.target.value }))
-      }
-      placeholder="Especifique el motivo de la devolución o cancelación"
-    />
-  </fieldset>
-)}
-
-
-
-
-                                <fieldset id="fieldsetAuto">
-                                    <legend>Pagado</legend>
-                                    <div className='deFlexBtnsFilset'>
-                                        <button
-                                            type="button"
-                                            className={pagado === 'Si' || (pagado === '' && pedido.pagado === 'Si') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setPagado('Si')}
-                                        >
-                                            Sí
-                                        </button>
-                                        <button
-                                            type="button"
-                                            className={pagado === 'No' || (pagado === '' && pedido.pagado === 'No') ? 'activo' : 'Noactivo'}
-                                            onClick={() => setPagado('No')}
-                                        >
-                                            No
-                                        </button>
-                                    </div>
-                                </fieldset>
-
-
-
-
-                            </div>
-
-
-                            <button className='btnPost' onClick={() => handleUpdateText(pedido.idPedido)} >Guardar </button>
-                        </div>
-                    </div>
-                </div>
-            )} */}
 
 
 {modalVisible && (
@@ -1529,7 +1244,8 @@ const header = renderHeader();
         ['Teléfono Transportador', pedido.telefono_tran],
         ['Transportadora', pedido.transportadora],
         ['Número de Guía', pedido.numero_guia],
-        ['Costo de Envío', pedido.costo_envio],
+        ['Costo de Envío', formatCOP(pedido?.costo_envio)],
+
 
       ].map(([label, val], idx) => (
         <div key={idx} className="info-row">
@@ -1547,9 +1263,32 @@ const header = renderHeader();
     <h4 className="section-title">Actualizar pedido</h4>
     <form onSubmit={handleSubmit(onSubmitEdit)} className="form-grid">
       <div>
-        <Controller name="transportadora" control={control}
-          render={({ field }) => <InputText {...field} placeholder="Transportadora" className="w-full" />} />
-      </div>
+  <Controller
+    name="transportadora"
+    control={control}
+    render={({ field }) => (
+      <Dropdown
+        {...field}
+        className="w-full"
+        placeholder="Transportadora"
+        options={TRANSPORTADORAS_CO}
+      />
+    )}
+  />
+</div>
+
+{watch('transportadora') === 'Otra' && (
+  <div>
+    <Controller
+      name="transportadoraOtra"
+      control={control}
+      render={({ field }) => (
+        <InputText {...field} placeholder="Escribe la transportadora" className="w-full" />
+      )}
+    />
+  </div>
+)}
+
       <div>
         <Controller name="numeroGuia" control={control}
           render={({ field }) => <InputText {...field} placeholder="Número de Guía" className="w-full" />} />

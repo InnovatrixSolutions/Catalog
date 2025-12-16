@@ -191,8 +191,17 @@ export default function ProductosData() {
     setNuevoSku(producto.sku);
   }, [producto]);
 
+      const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoLista = modeToBackend[mode] || "catalogo";
+
   const cargarProductos = () => {
-    fetch(`${baseURL}/productosGet.php`, {
+    fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
       method: 'GET',
     })
       .then(response => response.json())
@@ -232,12 +241,13 @@ export default function ProductosData() {
     });
   };
 
-  const abrirModal = (item) => {
+  const abrirModal = async (item) => {
     setProducto(item);
     setNuevoTitulo(item.titulo);
     setNuevaDescripcion(item.descripcion);
     setNuevoPrecio(item.precio);
     setModalVisible(true);
+     await cargarListasDePrecios(item.idProducto);
   };
 
   const cerrarModal = () => {
@@ -398,7 +408,8 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
           toast.error(data.error);
         } else {
           toast.success(data.mensaje);
-          window.location.reload();
+          cargarProductos(); // refresca tabla sin matar el modal
+
         }
       })
       .catch(error => {
@@ -446,15 +457,24 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
     setMostrarItems(isChecked);
   };
 
-  async function guardarCambios(idProducto) {
-    try {
-      await handleEditarImagenBanner(idProducto);
-      await handleUpdateText(idProducto);
-    } catch (error) {
-      console.error('Error al guardar los cambios:', error);
-      toast.error('Error al guardar los cambios');
-    }
+async function guardarCambios(idProducto) {
+  try {
+    await handleEditarImagenBanner(idProducto);
+    await handleUpdateText(idProducto);
+    await guardarPreciosEditados();
+
+    // ✅ refresca lo que acabas de guardar
+    await cargarListasDePrecios(idProducto);
+
+    Swal.fire('Listo', 'Producto y listas de precios actualizados', 'success');
+    cargarProductos();
+    cerrarModal();
+  } catch (e) {
+    console.error(e);
+    Swal.fire('Error', e.message || 'Error al guardar', 'error');
   }
+}
+
 
   // Usuario logueado
   const [loading, setLoading] = useState(true);
@@ -470,6 +490,107 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
   const alertPermiso = () => {
     Swal.fire('¡Error!', '¡No tienes permisos!', 'error');
   }
+
+  const actualizarPrecio = async (idListaPrecio, precio) => {
+  const fd = new FormData();
+  fd.append('idListaPrecio', idListaPrecio);
+  fd.append('precio', String(precio));
+
+  const res = await fetch(`${baseURL}/listaPreciosPut.php`, { method: 'POST', body: fd });
+  const data = await res.json();
+
+  if (!res.ok || data?.error) throw new Error(data?.error || 'Error actualizando precio');
+};
+
+const guardarPreciosEditados = async () => {
+  const tasks = [];
+
+  const push = (idLP, val, label) => {
+    const n = Number(val);
+    if (!idLP) {
+      // Si quieres: aquí podrías CREAR la lista en vez de ignorarla
+      throw new Error(`No existe idListaPrecio para: ${label}. Debes crear esa lista primero.`);
+    }
+    if (isNaN(n) || n < 0) {
+      throw new Error(`Precio inválido en: ${label}`);
+    }
+    tasks.push(actualizarPrecio(idLP, n));
+  };
+
+  // ojo: solo empuja si el input tiene valor, si no, puedes dejarlo opcional
+  if (catPrecioActual !== '') push(idCatActual, catPrecioActual, 'Catálogo Actual');
+  if (catPrecioAnterior !== '') push(idCatAnterior, catPrecioAnterior, 'Catálogo Anterior');
+  if (dropPrecioActual !== '') push(idDropActual, dropPrecioActual, 'Dropshipper Actual');
+  if (dropPrecioAnterior !== '') push(idDropAnterior, dropPrecioAnterior, 'Dropshipper Anterior');
+
+  if (tasks.length === 0) {
+    throw new Error('No hay precios para actualizar.');
+  }
+
+  await Promise.all(tasks);
+};
+
+// =========================
+// LISTAS DE PRECIOS (EDICIÓN)
+// =========================
+const [catPrecioActual, setCatPrecioActual] = useState('');
+const [catPrecioAnterior, setCatPrecioAnterior] = useState('');
+const [dropPrecioActual, setDropPrecioActual] = useState('');
+const [dropPrecioAnterior, setDropPrecioAnterior] = useState('');
+
+const [idCatActual, setIdCatActual] = useState(null);
+const [idCatAnterior, setIdCatAnterior] = useState(null);
+const [idDropActual, setIdDropActual] = useState(null);
+const [idDropAnterior, setIdDropAnterior] = useState(null);
+
+const [loadingPrecios, setLoadingPrecios] = useState(false);
+
+
+const cargarListasDePrecios = async (idProducto) => {
+  setLoadingPrecios(true);
+  try {
+    const res = await fetch(`${baseURL}/listaPreciosGet.php?idProducto=${idProducto}`, { method: 'GET' });
+
+    const text = await res.text();
+    let data = {};
+    try { data = JSON.parse(text); } catch {}
+    console.log("RESP listaPreciosGet:", data);
+
+
+    if (!res.ok || data?.error) throw new Error(data?.error || text || 'Error cargando listas de precios');
+
+    const precios = data?.listaprecios || data?.listaPrecios || data?.precios || [];
+
+
+    const find = (tipoLista, estado) =>
+      precios.find(p => String(p.tipoLista).toLowerCase() === tipoLista && String(p.estado).toLowerCase() === estado);
+
+    const catAct = find('catalogo', 'actual');
+    const catAnt = find('catalogo', 'anterior');
+    const drAct = find('dropshipper', 'actual');
+    const drAnt = find('dropshipper', 'anterior');
+
+    setIdCatActual(catAct?.idListaPrecio ?? null);
+    setIdCatAnterior(catAnt?.idListaPrecio ?? null);
+    setIdDropActual(drAct?.idListaPrecio ?? null);
+    setIdDropAnterior(drAnt?.idListaPrecio ?? null);
+
+    setCatPrecioActual(catAct?.precio ?? '');
+    setCatPrecioAnterior(catAnt?.precio ?? '');
+    setDropPrecioActual(drAct?.precio ?? '');
+    setDropPrecioAnterior(drAnt?.precio ?? '');
+  } catch (e) {
+    console.error(e);
+    toast.error(e?.message || 'No se pudieron cargar las listas de precios');
+    // Limpio para que no quede basura del producto anterior
+    setIdCatActual(null); setIdCatAnterior(null); setIdDropActual(null); setIdDropAnterior(null);
+    setCatPrecioActual(''); setCatPrecioAnterior(''); setDropPrecioActual(''); setDropPrecioAnterior('');
+  } finally {
+    setLoadingPrecios(false);
+  }
+};
+
+
 
   return (
     <div>
@@ -720,7 +841,77 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
         />
       </fieldset>
     </div>
+        <fieldset>
+    <legend>Lista de precios (Mercado Yepes)</legend>
 
+    {loadingPrecios ? (
+      <small>Cargando precios...</small>
+    ) : (
+      <div className="two-cols">
+        <div>
+          <label>Precio Actual</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={catPrecioActual}
+            onChange={(e) => setCatPrecioActual(e.target.value)}
+            placeholder="Precio Actual"
+          />
+          {!idCatActual && <small style={{ color: 'red' }}>No existe “catálogo actual” en BD</small>}
+        </div>
+
+        <div>
+          <label>Precio Anterior</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={catPrecioAnterior}
+            onChange={(e) => setCatPrecioAnterior(e.target.value)}
+            placeholder="Precio Anterior"
+          />
+          {!idCatAnterior && <small style={{ color: 'red' }}>No existe “catálogo anterior” en BD</small>}
+        </div>
+      </div>
+    )}
+  </fieldset>
+
+  <fieldset>
+    <legend>Lista de precios (Dropshipper)</legend>
+
+    {loadingPrecios ? (
+      <small>Cargando precios...</small>
+    ) : (
+      <div className="two-cols">
+        <div>
+          <label>Precio Actual</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={dropPrecioActual}
+            onChange={(e) => setDropPrecioActual(e.target.value)}
+            placeholder="Precio Actual dropshipper"
+          />
+          {!idDropActual && <small style={{ color: 'red' }}>No existe “dropshipper actual” en BD</small>}
+        </div>
+
+        <div>
+          <label>Precio Anterior</label>
+          <input
+            type="number"
+            min="0"
+            step="0.01"
+            value={dropPrecioAnterior}
+            onChange={(e) => setDropPrecioAnterior(e.target.value)}
+            placeholder="Precio Anterior dropshipper"
+          />
+          {!idDropAnterior && <small style={{ color: 'red' }}>No existe “dropshipper anterior” en BD</small>}
+        </div>
+      </div>
+    )}
+  </fieldset>
     {/* Variaciones */}
     <div id='textLabel'>
       <label>Variaciones (opcionales)</label>
@@ -754,7 +945,7 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
               <legend>Variación</legend>
               <input
                 type="text"
-                required
+                required={idx === 0 && verItems === 'Si'}   // solo item1 obligatorio
                 value={it.v || ''}
                 onChange={(e) => it.s(e.target.value)}
               />
@@ -816,6 +1007,8 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
           )}
         </>
       )}
+
+
     </div>
 
     {/* Uploads */}
@@ -843,6 +1036,8 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
         </div>
       ))}
     </div>
+
+{/* ====================================================================== */}
 
     {/* Guardar */}
     <button className='btnPost' onClick={() => guardarCambios(producto.idProducto)}>

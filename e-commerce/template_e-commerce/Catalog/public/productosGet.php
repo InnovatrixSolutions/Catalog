@@ -37,8 +37,8 @@ try {
     // Consulta SQL para obtener todos los productos
     if ($metodo == 'GET') {
         // GET /productosGet.php?tipo_lista=catalogo
-        $tipoLista = $_GET['tipo_lista'] ?? 'catalogo';
-        $tiposPermitidos = ['catalogo', 'droshipper'];
+        $tipoLista = $_GET['tipo_lista'] ?? 'dropshipper';
+        $tiposPermitidos = ['catalogo', 'dropshipper'];
 
         if (!in_array($tipoLista, $tiposPermitidos)) {
             throw new Exception('Tipo de lista no válido');
@@ -94,6 +94,7 @@ try {
             $resultado = $sentencia->fetchAll(PDO::FETCH_ASSOC);
 
             // Imprimir datos en formato JSON
+            //echo json_encode(["parametros enviados" => $tipoLista]);
             echo json_encode(["productos" => $resultado]);
         } else {
             // Imprimir mensaje de error si la ejecución de la consulta falla

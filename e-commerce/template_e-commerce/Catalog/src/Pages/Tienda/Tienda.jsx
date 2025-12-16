@@ -31,6 +31,7 @@ export default function Tienda() {
                     ) : usuarioLegued?.idUsuario ? (
                         <>
                             {usuarioLegued?.rol === 'admin' ? (
+                                
                                 <TiendaData />
                             ) : usuarioLegued?.rol === 'colaborador' ? (
                                 <SinPermisos />

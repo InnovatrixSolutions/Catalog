@@ -233,6 +233,7 @@ export default function NewCodigo() {
     return (
         <div className='NewContain'>
             <ToastContainer />
+            <h1>Juerte</h1>
             {loading ? (
                 <></>
             ) : usuarioLegued?.idUsuario ? (

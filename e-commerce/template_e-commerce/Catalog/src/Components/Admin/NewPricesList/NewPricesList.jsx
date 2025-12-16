@@ -310,9 +310,18 @@ export default function NewPricesList() {
         }
     }, [productoSeleccionado, productos]);
     
+        const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoListaP = modeToBackend[mode] || "catalogo";
+
     
     const cargarProductos = () => {
-        fetch(`${baseURL}/productosGet.php`, {
+        fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoListaP}`, {
             method: 'GET',
         })
             .then(response => response.json())

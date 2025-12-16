@@ -38,14 +38,14 @@ const franjasHorarias = [
 
 function resolveMode() {
   const envModeRaw = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
-  if (envModeRaw === 'catalog' || envModeRaw === 'dropshipper') {
+  if (envModeRaw === 'catalogo' || envModeRaw === 'dropshipper') {
     return envModeRaw;
   }
 
   const host = typeof window !== 'undefined' ? window.location.hostname : '';
   const isDropshipperDomain =
     /^drop\./i.test(host) || host === 'catalogo.mercadoyepes.co';
-  let mode = isDropshipperDomain ? 'dropshipper' : 'catalog';
+  let mode = isDropshipperDomain ? 'dropshipper' : 'catalogo';
 
   try {
     const params = new URLSearchParams(window.location.search);

@@ -338,9 +338,17 @@ try {
   useEffect(() => {
     cargarProductos();
   }, []);
+    const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoLista = modeToBackend[mode] || "catalogo";
 
   const cargarProductos = () => {
-    fetch(`${baseURL}/productosGet.php`, { method: 'GET' })
+    fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, { method: 'GET' })
       .then(response => response.json())
       .then(data => setProductos(data.productos || []))
       .catch(error => console.error('Error al cargar productos:', error));

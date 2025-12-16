@@ -141,27 +141,27 @@ export default function Navbar() {
                     <FontAwesomeIcon icon={faMoneyBill} /> Lista de precios
                 </Anchor>
 
-                <Anchor
+{/*                 <Anchor
                     to="/dashboard/pedidos"
                     className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}
                 >
                     <FontAwesomeIcon icon={faRectangleList} /> Pedidos
-                </Anchor>
+                </Anchor> */}
 
                 <Anchor
                     to="/dashboard/pedidos-dropshipper"
                     className={location.pathname === '/dashboard/pedidos-dropshipper' ? 'activeLink' : ''}
                 >
-                    <FontAwesomeIcon icon={faRectangleList} /> Pedidos Dropshipper
+                    <FontAwesomeIcon icon={faRectangleList} /> Pedidos
                 </Anchor>
 
-                <Anchor
+{/*                 <Anchor
                     to="/dashboard/pedidos-catalogo"
                     className={location.pathname === '/dashboard/pedidos-catalogo' ? 'activeLink' : ''}
                 >
                     <FontAwesomeIcon icon={faRectangleList} /> Pedidos Catálogo
                 </Anchor>
-
+ */}
                 <Anchor
                     to="/dashboard/liquidacion-dropshipper"
                     className={location.pathname === '/dashboard/liquidacion-dropshipper' ? 'activeLink' : ''}

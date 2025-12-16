@@ -14,6 +14,17 @@ import moneda from '../moneda';
 
 SwiperCore.use([Navigation, Pagination, Autoplay]);
 
+const mode = process.env.REACT_APP_MODE || "catalog"; // "dropshipper" o "catalog"
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalog: "catalogo",      // el backend espera "catalogo"
+};
+
+// Este será el valor final que se envía a productosGet.php
+const tipoLista = modeToBackend[mode] || "catalogo";
+
+
 export default function Products() {
     const [categorias, setCategorias] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -60,12 +71,14 @@ export default function Products() {
 
 
 
+    // 🔹 MODIFICADO: ahora usa tipo_lista según el modo
     const cargarProductos = () => {
-        fetch(`${baseURL}/productosGet.php`, {
+        fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
             method: 'GET',
         })
             .then(response => response.json())
             .then(data => {
+                console.log(`Productos cargados para modo ${tipoLista}:`, data.productos);
                 setProductos(data.productos);
                 setLoading(false);
             })
@@ -114,6 +127,7 @@ export default function Products() {
 
     return (
         <div className='ProductsContain'>
+            
             <ToastContainer />
             {productos?.length > 0 && (
                 <div className={`categoriasInputs ${fixedCategories ? 'fixed' : ''}`} id='FlexIn' ref={categoriasInputRef}>

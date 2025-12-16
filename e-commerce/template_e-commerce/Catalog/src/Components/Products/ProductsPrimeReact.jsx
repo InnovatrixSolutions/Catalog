@@ -75,10 +75,18 @@ export default function Products() {
         }
     };
 
+    const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoLista = modeToBackend[mode] || "catalogo";
 
 
     const cargarProductos = () => {
-        fetch(`${baseURL}/productosGet.php`, {
+        fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
             method: 'GET',
         })
             .then(response => response.json())
@@ -132,7 +140,9 @@ export default function Products() {
     const masVendidos = productos.filter(p => p.masVendido === "si").slice(0, 20);
     return (
         <div className='ProductsContain'>
+            
             <ToastContainer />
+            
 
 <Button 
         label="Ver Categorías"

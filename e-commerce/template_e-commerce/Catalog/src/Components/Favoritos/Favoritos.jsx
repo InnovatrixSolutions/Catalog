@@ -18,8 +18,17 @@ export default function Favoritos() {
         cargarFavoritos();
     }, [isFocused]);
 
+        const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoLista = modeToBackend[mode] || "catalogo";
+
     const cargarProductos = () => {
-        fetch(`${baseURL}/productosGet.php`, {
+        fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
             method: 'GET',
         })
             .then(response => response.json())

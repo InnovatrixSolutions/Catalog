@@ -9,6 +9,7 @@ import { faSearch } from '@fortawesome/free-solid-svg-icons';
 import Cart from '../Cart/Cart';
 import moneda from '../moneda';
 
+
 export default function ProductsPage() {
     const [productos, setProductos] = useState([]);
     const [categorias, setCategorias] = useState([]);
@@ -25,21 +26,33 @@ export default function ProductsPage() {
         cargarCategorias();
     }, []);
 
-    const cargarProductos = () => {
-        fetch(`${baseURL}/productosGet.php`, {
-            method: 'GET',
+
+    const mode = process.env.REACT_APP_MODE || "catalogo";
+
+const modeToBackend = {
+    dropshipper: "dropshipper",
+    catalogo: "catalogo"
+};
+
+const tipoLista = modeToBackend[mode] || "catalogo";
+
+const cargarProductos = () => {
+    console.log("Dentro de products page:"+tipoLista)
+    fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
+        method: 'GET',
+    })
+        .then(response => response.json())
+        .then(data => {
+            console.log(`Productos cargados para modo ${tipoLista}:`, data.productos);
+            setProductos(data.productos);
+            const maxPrecio = calcularPrecioMaximo(data.productos);
+            setPrecioMaximo(maxPrecio);
+            setPrecioActual(maxPrecio);
+            setLoading(false);
         })
-            .then(response => response.json())
-            .then(data => {
-                console.log('Productos cargados:', data.productos); // Debug
-                setProductos(data.productos);
-                const maxPrecio = calcularPrecioMaximo(data.productos);
-                setPrecioMaximo(maxPrecio);
-                setPrecioActual(maxPrecio);
-                setLoading(false);
-            })
-            .catch(error => console.error('Error al cargar productos:', error));
-    };
+        .catch(error => console.error('Error al cargar productos:', error));
+};
+
 
     const cargarCategorias = () => {
         fetch(`${baseURL}/categoriasGet.php`, {
@@ -113,7 +126,9 @@ export default function ProductsPage() {
 
     return (
         <div className='ProductsContainPage'>
+            
             <Cart />
+            
 
             {productos?.length > 0 && (
                 <div className='filtrosPage'>
