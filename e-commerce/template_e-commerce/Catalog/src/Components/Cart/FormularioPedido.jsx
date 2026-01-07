@@ -37,33 +37,28 @@ const franjasHorarias = [
 ];
 
 function resolveMode() {
-  const envModeRaw = (process.env.REACT_APP_MODE || '').toLowerCase().trim();
-  if (envModeRaw === 'catalogo' || envModeRaw === 'dropshipper') {
-    return envModeRaw;
-  }
+  const host = typeof window !== "undefined" ? window.location.hostname : "";
 
-  const host = typeof window !== 'undefined' ? window.location.hostname : '';
-  const isDropshipperDomain =
-    /^drop\./i.test(host) || host === 'catalogo.mercadoyepes.co';
-  let mode = isDropshipperDomain ? 'dropshipper' : 'catalogo';
-
+  // 1) Override por query (útil en local)
   try {
     const params = new URLSearchParams(window.location.search);
-    const override = (params.get('mode') || '').toLowerCase().trim();
-    if (override === 'dropshipper' || override === 'catalog') {
-      mode = override;
-    }
-  } catch {
-    /* noop */
-  }
+    const override = (params.get("mode") || "").toLowerCase().trim();
+    if (override === "dropshipper" || override === "catalogo") return override;
+  } catch {}
 
-  return mode;
+  // 2) Si env trae algo válido (solo dev)
+  const envModeRaw = (process.env.REACT_APP_MODE || "").toLowerCase().trim();
+  if (envModeRaw === "catalogo" || envModeRaw === "dropshipper") return envModeRaw;
+
+  // 3) Producción por hostname
+  return /^drop\./i.test(host) ? "dropshipper" : "catalogo";
 }
 
 export default function MiPedido({ onPedidoSuccess, cartItems, totalPrice }) {
   const mode = useMemo(resolveMode, []);
-  const isCatalog = mode === 'catalog';
+  const isCatalog = mode === 'catalogo';
   const isDropshipper = mode === 'dropshipper';
+
   const tipoAsesor = mode;
 
   console.log('MODE =>', mode);
@@ -692,7 +687,7 @@ const onSubmit = async (data) => {
               >
                 <div className="formgrid grid">
                   {[
-                    ['clienteNombre', 'Nombrel del cliente'],
+                    ['clienteNombre', 'Nombre del cliente'],
                     ['clienteDocumento', 'Documento del cliente'],
                     ['clienteCelular', 'Celular Llamadas del cliente'],
                     ['clienteTransportadora', 'WhatsApp del cliente'],

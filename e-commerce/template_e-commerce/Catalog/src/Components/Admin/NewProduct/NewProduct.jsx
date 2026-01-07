@@ -438,33 +438,7 @@ const tipoLista = modeToBackend[mode] || "catalogo";
                     />
                   </fieldset>
 
-                  <fieldset>
-                    <legend>Costo Compra (*)</legend>
-                    <input
-                      type="number"
-                      id="precio"
-                      name="precio"
-                      min="0"
-                      step="0.01"
-                      required
-                      value={precio}
-                      onChange={(e) => setPrecio(e.target.value)}
-                    />
-                  </fieldset>
 
-                  <fieldset>
-                    <legend>Costo Venta</legend>
-                    <input
-                      type="number"
-                      id="precioAnterior"
-                      name="precioAnterior"
-                      min="0"
-                      step="0.01"
-                      required
-                      value={precioAnterior}
-                      onChange={(e) => setPrecioAnterior(e.target.value)}
-                    />
-                  </fieldset>
 
                   <fieldset>
                     <legend>Más vendido (*)</legend>
@@ -518,7 +492,7 @@ const tipoLista = modeToBackend[mode] || "catalogo";
                   </fieldset>
 
                   <div id='textLabel'>
-                    <label>Variaciones (opcionales)</label>
+                    <label>Variaciones (opcionales, mínimo una)</label>
                     <div id='flexLabel'>
                       Dar a elegir a los clientes
                       <input
@@ -540,7 +514,7 @@ const tipoLista = modeToBackend[mode] || "catalogo";
                             type="text"
                             id={`item${index + 1}`}
                             name={`item${index + 1}`}
-                            required
+                            required={index === 0 && verItems === 'Si'}  // ✅ solo item1 obligatorio
                             value={[
                               item1, item2, item3, item4, item5,
                               item6, item7, item8, item9, item10
@@ -644,6 +618,34 @@ const tipoLista = modeToBackend[mode] || "catalogo";
                       <small>Se guardan automáticamente después de crear el producto.</small>
                     </fieldset>
                   </div>
+
+                                    <fieldset>
+                    <legend>Costo Compra (*)</legend>
+                    <input
+                      type="number"
+                      id="precio"
+                      name="precio"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={precio}
+                      onChange={(e) => setPrecio(e.target.value)}
+                    />
+                  </fieldset>
+                  <p>Estos costos pueden corresponder con la lista de precios de cliente final</p>
+                  <fieldset>
+                    <legend>Costo Venta</legend>
+                    <input
+                      type="number"
+                      id="precioAnterior"
+                      name="precioAnterior"
+                      min="0"
+                      step="0.01"
+                      required
+                      value={precioAnterior}
+                      onChange={(e) => setPrecioAnterior(e.target.value)}
+                    />
+                  </fieldset>
                   {/* ========================================================= */}
                 </div>
 

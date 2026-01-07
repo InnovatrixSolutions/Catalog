@@ -21,6 +21,15 @@ export default function ProductsPage() {
     const [precioActual, setPrecioActual] = useState(0);
     const [selectedItems, setSelectedItems] = useState([]);
 
+
+    const toPrice = (v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+        };
+
+const formatCOP = (v) =>
+  `${moneda} ${toPrice(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+
     useEffect(() => {
         cargarProductos();
         cargarCategorias();
@@ -67,8 +76,11 @@ const cargarProductos = () => {
     };
 
     const calcularPrecioMaximo = (productos) => {
-        return Math.max(...productos.map(producto => producto.precio));
-    };
+  if (!productos?.length) return 0;
+  return Math.max(...productos.map(p => toPrice(p.precio)));
+};
+
+
 
     const obtenerImagen = (item) => {
         if (item.imagen1) {
@@ -108,7 +120,8 @@ const cargarProductos = () => {
         console.log('Filtrando producto:', producto); // Debug
         const categoriaMatch = categoriasSeleccionadas === '' || producto.idCategoria.toString().includes(categoriasSeleccionadas);
         const searchTextMatch = searchText === '' || producto.titulo.toLowerCase().includes(searchText.toLowerCase());
-        const precioMatch = producto.precio >= precioMinimo && producto.precio <= precioActual;
+        const precio = toPrice(producto.precio);
+        const precioMatch = precio >= precioMinimo && precio <= precioActual;
         const itemMatches = selectedItems?.length === 0 || selectedItems.some(item => {
             return producto.item1 === item ||
                 producto.item2 === item ||
@@ -123,6 +136,8 @@ const cargarProductos = () => {
         });
         return categoriaMatch && searchTextMatch && precioMatch && itemMatches;
     };
+
+    
 
     return (
         <div className='ProductsContainPage'>
@@ -214,10 +229,12 @@ const cargarProductos = () => {
                                             ))
                                         }
                                         <div className='deFLexPrice'>
-                                            <h5> {moneda} {String(item?.precio)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                            {item.precioAnterior !== 0 && item.precioAnterior !== undefined && (
-                                                <h5 className='precioTachado'>{moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
+                                            <h5>{formatCOP(item?.precio)}</h5>
+
+                                           {toPrice(item?.precioAnterior) > 0 && (
+                                            <h5 className='precioTachado'>{formatCOP(item?.precioAnterior)}</h5>
                                             )}
+
                                         </div>
                                     </div>
                                 </Anchor>

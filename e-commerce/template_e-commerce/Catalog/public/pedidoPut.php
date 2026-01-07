@@ -83,6 +83,57 @@ try {
         $stmt = $conexion->prepare($sql);
 
         if ($stmt->execute($params)) {
+            // =========================================================================
+            // RECALCULO COMISIÓN DROPSHIPPER (Si se actualizó el costo de envío)
+            // =========================================================================
+            if ($costoEnvio !== null) {
+                try {
+                    // 1. Verificar si este pedido tiene relación con un asesor
+                    // Traemos también el base_calculo anterior que es el Costo Dropshipper (según la lógica nueva en OrdersManager)
+                    $stmtAsesor = $conexion->prepare("
+                        SELECT idPedidoAsesor, base_calculo, total_cupon, valor_pedido 
+                        FROM pedido_asesores 
+                        WHERE idPedido = :idPedido 
+                        LIMIT 1
+                    ");
+                    $stmtAsesor->execute([':idPedido' => $idPedido]);
+                    $relacion = $stmtAsesor->fetch(PDO::FETCH_ASSOC);
+
+                    if ($relacion) {
+                        // 2. Recalcular
+                        // Fórmula: Ganancia = Valor Pedido - Nuevo Envío - Costo Dropshipper - Cupón
+                        $valorPedidoDb       = (float) $relacion['valor_pedido'];
+                        $totalCuponDb        = (float) $relacion['total_cupon'];
+                        $costoBaseDropshipper= (float) $relacion['base_calculo'];
+                        
+                        // Nuevo ingreso neto
+                        $ingresoNeto = $valorPedidoDb - $costoEnvio - $totalCuponDb;
+                        
+                        // Nueva comisión
+                        $nuevaComision = max(0, $ingresoNeto - $costoBaseDropshipper);
+                        
+                        // 3. Actualizar tabla pedido_asesores
+                        $stmtUpdateCom = $conexion->prepare("
+                            UPDATE pedido_asesores 
+                            SET 
+                                valor_envio = :nuevoEnvio,
+                                comision_valor = :nuevaComision,
+                                valor_a_pagar_asesor = :nuevaComision
+                            WHERE idPedidoAsesor = :idRelacion
+                        ");
+                        $stmtUpdateCom->execute([
+                            ':nuevoEnvio'     => $costoEnvio,
+                            ':nuevaComision'  => $nuevaComision,
+                            ':idRelacion'     => $relacion['idPedidoAsesor']
+                        ]);
+                    }
+                } catch (Exception $e) {
+                    // Si falla el recálculo, no detenemos el update principal pero alertamos/logueamos
+                    // En este contexto JSON, podríamos agregar una advertencia al mensaje de éxito si fuera crítico
+                    // error_log("Error recalculando comisión: " . $e->getMessage());
+                }
+            }
+            
             echo json_encode(["success" => true, "mensaje" => "Pedido actualizado correctamente"]);
         } else {
             echo json_encode(["error" => "Error al actualizar el pedido"]);

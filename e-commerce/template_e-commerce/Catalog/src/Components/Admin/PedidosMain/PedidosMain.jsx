@@ -29,7 +29,8 @@ export default function PedidosMain() {
     return (
 
 
-        <div className='table-containerProductos'>
+        <div className='table-containerProductos'>  
+        
             <div className='deFlexMore'>
                 <h3>Ultimos pedidos</h3>
                 <Anchor to={`/dashboard/pedidos`} className='logo'>

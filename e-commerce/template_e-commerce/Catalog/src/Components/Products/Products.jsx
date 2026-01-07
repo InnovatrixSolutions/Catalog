@@ -14,11 +14,11 @@ import moneda from '../moneda';
 
 SwiperCore.use([Navigation, Pagination, Autoplay]);
 
-const mode = process.env.REACT_APP_MODE || "catalog"; // "dropshipper" o "catalog"
+const mode = process.env.REACT_APP_MODE || "catalogo"; // "dropshipper" o "catalog"
 
 const modeToBackend = {
     dropshipper: "dropshipper",
-    catalog: "catalogo",      // el backend espera "catalogo"
+    catalogo: "catalogo",      // el backend espera "catalogo"
 };
 
 // Este será el valor final que se envía a productosGet.php
@@ -79,7 +79,13 @@ export default function Products() {
             .then(response => response.json())
             .then(data => {
                 console.log(`Productos cargados para modo ${tipoLista}:`, data.productos);
-                setProductos(data.productos);
+                const prods = (data.productos || []).map(p => ({
+                    ...p,
+                    precio: toPrice(p.precio),
+                    precioAnterior: toPrice(p.precioAnterior),
+                    }));
+                    setProductos(prods);
+
                 setLoading(false);
             })
             .catch(error => console.error('Error al cargar productos:', error));
@@ -124,6 +130,16 @@ export default function Products() {
     const categoriasConProductos = categorias?.filter(categoria =>
         productos?.some(producto => producto?.idCategoria === categoria?.idCategoria)
     );
+
+    const toPrice = (v) => {
+  const n = Number(v);
+  return Number.isFinite(n) ? n : 0;
+};
+
+const formatCOP = (v) =>
+  `${moneda} ${toPrice(v).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+
+
 
     return (
         <div className='ProductsContain'>
@@ -225,10 +241,13 @@ export default function Products() {
                                                         <h4>{item.titulo}</h4>
                                                         <span>{item.descripcion}</span>
                                                         <div className='deFLexPrice'>
-                                                            <h5> {moneda} {String(item?.precio)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                            {(item.precioAnterior >= 1 && item.precioAnterior !== undefined) && (
-                                                                <h5 className='precioTachado'>{moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                            )}
+                                                            <h5>{formatCOP(item?.precio)}</h5>
+
+                                                            <h5 className='precioTachado'>
+                                                            {formatCOP(item.precioAnterior)}
+                                                            </h5>
+
+
                                                         </div>
                                                     </div>
                                                 </Anchor>
@@ -264,10 +283,12 @@ export default function Products() {
                                                         <h4>{item.titulo}</h4>
                                                         <span>{item.descripcion}</span>
                                                         <div className='deFLexPrice'>
-                                                            <h5> {moneda} {String(item?.precio)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                            {(item.precioAnterior >= 1 && item.precioAnterior !== undefined) && (
-                                                                <h5 className='precioTachado'>{moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                            )}
+                                                            <h5>{formatCOP(item?.precio)}</h5>
+                                                                <h5 className='precioTachado'>
+                                                                    {formatCOP(item.precioAnterior)}
+                                                                    </h5>
+
+
                                                         </div>
                                                         <FontAwesomeIcon icon={faAngleDoubleRight} className='iconCard' />
                                                     </div>
@@ -301,15 +322,15 @@ export default function Products() {
                                             <h4>{item.titulo}</h4>
                                             <span>{item.descripcion}</span>
                                             <div className='deFLexPrice'>
-                                                <h5> {moneda} {String(item?.precio)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                {(item.precioAnterior >= 1 && item.precioAnterior !== undefined) && (
-                                                    <h5 className='precioTachado'>{moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
-                                                )}
+                                                <h5>{formatCOP(item?.precio)}</h5>
+                                                    <h5 className='precioTachado'>
+                                                        {formatCOP(item.precioAnterior)}
+                                                        </h5>
                                             </div>
                                             <FontAwesomeIcon icon={faAngleDoubleRight} className='iconCard' />
                                         </div>
                                     </div>
-                                </Anchor>
+                                </Anchor>   
                             ))}
                     </div>
 

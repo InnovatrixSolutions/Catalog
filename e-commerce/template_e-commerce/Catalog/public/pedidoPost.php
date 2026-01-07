@@ -141,7 +141,7 @@ $lastPedidoId = $conexion->lastInsertId();
 echo json_encode([
 "mensaje" => "$nombre, tu pedido es el N°$lastPedidoId",
 "idPedido" => $lastPedidoId,
-"estado" => $estado,
+"estado" => $estado,    
 "productos" => $productos,
 "total" => $total,
 "nombre" => $nombre,
