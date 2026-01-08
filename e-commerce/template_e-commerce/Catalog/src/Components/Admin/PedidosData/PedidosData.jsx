@@ -379,11 +379,10 @@ export default function PedidosData() {
       estado: pedido?.estado || "",
       pagado: pedido?.pagado || "",
       transportadora: pedido?.transportadora || "",
-      numeroGuia: pedido?.numero_guia || "",
-      valorFlete: (toNumber(pedido?.costo_envio) > 0 ? String(toNumber(pedido?.costo_envio)) : ""),
-      notaPedidoInterna: pedido?.notaPedidoInterna || "",
-      transportadora: pedido?.transportadora || "",
       transportadoraOtra: "",
+      numeroGuia: pedido?.numero_guia || "",
+      valorFlete: pedido?.costo_envio || "", // Corrected mapping
+      notaPedidoInterna: pedido?.notaPedidoInterna || "",
     }
 
   });
@@ -395,8 +394,9 @@ export default function PedidosData() {
         estado: pedido?.estado || "",
         pagado: pedido?.pagado || "",
         transportadora: pedido?.transportadora || "",
+        transportadoraOtra: "",
         numeroGuia: pedido?.numero_guia || "",
-        valorFlete: pedido?.costo_envio?.toString() || "",
+        valorFlete: pedido?.costo_envio || "", // Corrected mapping
         notaPedidoInterna: pedido?.notaPedidoInterna || "",
       });
     }

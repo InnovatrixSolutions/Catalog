@@ -40,6 +40,13 @@ try {
         $numeroGuia       = $data['numero_guia']     ?? null;
         $costoEnvio       = isset($data['costo_envio']) ? (float)$data['costo_envio'] : null;
 
+        // DEBUG LOGGING
+        // DEBUG LOGGING (Docker logs)
+        error_log("--- Update " . date('Y-m-d H:i:s') . " ---");
+        error_log("ID Pedido: " . $idPedido);
+        error_log("Payload received: " . print_r($data, true));
+        error_log("Costo Envio parsed: " . var_export($costoEnvio, true));
+
         // Debe haber al menos un campo para actualizar
         if ($nuevoEstado === null && $pagado === null && 
             $transportadora === null && $numeroGuia === null && $costoEnvio === null) 
@@ -86,12 +93,20 @@ try {
             // =========================================================================
             // RECALCULO COMISIÓN DROPSHIPPER (Si se actualizó el costo de envío)
             // =========================================================================
+            // Initialize variables for debug response
+            $relacion = null;
+            $valorPedidoDb = null;
+            $totalCuponDb = null;
+            $costoBaseDropshipper = null;
+            $ingresoNeto = null;
+            $nuevaComision = null;
+            
             if ($costoEnvio !== null) {
                 try {
                     // 1. Verificar si este pedido tiene relación con un asesor
                     // Traemos también el base_calculo anterior que es el Costo Dropshipper (según la lógica nueva en OrdersManager)
                     $stmtAsesor = $conexion->prepare("
-                        SELECT idPedidoAsesor, base_calculo, total_cupon, valor_pedido 
+                        SELECT idRelacion as idPedidoAsesor, base_calculo, total_cupon, valor_pedido 
                         FROM pedido_asesores 
                         WHERE idPedido = :idPedido 
                         LIMIT 1
@@ -119,22 +134,41 @@ try {
                                 valor_envio = :nuevoEnvio,
                                 comision_valor = :nuevaComision,
                                 valor_a_pagar_asesor = :nuevaComision
-                            WHERE idPedidoAsesor = :idRelacion
+                            WHERE idRelacion = :idRelacion
                         ");
                         $stmtUpdateCom->execute([
                             ':nuevoEnvio'     => $costoEnvio,
                             ':nuevaComision'  => $nuevaComision,
                             ':idRelacion'     => $relacion['idPedidoAsesor']
                         ]);
+                        
+                        // Log success
+                        error_log("Commission recalculated successfully for order $idPedido: $nuevaComision");
+                    } else {
+                        error_log("No asesor relation found for order $idPedido");
                     }
                 } catch (Exception $e) {
-                    // Si falla el recálculo, no detenemos el update principal pero alertamos/logueamos
-                    // En este contexto JSON, podríamos agregar una advertencia al mensaje de éxito si fuera crítico
-                    // error_log("Error recalculando comisión: " . $e->getMessage());
+                    // Log the error for debugging
+                    error_log("Error recalculando comisión para pedido $idPedido: " . $e->getMessage());
                 }
             }
             
-            echo json_encode(["success" => true, "mensaje" => "Pedido actualizado correctamente"]);
+            
+            echo json_encode([
+                "success" => true, 
+                "mensaje" => "Pedido actualizado correctamente",
+                "debug_recalc" => [
+                    "did_run" => ($costoEnvio !== null),
+                    "idPedido" => $idPedido,
+                    "relacion_found" => ($relacion !== null),
+                    "costo_envio_received" => $costoEnvio,
+                    "valor_pedido_db" => $valorPedidoDb ?? 'N/A',
+                    "total_cupon_db" => $totalCuponDb ?? 'N/A',
+                    "base_calculo_db" => $costoBaseDropshipper ?? 'N/A',
+                    "ingreso_neto" => $ingresoNeto ?? 'N/A',
+                    "nueva_comision" => $nuevaComision ?? 'N/A'
+                ]
+            ]);
         } else {
             echo json_encode(["error" => "Error al actualizar el pedido"]);
         }

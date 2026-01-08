@@ -112,6 +112,7 @@ try {
                 p.estado              AS pedido_estado,
                 p.productos,
                 p.total               AS pedido_total,
+                p.costo_envio,
                 p.total_productos,
                 p.total_costo_compra,
                 p.total_cupon         AS pedido_total_cupon,
