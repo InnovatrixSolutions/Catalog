@@ -1,28 +1,30 @@
 /* ===============================
    CONTENEDOR DE TABLA + SCROLL
    =============================== */
-.table-container{
+.table-container {
   max-height: 60vh;
   max-width: 100%;
-  overflow-x: auto;              /* ← scroll horizontal */
+  overflow-x: auto;
+  /* ← scroll horizontal */
   overflow-y: auto;
   margin-top: 1rem;
   -webkit-overflow-scrolling: touch;
 }
 
 /* Si .table-container vive dentro de un flex, permite encogimiento */
-.deFlexContent .table-container{
+.deFlexContent .table-container {
   min-width: 0;
 }
 
 /* Scrollbar del contenedor de tabla */
-.table-container::-webkit-scrollbar{
+.table-container::-webkit-scrollbar {
   width: 5px;
   height: 5px;
   cursor: pointer;
   background-color: transparent;
 }
-.table-container::-webkit-scrollbar-thumb{
+
+.table-container::-webkit-scrollbar-thumb {
   background-color: var(--color1);
   border-radius: 10px;
   margin-top: 3rem;
@@ -31,48 +33,56 @@
 /* ===============================
    TABLA
    =============================== */
-.table{
-  width: max-content;   /* crece según contenido */
-  min-width: 100%;      /* pero mínimo ocupa el contenedor */
+.table {
+  width: max-content;
+  /* crece según contenido */
+  min-width: 100%;
+  /* pero mínimo ocupa el contenedor */
   border-collapse: collapse;
-  table-layout: fixed;  /* mantiene elipsis estables */
+  table-layout: fixed;
+  /* mantiene elipsis estables */
   text-align: left;
 }
 
 /* Celdas */
-.table th, .table td{
+.table th,
+.table td {
   padding: 8px;
   text-align: left;
-  white-space: nowrap;     /* ← no partir líneas */
+  white-space: nowrap;
+  /* ← no partir líneas */
   overflow: hidden;
   text-overflow: ellipsis;
   color: var(--text-color2);
 }
 
 /* Encabezado */
-.table th{
+.table th {
   background-color: #6868682b;
 }
 
 /* Filas pares/impares/hover */
-.table tr:nth-child(even){
+.table tr:nth-child(even) {
   background-color: #f2f2f261;
 }
-.table tr:nth-child(odd){
+
+.table tr:nth-child(odd) {
   background-color: var(--blanco);
 }
-.table tr:hover{
+
+.table tr:hover {
   background-color: #f2f2f261;
 }
 
 /* Imágenes en tabla */
-.table img{
+.table img {
   width: 35px;
   height: 35px;
   object-fit: cover;
   border-radius: 100%;
 }
-.imgNonetd{
+
+.imgNonetd {
   width: 35px;
   height: 35px;
   border-radius: 4px;
@@ -81,10 +91,10 @@
 /* ===============================
    PLACEHOLDER DE CARGA
    =============================== */
-.noResult{
-  display:flexbox;
+.noResult {
+  display: flexbox;
   width: 20rem;
-  height:10px;
+  height: 10px;
   border-radius: 7px;
   animation: gradientMove 1s linear infinite;
 }
@@ -92,59 +102,68 @@
 /* ===============================
    MODALES (IMAGEN + FORM)
    =============================== */
-.modal{
+.modal {
   display: flex;
   position: fixed;
   z-index: 1000;
-  top: 0; left: 0;
-  width: 100vw; height: 100vh;
-  background-color: rgba(0,0,0,.4);
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, .4);
   align-items: center;
   justify-content: center;
   padding: 1rem;
 }
-.modalImg{
+
+.modalImg {
   display: flex;
   position: fixed;
   z-index: 1001;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background-color: rgba(0,0,0,.4);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, .4);
   align-items: center;
   justify-content: center;
 }
 
-.modal-content{
+.modal-content {
   background-color: #fff;
-  width: 90vw;
+  width: 96vw;
   max-height: 90vh;
-  overflow: hidden;        /* oculta desborde global */
+  overflow: hidden;
+  /* oculta desborde global */
   border-radius: 10px;
-  padding: 20px;
+  padding: 0;
+  /* Removed padding to match NewProduct */
   display: flex;
   flex-direction: column;
   gap: 1rem;
   border: 1px solid #888;
 }
 
-.scrollable-modal-body{
-  overflow-y: auto;        /* ← scroll interno del cuerpo */
+.scrollable-modal-body {
+  overflow-y: auto;
+  /* ← scroll interno del cuerpo */
   flex: 1;
 }
 
-.modal-content::-webkit-scrollbar{
+.modal-content::-webkit-scrollbar {
   width: 5px;
   height: 5px;
   cursor: pointer;
   background-color: transparent;
 }
-.modal-content::-webkit-scrollbar-thumb{
+
+.modal-content::-webkit-scrollbar-thumb {
   background-color: var(--color1);
   border-radius: 10px;
   margin-top: 3rem;
 }
 
-.modal-contentImg{
+.modal-contentImg {
   background-color: var(--text-color);
   padding: 0;
   width: 120vh;
@@ -152,19 +171,22 @@
   border-radius: 10px;
   overflow: hidden;
 }
-.modal-contentImg img{
+
+.modal-contentImg img {
   width: 100%;
   height: 100%;
   object-fit: contain;
   cursor: pointer;
 }
 
-.close, .close2{
+.close,
+.close2 {
   font-size: 30px;
   text-align: right;
   cursor: pointer;
 }
-.close2{
+
+.close2 {
   position: absolute;
   background-color: var(--blanco);
   border-radius: 10px;
@@ -175,12 +197,13 @@
 /* ===============================
    BLOQUES Y TIPOGRAFÍA
    =============================== */
-.deFLexImg{
+.deFLexImg {
   display: flex;
   justify-content: space-between;
   gap: 2rem;
 }
-.deFLexImg img{
+
+.deFLexImg img {
   min-width: 50vh;
   width: 100%;
   height: 30vh;
@@ -189,7 +212,8 @@
   margin-top: 10px;
   cursor: pointer;
 }
-.modal-content p{
+
+.modal-content p {
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -197,10 +221,12 @@
   background-color: var(--gris);
   border-radius: 10px;
 }
-.modal-content strong{
+
+.modal-content strong {
   color: var(--text-color2);
 }
-.deColumnGuardar{
+
+.deColumnGuardar {
   display: flex;
   flex-direction: column;
   gap: 1rem;
@@ -209,11 +235,13 @@
   border-radius: 10px;
   margin-top: 10px;
 }
-.deColumnGuardar select{
+
+.deColumnGuardar select {
   padding: 10px;
   border-radius: 7px;
 }
-.deColumnGuardar button{
+
+.deColumnGuardar button {
   padding: 10px;
   border-radius: 7px;
   border: none;
@@ -221,21 +249,27 @@
   color: var(--blanco);
   cursor: pointer;
 }
-button{ cursor: pointer; }
 
-.deFLex{
+button {
+  cursor: pointer;
+}
+
+.deFLex {
   display: flex;
   align-items: center;
   justify-content: space-between;
   width: 100%;
   gap: 1rem;
 }
-.deFLex h2{ color: var(--text-color2); }
+
+.deFLex h2 {
+  color: var(--text-color2);
+}
 
 /* ===============================
    BOTONES EXTRA
    =============================== */
-.priceList{
+.priceList {
   background-color: transparent;
   border: none;
   font-size: 20px;
@@ -243,7 +277,8 @@ button{ cursor: pointer; }
   margin-left: 20px;
   margin-right: 10px;
 }
-.btnDanger{
+
+.btnDanger {
   background-color: #d9534f;
   color: var(--blanco);
   border-radius: 7px;
@@ -253,40 +288,47 @@ button{ cursor: pointer; }
   align-items: center;
   gap: 10px;
   font-size: .9em;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-.btnDanger:hover{ background-color: #c9302c; }
 
-.pagination{
+.btnDanger:hover {
+  background-color: #c9302c;
+}
+
+.pagination {
   display: flex;
   justify-content: center;
   gap: 5px;
   margin: 20px 0;
 }
-.pagination button{
+
+.pagination button {
   padding: 6px 12px;
   border: none;
   background-color: #FFFFFF;
   cursor: pointer;
 }
-.pagination button.active{
+
+.pagination button.active {
   background-color: green;
   color: white;
   font-weight: bold;
 }
-.pagination button:disabled{
+
+.pagination button:disabled {
   background-color: #FFFFFF;
   cursor: not-allowed;
 }
 
-.editar{
+.editar {
   background-color: transparent;
   border: none;
   font-size: 20px;
   color: var(--color2);
   margin-left: 20px;
 }
-.eliminar{
+
+.eliminar {
   background-color: transparent;
   border: none;
   font-size: 20px;
@@ -296,49 +338,63 @@ button{ cursor: pointer; }
 /* ===============================
    FILTROS / INPUTS
    =============================== */
-.filtrosContain{
+.filtrosContain {
   display: flex;
   gap: 10px;
   justify-content: space-between;
   align-items: center;
-  overflow-x: auto;             /* puede scrollear si se llenan */
+  overflow-x: auto;
+  /* puede scrollear si se llenan */
 }
-.filtrosContain::-webkit-scrollbar{
+
+.filtrosContain::-webkit-scrollbar {
   width: 5px;
   height: 5px;
   cursor: pointer;
   background-color: transparent;
 }
-.filtrosContain::-webkit-scrollbar-thumb{
+
+.filtrosContain::-webkit-scrollbar-thumb {
   background-color: var(--color1);
   border-radius: 10px;
   padding-bottom: 10px;
 }
 
-.inputsColumn{
+.inputsColumn {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
+
 .inputsColumn input,
 .inputsColumn select,
-.inputsColumn button{
+.inputsColumn button {
   border-radius: 7px;
   padding: 10px 10px;
   border: 1px solid #949191;
   background-color: transparent;
   font-size: .85em;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-.inputsColumn input{ width: 16vh; }
-.inputsColumn select{ width: 18vh; }
-.inputsColumn button{ width: 20vh; }
-.inputsColumn .length{
+
+.inputsColumn input {
+  width: 16vh;
+}
+
+.inputsColumn select {
+  width: 18vh;
+}
+
+.inputsColumn button {
+  width: 20vh;
+}
+
+.inputsColumn .length {
   padding: 10px 13px;
   width: 15vh;
 }
 
-#show-more-btn{
+#show-more-btn {
   background-color: var(--color1);
   color: var(--blanco);
   border: none;
@@ -346,7 +402,8 @@ button{ cursor: pointer; }
   border-radius: 8px;
   margin-top: 1rem;
 }
-.excel{
+
+.excel {
   background-color: green;
   color: var(--blanco);
   border-radius: 7px;
@@ -356,9 +413,10 @@ button{ cursor: pointer; }
   align-items: center;
   gap: 10px;
   font-size: .9em;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-.pdf{
+
+.pdf {
   padding: 6px 13px;
   background-color: var(--color1);
   color: var(--blanco);
@@ -368,9 +426,11 @@ button{ cursor: pointer; }
   gap: 10px;
   align-items: center;
   font-size: .9em;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-.reverse, .reload{
+
+.reverse,
+.reload {
   background-color: transparent;
   color: var(--text-color2);
   border: 1px solid #949191;
@@ -380,62 +440,102 @@ button{ cursor: pointer; }
   gap: 10px;
 }
 
-.deFlex2{
+.deFlex2 {
   display: flex;
   gap: 1rem;
 }
-.deFlexBtns{
+
+.deFlexBtns {
   display: flex;
   justify-content: space-between;
   gap: 2rem;
   padding: 10px 0px;
   align-items: center;
 }
-.deFlexBtnsModal{
+
+.deFlexBtnsModal {
   display: flex;
   justify-content: space-between;
   gap: 1rem;
   padding: 10px 0px;
   align-items: center;
 }
-.deFlexBtnsModal button{
+
+.deFlexBtnsModal button {
   background-color: transparent;
   border: none;
   padding: 5px 10px;
   color: var(--text-color2);
 }
-.selected{
-  border-bottom: 2px solid var(--color1)!important;
-  color: var(--color1)!important;
+
+.selected {
+  border-bottom: 2px solid var(--color1) !important;
+  color: var(--color1) !important;
 }
 
 /* ===============================
    PREVIEW DE IMÁGENES EN MODAL
    =============================== */
-.previevProduct{
-  display: flex;
-  gap: 1rem;
-  overflow-x: auto;
+.previevProduct {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  overflow: visible;
   padding-bottom: 10px;
 }
-.previevProduct::-webkit-scrollbar{
-  width: 5px; height: 5px;
+
+.previevProduct::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
   cursor: pointer;
   background-color: transparent;
 }
-.previevProduct::-webkit-scrollbar-thumb{
+
+.previevProduct::-webkit-scrollbar-thumb {
   background-color: var(--color1);
   border-radius: 10px;
   margin-top: 3rem;
 }
-.previevProduct img{
-  width: 150px;
-  height: 150px;
+
+.previevProduct img {
+  width: 100% !important;
+  aspect-ratio: 1/1 !important;
+  height: auto !important;
   object-fit: cover;
   border-radius: 10px;
+  cursor: pointer;
+  min-width: 0;
+  /* Ensures grid doesn't blow out */
 }
-.imgNone{
-  width: 150px; height: 150px;
+
+/* ===============================
+   UPLOADS / IMAGE CONTAINER
+   =============================== */
+.image-container {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.image-input {
+  width: 100%;
+  position: relative;
+}
+
+.image-icon {
+  width: 100% !important;
+  aspect-ratio: 1/1 !important;
+  height: auto !important;
+  object-fit: cover;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.imgNone {
+  width: 100%;
+  aspect-ratio: 1/1;
+  height: auto;
   border-radius: 10px;
   background-color: var(--gris);
   color: var(--text-color2);
@@ -445,12 +545,13 @@ button{ cursor: pointer; }
   justify-content: center;
 }
 
-.sectiontext{
+.sectiontext {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-.sectionImg{
+
+.sectionImg {
   display: flex;
   flex-wrap: wrap;
   flex-direction: column;
@@ -458,11 +559,12 @@ button{ cursor: pointer; }
   justify-content: space-between;
 }
 
-legend{
+legend {
   padding: 10px;
   color: var(--text-color2);
 }
-fieldset{
+
+fieldset {
   padding: 3px 4px;
   border-radius: 8px;
   display: flex;
@@ -471,31 +573,41 @@ fieldset{
   width: 49%;
   border: 1px solid #d1cccc;
 }
-fieldset input{
+
+fieldset input {
   padding: 3px;
   width: 100%;
   border: none;
 }
-.sectiontext input{
+
+.sectiontext input {
   padding: 0px 10px 10px;
 }
-textarea{
+
+textarea {
   width: 100%;
   min-height: 10vh;
   border: none;
   padding: 10px;
 }
-.sectiontext select{
+
+.sectiontext select {
   width: 100%;
   padding: 0px 10px 10px;
   border: none;
 }
-#descripcion{ width: 100%; }
-#descripcion textarea{
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+
+#descripcion {
+  width: 100%;
 }
 
-.btnSave, .btnPost, .btnLoading{
+#descripcion textarea {
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+}
+
+.btnSave,
+.btnPost,
+.btnLoading {
   border-radius: 10px;
   border: none;
   color: var(--blanco);
@@ -505,15 +617,33 @@ textarea{
   gap: 10px;
   align-items: center;
   font-size: .9em;
-  font-family: -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen,Ubuntu,Cantarell,Fira Sans,Droid Sans,Helvetica Neue,sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
-.btnSave{ padding: 7px 13px; background-color: var(--color1); }
-.btnPost{ padding: 13px 13px; background-color: var(--color1); margin-top: 1rem; }
-.btnLoading{ padding: 13px 13px; background-color: var(--loading); margin-top: 1rem; }
-.btnSave span{ font-size: 20px; font-weight: bold; }
+
+.btnSave {
+  padding: 7px 13px;
+  background-color: var(--color1);
+}
+
+.btnPost {
+  padding: 13px 13px;
+  background-color: var(--color1);
+  margin-top: 1rem;
+}
+
+.btnLoading {
+  padding: 13px 13px;
+  background-color: var(--loading);
+  margin-top: 1rem;
+}
+
+.btnSave span {
+  font-size: 20px;
+  font-weight: bold;
+}
 
 /* Layout superior */
-.deFlexContent{
+.deFlexContent {
   display: flex;
   flex-wrap: nowrap;
   justify-content: space-between;
@@ -523,51 +653,64 @@ textarea{
 }
 
 /* ====== Modal edición: layout con scroll ====== */
-.modal-content{
-  height: 90vh;           /* alto controlado */
+.modal-content {
+  height: 90vh;
+  /* alto controlado */
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;       /* el scroll va en el body */
+  overflow: hidden;
+  /* el scroll va en el body */
 }
 
-.deFlexBtnsModal{
-  position: sticky;       /* header fijo */
+.deFlexBtnsModal {
+  position: sticky;
+  /* header fijo */
   top: 0;
   z-index: 2;
   background: #fff;
   border-bottom: 1px solid #eee;
+  padding: 10px 20px;
+  /* Added padding here since removed from parent */
 }
 
-.scrollable-modal-body{
+.scrollable-modal-body {
   flex: 1 1 auto;
-  overflow-y: auto;       /* scroll vertical */
-  min-height: 0;          /* evita que hijos rompan el scroll */
+  overflow-y: auto;
+  /* scroll vertical */
+  min-height: 0;
+  /* evita que hijos rompan el scroll */
   padding: 12px 16px;
 }
 
-.scrollable-modal-body::-webkit-scrollbar{ width: 6px; }
-.scrollable-modal-body::-webkit-scrollbar-thumb{
+.scrollable-modal-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollable-modal-body::-webkit-scrollbar-thumb {
   background: var(--color1);
   border-radius: 6px;
 }
 
 /* ====== Grilla de edición (2 cols) ====== */
-.edit-grid{
-  display:grid;
+.edit-grid {
+  display: grid;
   grid-template-columns: repeat(2, minmax(280px, 1fr));
-  gap:16px;
-  width:100%;
-}
-.edit-grid #descripcion{ grid-column: 1 / -1; }
-
-.variaciones-scroll-x{
-  overflow-x:auto;
-  -webkit-overflow-scrolling:touch;
+  gap: 16px;
+  width: 100%;
 }
 
+.edit-grid #descripcion {
+  grid-column: 1 / -1;
+}
 
-.edit-grid fieldset{
+.variaciones-scroll-x {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+
+.edit-grid fieldset {
   width: 100%;
   padding: 6px 8px;
   border: 1px solid #d1cccc;
@@ -577,11 +720,15 @@ textarea{
   gap: 10px;
   background: #fff;
 }
-.edit-grid legend{ padding: 0 6px; color: var(--text-color2); }
+
+.edit-grid legend {
+  padding: 0 6px;
+  color: var(--text-color2);
+}
 
 .edit-grid input,
 .edit-grid select,
-.edit-grid textarea{
+.edit-grid textarea {
   width: 100%;
   border: 1px solid #ccc !important;
   border-radius: 6px;
@@ -593,68 +740,93 @@ textarea{
 
 .edit-grid input:focus,
 .edit-grid select:focus,
-.edit-grid textarea:focus{
+.edit-grid textarea:focus {
   border-color: var(--color1);
   outline: none;
 }
 
 /* Descripción ocupa ancho completo */
-.edit-grid #descripcion{ grid-column: 1 / -1; }
+.edit-grid #descripcion {
+  grid-column: 1 / -1;
+}
 
 /* Tira “Variaciones” con scroll-x (opcional) */
-.variaciones-scroll-x{
+.variaciones-scroll-x {
   overflow-x: auto;
   padding-bottom: 6px;
 }
-.variaciones-scroll-x::-webkit-scrollbar{ height: 5px; }
-.variaciones-scroll-x::-webkit-scrollbar-thumb{
+
+.variaciones-scroll-x::-webkit-scrollbar {
+  height: 5px;
+}
+
+.variaciones-scroll-x::-webkit-scrollbar-thumb {
   background-color: var(--color1);
   border-radius: 10px;
 }
 
 /* Ítems individuales no se encogen en el carrusel */
-.items{ flex-wrap: nowrap; }
-.items fieldset{ min-width: 200px; flex: 0 0 auto; }
+.items {
+  flex-wrap: nowrap;
+}
+
+.items fieldset {
+  min-width: 200px;
+  flex: 0 0 auto;
+}
 
 /* Imágenes: mantenemos el scroll-x que ya tienes */
-.previevProduct{ overflow-x: auto; }
+/* Imágenes: mantenemos el scroll-x que ya tienes - REMOVED to avoid conflict */
+/* .previevProduct {
+  overflow-x: auto;
+} */
 
 
 /* ===============================
    RESPONSIVE
    =============================== */
-@media (max-width: 1000px){
-  .previevProduct img{ width: 115px; height: 90px; }
-  .imgNone{ width: 100px; height: 100px; font-size: 12px; }
-  .close2{ left: 90%; }
-  fieldset{ width: 100%; }
+@media (max-width: 1000px) {
+
+  /* .previevProduct img{ width: 115px; height: 90px; } */
+  /* .imgNone{ width: 100px; height: 100px; font-size: 12px; } */
+  .close2 {
+    left: 90%;
+  }
+
+  fieldset {
+    width: 100%;
+  }
 
   .inputsColumn input,
-  .inputsColumn select{ width: 17vh; }
+  .inputsColumn select {
+    width: 17vh;
+  }
 
-  .filtrosContain{
+  .filtrosContain {
     display: flex;
     flex-direction: row;
     gap: 1rem;
     overflow-x: auto;
   }
-  .filtrosContain::-webkit-scrollbar-thumb{
+
+  .filtrosContain::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 10px;
     padding-bottom: 10px;
   }
 
-  .deFLexImg img{
+  .deFLexImg img {
     min-width: 17vh;
     width: 17vh;
     height: 17vh;
   }
 
-  .modal{
-    align-items:flex-end;
-    justify-content:flex-end;
+  .modal {
+    align-items: flex-end;
+    justify-content: flex-end;
   }
-  .modal-contentImg{
+
+  .modal-contentImg {
     width: 100%;
     height: 100vh;
     border-radius: 0;
@@ -662,26 +834,34 @@ textarea{
   }
 
   /* En móvil puedes preferir tabla sin scroll horizontal */
-  .table{
+  .table {
     width: 100%;
     border-collapse: unset;
     table-layout: auto;
     text-align: left;
   }
 
-  .deFlexBtns{ gap: 10px; }
-  .deFlex2{
+  .deFlexBtns {
+    gap: 10px;
+  }
+
+  .deFlex2 {
     gap: 10px;
     overflow-x: auto;
   }
-  .deFlex2::-webkit-scrollbar{
-    width: 5px; height: 0;
+
+  .deFlex2::-webkit-scrollbar {
+    width: 5px;
+    height: 0;
     cursor: pointer;
     background-color: transparent;
   }
-  .deFlex2::-webkit-scrollbar-thumb{ background-color: transparent; }
 
-  .deFlexContent{
+  .deFlex2::-webkit-scrollbar-thumb {
+    background-color: transparent;
+  }
+
+  .deFlexContent {
     flex-wrap: nowrap;
     gap: 1rem;
     flex-direction: column;

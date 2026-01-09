@@ -14,6 +14,45 @@ import moneda from '../../moneda';
 import { Link as Anchor } from "react-router-dom";
 import imageIcon from '../../../images/imageIcon.png';
 import { fetchUsuario, getUsuario } from '../../user';
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+
+function SortableItem(props) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({ id: props.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    cursor: 'grab',
+    touchAction: 'none',
+  };
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+      {props.children}
+    </div>
+  );
+}
 
 export default function ProductosData() {
   const [productos, setProductos] = useState([]);
@@ -34,14 +73,20 @@ export default function ProductosData() {
   const [filtroSKU, setFiltroSKU] = useState('');
 
   const [ordenInvertido, setOrdenInvertido] = useState(false);
-  const [imagenPreview, setImagenPreview] = useState(null);
-  const [imagenPreview2, setImagenPreview2] = useState(null);
-  const [imagenPreview3, setImagenPreview3] = useState(null);
-  const [imagenPreview4, setImagenPreview4] = useState(null);
-  const [nuevaImagen, setNuevaImagen] = useState(null);
-  const [nuevaImagen2, setNuevaImagen2] = useState(null);
-  const [nuevaImagen3, setNuevaImagen3] = useState(null);
-  const [nuevaImagen4, setNuevaImagen4] = useState(null);
+
+  // State for Drag and Drop Images
+  const [images, setImages] = useState([]);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
   const [selectedSection, setSelectedSection] = useState('texto');
   const [nuevoMasVendido, setNuevoMasVendido] = useState('');
   const [categorias, setCategoras] = useState([]);
@@ -189,16 +234,24 @@ export default function ProductosData() {
     setNuevoStock(producto.stock)
     setVerItems(producto.verItems)
     setNuevoSku(producto.sku);
+
+    // Initialize images for DnD
+    setImages([
+      { id: '1', url: producto.imagen1, file: null },
+      { id: '2', url: producto.imagen2, file: null },
+      { id: '3', url: producto.imagen3, file: null },
+      { id: '4', url: producto.imagen4, file: null },
+    ]);
   }, [producto]);
 
-      const mode = process.env.REACT_APP_MODE || "catalogo";
+  const mode = process.env.REACT_APP_MODE || "catalogo";
 
-const modeToBackend = {
+  const modeToBackend = {
     dropshipper: "dropshipper",
     catalogo: "catalogo"
-};
+  };
 
-const tipoLista = modeToBackend[mode] || "catalogo";
+  const tipoLista = modeToBackend[mode] || "catalogo";
 
   const cargarProductos = () => {
     fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
@@ -247,7 +300,7 @@ const tipoLista = modeToBackend[mode] || "catalogo";
     setNuevaDescripcion(item.descripcion);
     setNuevoPrecio(item.precio);
     setModalVisible(true);
-     await cargarListasDePrecios(item.idProducto);
+    await cargarListasDePrecios(item.idProducto);
   };
 
   const cerrarModal = () => {
@@ -354,11 +407,11 @@ const tipoLista = modeToBackend[mode] || "catalogo";
       verItems: verItems !== '' ? verItems : producto.verItems,
     };
 
-fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
-  method: 'PUT',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(payload),
-})
+    fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
 
       .then(response => response.json())
       .then(data => {
@@ -376,12 +429,25 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
       });
   };
 
-  const handleFileChange = (event, setFile, setPreview) => {
+  const handleDragEnd = (event) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setImages((items) => {
+        const oldIndex = items.findIndex(item => item.id === active.id);
+        const newIndex = items.findIndex(item => item.id === over.id);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const handleFileChange = (event, id) => {
     const file = event.target.files[0];
     if (file) {
       const previewURL = URL.createObjectURL(file);
-      setFile(file);
-      setPreview(previewURL);
+      setImages(prev => prev.map(img =>
+        img.id === id ? { ...img, url: previewURL, file: file } : img
+      ));
     }
   };
 
@@ -390,10 +456,16 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
     formData.append('idProducto', idProducto);
     formData.append('updateAction', 'update');
 
-    if (nuevaImagen) formData.append('imagen1', nuevaImagen);
-    if (nuevaImagen2) formData.append('imagen2', nuevaImagen2);
-    if (nuevaImagen3) formData.append('imagen3', nuevaImagen3);
-    if (nuevaImagen4) formData.append('imagen4', nuevaImagen4);
+    images.forEach((img, index) => {
+      // Backend expects imagen1, imagen2, imagen3, imagen4
+      const key = `imagen${index + 1}`;
+      if (img.file) {
+        formData.append(key, img.file);
+      } else {
+        // Send URL or empty string so backend knows the state
+        formData.append(`${key}_url`, img.url || '');
+      }
+    });
 
     fetch(`${baseURL}/productoImagePut.php`, {
       method: 'POST',
@@ -457,23 +529,23 @@ fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
     setMostrarItems(isChecked);
   };
 
-async function guardarCambios(idProducto) {
-  try {
-    await handleEditarImagenBanner(idProducto);
-    await handleUpdateText(idProducto);
-    await guardarPreciosEditados();
+  async function guardarCambios(idProducto) {
+    try {
+      await handleEditarImagenBanner(idProducto);
+      await handleUpdateText(idProducto);
+      await guardarPreciosEditados();
 
-    // ✅ refresca lo que acabas de guardar
-    await cargarListasDePrecios(idProducto);
+      // ✅ refresca lo que acabas de guardar
+      await cargarListasDePrecios(idProducto);
 
-    Swal.fire('Listo', 'Producto y listas de precios actualizados', 'success');
-    cargarProductos();
-    cerrarModal();
-  } catch (e) {
-    console.error(e);
-    Swal.fire('Error', e.message || 'Error al guardar', 'error');
+      Swal.fire('Listo', 'Producto y listas de precios actualizados', 'success');
+      cargarProductos();
+      cerrarModal();
+    } catch (e) {
+      console.error(e);
+      Swal.fire('Error', e.message || 'Error al guardar', 'error');
+    }
   }
-}
 
 
   // Usuario logueado
@@ -492,103 +564,103 @@ async function guardarCambios(idProducto) {
   }
 
   const actualizarPrecio = async (idListaPrecio, precio) => {
-  const fd = new FormData();
-  fd.append('idListaPrecio', idListaPrecio);
-  fd.append('precio', String(precio));
+    const fd = new FormData();
+    fd.append('idListaPrecio', idListaPrecio);
+    fd.append('precio', String(precio));
 
-  const res = await fetch(`${baseURL}/listaPreciosPut.php`, { method: 'POST', body: fd });
-  const data = await res.json();
+    const res = await fetch(`${baseURL}/listaPreciosPut.php`, { method: 'POST', body: fd });
+    const data = await res.json();
 
-  if (!res.ok || data?.error) throw new Error(data?.error || 'Error actualizando precio');
-};
-
-const guardarPreciosEditados = async () => {
-  const tasks = [];
-
-  const push = (idLP, val, label) => {
-    const n = Number(val);
-    if (!idLP) {
-      // Si quieres: aquí podrías CREAR la lista en vez de ignorarla
-      throw new Error(`No existe idListaPrecio para: ${label}. Debes crear esa lista primero.`);
-    }
-    if (isNaN(n) || n < 0) {
-      throw new Error(`Precio inválido en: ${label}`);
-    }
-    tasks.push(actualizarPrecio(idLP, n));
+    if (!res.ok || data?.error) throw new Error(data?.error || 'Error actualizando precio');
   };
 
-  // ojo: solo empuja si el input tiene valor, si no, puedes dejarlo opcional
-  if (catPrecioActual !== '') push(idCatActual, catPrecioActual, 'Catálogo Actual');
-  if (catPrecioAnterior !== '') push(idCatAnterior, catPrecioAnterior, 'Catálogo Anterior');
-  if (dropPrecioActual !== '') push(idDropActual, dropPrecioActual, 'Dropshipper Actual');
-  if (dropPrecioAnterior !== '') push(idDropAnterior, dropPrecioAnterior, 'Dropshipper Anterior');
+  const guardarPreciosEditados = async () => {
+    const tasks = [];
 
-  if (tasks.length === 0) {
-    throw new Error('No hay precios para actualizar.');
-  }
+    const push = (idLP, val, label) => {
+      const n = Number(val);
+      if (!idLP) {
+        // Si quieres: aquí podrías CREAR la lista en vez de ignorarla
+        throw new Error(`No existe idListaPrecio para: ${label}. Debes crear esa lista primero.`);
+      }
+      if (isNaN(n) || n < 0) {
+        throw new Error(`Precio inválido en: ${label}`);
+      }
+      tasks.push(actualizarPrecio(idLP, n));
+    };
 
-  await Promise.all(tasks);
-};
+    // ojo: solo empuja si el input tiene valor, si no, puedes dejarlo opcional
+    if (catPrecioActual !== '') push(idCatActual, catPrecioActual, 'Catálogo Actual');
+    if (catPrecioAnterior !== '') push(idCatAnterior, catPrecioAnterior, 'Catálogo Anterior');
+    if (dropPrecioActual !== '') push(idDropActual, dropPrecioActual, 'Dropshipper Actual');
+    if (dropPrecioAnterior !== '') push(idDropAnterior, dropPrecioAnterior, 'Dropshipper Anterior');
 
-// =========================
-// LISTAS DE PRECIOS (EDICIÓN)
-// =========================
-const [catPrecioActual, setCatPrecioActual] = useState('');
-const [catPrecioAnterior, setCatPrecioAnterior] = useState('');
-const [dropPrecioActual, setDropPrecioActual] = useState('');
-const [dropPrecioAnterior, setDropPrecioAnterior] = useState('');
+    if (tasks.length === 0) {
+      throw new Error('No hay precios para actualizar.');
+    }
 
-const [idCatActual, setIdCatActual] = useState(null);
-const [idCatAnterior, setIdCatAnterior] = useState(null);
-const [idDropActual, setIdDropActual] = useState(null);
-const [idDropAnterior, setIdDropAnterior] = useState(null);
+    await Promise.all(tasks);
+  };
 
-const [loadingPrecios, setLoadingPrecios] = useState(false);
+  // =========================
+  // LISTAS DE PRECIOS (EDICIÓN)
+  // =========================
+  const [catPrecioActual, setCatPrecioActual] = useState('');
+  const [catPrecioAnterior, setCatPrecioAnterior] = useState('');
+  const [dropPrecioActual, setDropPrecioActual] = useState('');
+  const [dropPrecioAnterior, setDropPrecioAnterior] = useState('');
 
+  const [idCatActual, setIdCatActual] = useState(null);
+  const [idCatAnterior, setIdCatAnterior] = useState(null);
+  const [idDropActual, setIdDropActual] = useState(null);
+  const [idDropAnterior, setIdDropAnterior] = useState(null);
 
-const cargarListasDePrecios = async (idProducto) => {
-  setLoadingPrecios(true);
-  try {
-    const res = await fetch(`${baseURL}/listaPreciosGet.php?idProducto=${idProducto}`, { method: 'GET' });
-
-    const text = await res.text();
-    let data = {};
-    try { data = JSON.parse(text); } catch {}
-    console.log("RESP listaPreciosGet:", data);
-
-
-    if (!res.ok || data?.error) throw new Error(data?.error || text || 'Error cargando listas de precios');
-
-    const precios = data?.listaprecios || data?.listaPrecios || data?.precios || [];
+  const [loadingPrecios, setLoadingPrecios] = useState(false);
 
 
-    const find = (tipoLista, estado) =>
-      precios.find(p => String(p.tipoLista).toLowerCase() === tipoLista && String(p.estado).toLowerCase() === estado);
+  const cargarListasDePrecios = async (idProducto) => {
+    setLoadingPrecios(true);
+    try {
+      const res = await fetch(`${baseURL}/listaPreciosGet.php?idProducto=${idProducto}`, { method: 'GET' });
 
-    const catAct = find('catalogo', 'actual');
-    const catAnt = find('catalogo', 'anterior');
-    const drAct = find('dropshipper', 'actual');
-    const drAnt = find('dropshipper', 'anterior');
+      const text = await res.text();
+      let data = {};
+      try { data = JSON.parse(text); } catch { }
+      console.log("RESP listaPreciosGet:", data);
 
-    setIdCatActual(catAct?.idListaPrecio ?? null);
-    setIdCatAnterior(catAnt?.idListaPrecio ?? null);
-    setIdDropActual(drAct?.idListaPrecio ?? null);
-    setIdDropAnterior(drAnt?.idListaPrecio ?? null);
 
-    setCatPrecioActual(catAct?.precio ?? '');
-    setCatPrecioAnterior(catAnt?.precio ?? '');
-    setDropPrecioActual(drAct?.precio ?? '');
-    setDropPrecioAnterior(drAnt?.precio ?? '');
-  } catch (e) {
-    console.error(e);
-    toast.error(e?.message || 'No se pudieron cargar las listas de precios');
-    // Limpio para que no quede basura del producto anterior
-    setIdCatActual(null); setIdCatAnterior(null); setIdDropActual(null); setIdDropAnterior(null);
-    setCatPrecioActual(''); setCatPrecioAnterior(''); setDropPrecioActual(''); setDropPrecioAnterior('');
-  } finally {
-    setLoadingPrecios(false);
-  }
-};
+      if (!res.ok || data?.error) throw new Error(data?.error || text || 'Error cargando listas de precios');
+
+      const precios = data?.listaprecios || data?.listaPrecios || data?.precios || [];
+
+
+      const find = (tipoLista, estado) =>
+        precios.find(p => String(p.tipoLista).toLowerCase() === tipoLista && String(p.estado).toLowerCase() === estado);
+
+      const catAct = find('catalogo', 'actual');
+      const catAnt = find('catalogo', 'anterior');
+      const drAct = find('dropshipper', 'actual');
+      const drAnt = find('dropshipper', 'anterior');
+
+      setIdCatActual(catAct?.idListaPrecio ?? null);
+      setIdCatAnterior(catAnt?.idListaPrecio ?? null);
+      setIdDropActual(drAct?.idListaPrecio ?? null);
+      setIdDropAnterior(drAnt?.idListaPrecio ?? null);
+
+      setCatPrecioActual(catAct?.precio ?? '');
+      setCatPrecioAnterior(catAnt?.precio ?? '');
+      setDropPrecioActual(drAct?.precio ?? '');
+      setDropPrecioAnterior(drAnt?.precio ?? '');
+    } catch (e) {
+      console.error(e);
+      toast.error(e?.message || 'No se pudieron cargar las listas de precios');
+      // Limpio para que no quede basura del producto anterior
+      setIdCatActual(null); setIdCatAnterior(null); setIdDropActual(null); setIdDropAnterior(null);
+      setCatPrecioActual(''); setCatPrecioAnterior(''); setDropPrecioActual(''); setDropPrecioAnterior('');
+    } finally {
+      setLoadingPrecios(false);
+    }
+  };
 
 
 
@@ -694,357 +766,356 @@ const cargarListasDePrecios = async (idProducto) => {
               </span>
             </div>
 
-<div className="scrollable-modal-body">
-  <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
-    {/* GRID 2 columnas */}
-    <div className='edit-grid'>
+            <div className="scrollable-modal-body">
+              <div className='sectiontext' style={{ display: selectedSection === 'texto' ? 'flex' : 'none' }}>
+                {/* GRID 2 columnas */}
+                <div className='edit-grid'>
 
-      {/* Título */}
-      <fieldset id='titulo'>
-        <legend>Titulo (*)</legend>
-        <input
-          type="text"
-          value={nuevoTitulo}
-          onChange={(e) => setNuevoTitulo(e.target.value)}
-        />
-      </fieldset>
+                  {/* Título */}
+                  <fieldset id='titulo'>
+                    <legend>Titulo (*)</legend>
+                    <input
+                      type="text"
+                      value={nuevoTitulo}
+                      onChange={(e) => setNuevoTitulo(e.target.value)}
+                    />
+                  </fieldset>
 
-      {/* Categoría / Subcategoría */}
-      <fieldset>
-        <legend>Categoría (*)</legend>
-        <select
-          id="categoriaSeleccionada"
-          name="categoriaSeleccionada"
-          onChange={handleCategoriaSeleccion}
-          required
-        >
-          {/* Opción actual */}
-          {categorias
-            ?.filter(c => c?.idCategoria === producto?.idCategoria)
-            ?.map(c => (
-              <option key={`actual-${c?.idCategoria}`} value={`${producto?.idCategoria}-${producto?.idSubCategoria || ''}`}>
-                {c?.categoria}
-                {subcategorias
-                  ?.filter(s => s.idSubCategoria === producto.idSubCategoria)
-                  ?.map(s => (
-                    <React.Fragment key={s.idSubCategoria}>
-                      {producto?.idSubCategoria ? ` > ${s?.subcategoria}` : ''}
-                    </React.Fragment>
-                  ))
-                }
-              </option>
-            ))
-          }
-          {/* Todas las opciones */}
-          {categoriasConSubcategorias.map(categoria => (
-            <optgroup key={`catg-${categoria.idCategoria}`}>
-              <option
-                key={`cat-${categoria.idCategoria}`}
-                value={`${categoria.idCategoria}`}
-                id='option'
-              >
-                {categoria.categoria}
-              </option>
-              {categoria.subcategorias.map(sub => (
-                <option
-                  key={`sub-${categoria.idCategoria}-${sub.idSubCategoria}`}
-                  value={`${categoria.idCategoria}-${sub.idSubCategoria}`}
-                >
-                  {categoria.categoria} {`>`} {sub.subcategoria}
-                </option>
-              ))}
-            </optgroup>
-          ))}
-        </select>
-      </fieldset>
+                  {/* Categoría / Subcategoría */}
+                  <fieldset>
+                    <legend>Categoría (*)</legend>
+                    <select
+                      id="categoriaSeleccionada"
+                      name="categoriaSeleccionada"
+                      onChange={handleCategoriaSeleccion}
+                      required
+                    >
+                      {/* Opción actual */}
+                      {categorias
+                        ?.filter(c => c?.idCategoria === producto?.idCategoria)
+                        ?.map(c => (
+                          <option key={`actual-${c?.idCategoria}`} value={`${producto?.idCategoria}-${producto?.idSubCategoria || ''}`}>
+                            {c?.categoria}
+                            {subcategorias
+                              ?.filter(s => s.idSubCategoria === producto.idSubCategoria)
+                              ?.map(s => (
+                                <React.Fragment key={s.idSubCategoria}>
+                                  {producto?.idSubCategoria ? ` > ${s?.subcategoria}` : ''}
+                                </React.Fragment>
+                              ))
+                            }
+                          </option>
+                        ))
+                      }
+                      {/* Todas las opciones */}
+                      {categoriasConSubcategorias.map(categoria => (
+                        <optgroup key={`catg-${categoria.idCategoria}`}>
+                          <option
+                            key={`cat-${categoria.idCategoria}`}
+                            value={`${categoria.idCategoria}`}
+                            id='option'
+                          >
+                            {categoria.categoria}
+                          </option>
+                          {categoria.subcategorias.map(sub => (
+                            <option
+                              key={`sub-${categoria.idCategoria}-${sub.idSubCategoria}`}
+                              value={`${categoria.idCategoria}-${sub.idSubCategoria}`}
+                            >
+                              {categoria.categoria} {`>`} {sub.subcategoria}
+                            </option>
+                          ))}
+                        </optgroup>
+                      ))}
+                    </select>
+                  </fieldset>
 
-      {/* SKU */}
-      <fieldset>
-        <legend>SKU (*)</legend>
-        <input
-          type="text"
-          value={nuevoSku}
-          onChange={(e) => setNuevoSku(e.target.value)}
-        />
-      </fieldset>
+                  {/* SKU */}
+                  <fieldset>
+                    <legend>SKU (*)</legend>
+                    <input
+                      type="text"
+                      value={nuevoSku}
+                      onChange={(e) => setNuevoSku(e.target.value)}
+                    />
+                  </fieldset>
 
-      {/* Precio */}
-      <fieldset>
-        <legend>Costo Venta (*)</legend>
-        <input
-          type="number"
-          value={nuevoPrecio}
-          onChange={(e) => setNuevoPrecio(e.target.value)}
-        />
-      </fieldset>
+                  {/* Precio */}
+                  <fieldset>
+                    <legend>Costo Venta (*)</legend>
+                    <input
+                      type="number"
+                      value={nuevoPrecio}
+                      onChange={(e) => setNuevoPrecio(e.target.value)}
+                    />
+                  </fieldset>
 
-      {/* Precio anterior */}
-      <fieldset>
-        <legend>Costo de compra</legend>
-        <input
-          type="number"
-          value={nuevoPrecioAnterior}
-          onChange={(e) => setNuevoPrecioAnterior(e.target.value)}
-        />
-      </fieldset>
+                  {/* Precio anterior */}
+                  <fieldset>
+                    <legend>Costo de compra</legend>
+                    <input
+                      type="number"
+                      value={nuevoPrecioAnterior}
+                      onChange={(e) => setNuevoPrecioAnterior(e.target.value)}
+                    />
+                  </fieldset>
 
-      {/* Más vendido */}
-      <fieldset>
-        <legend>Más vendido (*)</legend>
-        <select
-          value={nuevoMasVendido !== '' ? nuevoMasVendido : producto.masVendido}
-          onChange={(e) => setNuevoMasVendido(e.target.value)}
-        >
-          <option value={producto.masVendido}>{producto.masVendido}</option>
-          <option value="si">Si</option>
-          <option value="no">No</option>
-        </select>
-      </fieldset>
+                  {/* Más vendido */}
+                  <fieldset>
+                    <legend>Más vendido (*)</legend>
+                    <select
+                      value={nuevoMasVendido !== '' ? nuevoMasVendido : producto.masVendido}
+                      onChange={(e) => setNuevoMasVendido(e.target.value)}
+                    >
+                      <option value={producto.masVendido}>{producto.masVendido}</option>
+                      <option value="si">Si</option>
+                      <option value="no">No</option>
+                    </select>
+                  </fieldset>
 
-      {/* Stock */}
-      <fieldset>
-        <legend>Disponible (*)</legend>
-        <select
-          value={nuevoStock}
-          onChange={(e) => {
-            const value = e.target.value;
-            setNuevoStock(value);
-            if (value === 'elegir') {
-              setCantidadStock(producto.stock);
-            }
-          }}
-        >
-          <option value="">Selecciona opcion</option>
-          <option value={1}>Disponible</option>
-          <option value={0}>Agotado</option>
-          <option value="elegir">Ingrese cantidad</option>
-        </select>
-        {nuevoStock === 'elegir' && (
-          <input
-            type="number"
-            min="0"
-            placeholder="Ingrese cantidad"
-            value={cantidadStock}
-            onChange={(e) => setCantidadStock(e.target.value)}
-            required
-          />
-        )}
-      </fieldset>
+                  {/* Stock */}
+                  <fieldset>
+                    <legend>Disponible (*)</legend>
+                    <select
+                      value={nuevoStock}
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        setNuevoStock(value);
+                        if (value === 'elegir') {
+                          setCantidadStock(producto.stock);
+                        }
+                      }}
+                    >
+                      <option value="">Selecciona opcion</option>
+                      <option value={1}>Disponible</option>
+                      <option value={0}>Agotado</option>
+                      <option value="elegir">Ingrese cantidad</option>
+                    </select>
+                    {nuevoStock === 'elegir' && (
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Ingrese cantidad"
+                        value={cantidadStock}
+                        onChange={(e) => setCantidadStock(e.target.value)}
+                        required
+                      />
+                    )}
+                  </fieldset>
 
-      {/* Descripción (a lo ancho) */}
-      <fieldset id='descripcion'>
-        <legend>Descripción</legend>
-        <textarea
-          type="text"
-          value={nuevaDescripcion}
-          onChange={(e) => setNuevaDescripcion(e.target.value)}
-        />
-      </fieldset>
-    </div>
-        <fieldset>
-    <legend>Lista de precios (Mercado Yepes)</legend>
+                  {/* Descripción (a lo ancho) */}
+                  <fieldset id='descripcion'>
+                    <legend>Descripción</legend>
+                    <textarea
+                      type="text"
+                      value={nuevaDescripcion}
+                      onChange={(e) => setNuevaDescripcion(e.target.value)}
+                    />
+                  </fieldset>
+                </div>
+                <fieldset>
+                  <legend>Lista de precios (Mercado Yepes)</legend>
 
-    {loadingPrecios ? (
-      <small>Cargando precios...</small>
-    ) : (
-      <div className="two-cols">
-        <div>
-          <label>Precio Actual</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={catPrecioActual}
-            onChange={(e) => setCatPrecioActual(e.target.value)}
-            placeholder="Precio Actual"
-          />
-          {!idCatActual && <small style={{ color: 'red' }}>No existe “catálogo actual” en BD</small>}
-        </div>
+                  {loadingPrecios ? (
+                    <small>Cargando precios...</small>
+                  ) : (
+                    <div className="two-cols">
+                      <div>
+                        <label>Precio Actual</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={catPrecioActual}
+                          onChange={(e) => setCatPrecioActual(e.target.value)}
+                          placeholder="Precio Actual"
+                        />
+                        {!idCatActual && <small style={{ color: 'red' }}>No existe “catálogo actual” en BD</small>}
+                      </div>
 
-        <div>
-          <label>Precio Anterior</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={catPrecioAnterior}
-            onChange={(e) => setCatPrecioAnterior(e.target.value)}
-            placeholder="Precio Anterior"
-          />
-          {!idCatAnterior && <small style={{ color: 'red' }}>No existe “catálogo anterior” en BD</small>}
-        </div>
-      </div>
-    )}
-  </fieldset>
+                      <div>
+                        <label>Precio Anterior</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={catPrecioAnterior}
+                          onChange={(e) => setCatPrecioAnterior(e.target.value)}
+                          placeholder="Precio Anterior"
+                        />
+                        {!idCatAnterior && <small style={{ color: 'red' }}>No existe “catálogo anterior” en BD</small>}
+                      </div>
+                    </div>
+                  )}
+                </fieldset>
 
-  <fieldset>
-    <legend>Lista de precios (Dropshipper)</legend>
+                <fieldset>
+                  <legend>Lista de precios (Dropshipper)</legend>
 
-    {loadingPrecios ? (
-      <small>Cargando precios...</small>
-    ) : (
-      <div className="two-cols">
-        <div>
-          <label>Precio Actual</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={dropPrecioActual}
-            onChange={(e) => setDropPrecioActual(e.target.value)}
-            placeholder="Precio Actual dropshipper"
-          />
-          {!idDropActual && <small style={{ color: 'red' }}>No existe “dropshipper actual” en BD</small>}
-        </div>
+                  {loadingPrecios ? (
+                    <small>Cargando precios...</small>
+                  ) : (
+                    <div className="two-cols">
+                      <div>
+                        <label>Precio Actual</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={dropPrecioActual}
+                          onChange={(e) => setDropPrecioActual(e.target.value)}
+                          placeholder="Precio Actual dropshipper"
+                        />
+                        {!idDropActual && <small style={{ color: 'red' }}>No existe “dropshipper actual” en BD</small>}
+                      </div>
 
-        <div>
-          <label>Precio Anterior</label>
-          <input
-            type="number"
-            min="0"
-            step="0.01"
-            value={dropPrecioAnterior}
-            onChange={(e) => setDropPrecioAnterior(e.target.value)}
-            placeholder="Precio Anterior dropshipper"
-          />
-          {!idDropAnterior && <small style={{ color: 'red' }}>No existe “dropshipper anterior” en BD</small>}
-        </div>
-      </div>
-    )}
-  </fieldset>
-    {/* Variaciones */}
-    <div id='textLabel'>
-      <label>Variaciones (opcionales)</label>
-      <div id='flexLabel'>
-        Dar a elegir a los clientes
-        <input
-          type="checkbox"
-          value={verItems}
-          checked={verItems === "Si"}
-          onChange={handleCheckboxChange}
-        />
-      </div>
-    </div>
+                      <div>
+                        <label>Precio Anterior</label>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={dropPrecioAnterior}
+                          onChange={(e) => setDropPrecioAnterior(e.target.value)}
+                          placeholder="Precio Anterior dropshipper"
+                        />
+                        {!idDropAnterior && <small style={{ color: 'red' }}>No existe “dropshipper anterior” en BD</small>}
+                      </div>
+                    </div>
+                  )}
+                </fieldset>
+                {/* Variaciones */}
+                <div id='textLabel'>
+                  <label>Variaciones (opcionales)</label>
+                  <div id='flexLabel'>
+                    Dar a elegir a los clientes
+                    <input
+                      type="checkbox"
+                      value={verItems}
+                      checked={verItems === "Si"}
+                      onChange={handleCheckboxChange}
+                    />
+                  </div>
+                </div>
 
-    {verItems === 'Si' && (
-      <div className="variaciones-scroll-x">
-        <div className='items'>
-          {[
-            { v: item1, s: setItem1 },
-            { v: item2, s: setItem2 },
-            { v: item3, s: setItem3 },
-            { v: item4, s: setItem4 },
-            { v: item5, s: setItem5 },
-            { v: item6, s: setItem6 },
-            { v: item7, s: setItem7 },
-            { v: item8, s: setItem8 },
-            { v: item9, s: setItem9 },
-            { v: item10, s: setItem10 },
-          ].map((it, idx) => (
-            <fieldset key={idx}>
-              <legend>Variación</legend>
-              <input
-                type="text"
-                required={idx === 0 && verItems === 'Si'}   // solo item1 obligatorio
-                value={it.v || ''}
-                onChange={(e) => it.s(e.target.value)}
-              />
-            </fieldset>
-          ))}
-        </div>
-      </div>
-    )}
+                {verItems === 'Si' && (
+                  <div className="variaciones-scroll-x">
+                    <div className='items'>
+                      {[
+                        { v: item1, s: setItem1 },
+                        { v: item2, s: setItem2 },
+                        { v: item3, s: setItem3 },
+                        { v: item4, s: setItem4 },
+                        { v: item5, s: setItem5 },
+                        { v: item6, s: setItem6 },
+                        { v: item7, s: setItem7 },
+                        { v: item8, s: setItem8 },
+                        { v: item9, s: setItem9 },
+                        { v: item10, s: setItem10 },
+                      ].map((it, idx) => (
+                        <fieldset key={idx}>
+                          <legend>Variación</legend>
+                          <input
+                            type="text"
+                            required={idx === 0 && verItems === 'Si'}   // solo item1 obligatorio
+                            value={it.v || ''}
+                            onChange={(e) => it.s(e.target.value)}
+                          />
+                        </fieldset>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Imágenes con Drag and Drop */}
+                <label id='textLabel'>Imagenes (Arrastra para reordenar)</label>
 
-    {/* Imágenes */}
-    <label id='textLabel'>Imagenes</label>
+                <div className='dnd-container' style={{ padding: '10px', overflowX: 'auto' }}>
+                  <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCenter}
+                    onDragEnd={handleDragEnd}
+                  >
+                    <SortableContext
+                      items={images.map(img => img.id)}
+                      strategy={horizontalListSortingStrategy}
+                    >
+                      <div style={{ display: 'flex', gap: '15px' }}>
+                        {images.map((img, index) => (
+                          <SortableItem key={img.id} id={img.id}>
+                            <div className="image-card" style={{
+                              width: '120px',
+                              border: '1px solid #ddd',
+                              borderRadius: '8px',
+                              padding: '8px',
+                              background: '#fff',
+                              display: 'flex',
+                              flexDirection: 'column',
+                              alignItems: 'center',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                            }}>
+                              <span style={{ fontSize: '12px', fontWeight: 'bold', marginBottom: '5px' }}>
+                                Imagen {index + 1}
+                              </span>
+                              <div style={{
+                                width: '100px',
+                                height: '100px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                overflow: 'hidden',
+                                backgroundColor: '#f9f9f9',
+                                borderRadius: '4px',
+                                marginBottom: '8px'
+                              }}>
+                                {img.url ? (
+                                  <img
+                                    src={img.url}
+                                    alt={`Imagen ${index + 1}`}
+                                    style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }}
+                                    onClick={() => abrirModalImagenSeleccionada(img.url)}
+                                  />
+                                ) : (
+                                  <span style={{ color: '#ccc', fontSize: '12px' }}>Vacio</span>
+                                )}
+                              </div>
 
-    {/* Preview con scroll-x */}
-    <div className='previevProduct'>
-      {imagenPreview ? (
-        <img src={imagenPreview} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
-      ) : (
-        <>
-          {producto.imagen1 ? (
-            <img src={producto.imagen1} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen1)} />
-          ) : (
-            <span className='imgNone'>No hay imagen</span>
-          )}
-        </>
-      )}
+                              {/* Upload Input */}
+                              <label
+                                htmlFor={`file-${img.id}`}
+                                style={{
+                                  cursor: 'pointer',
+                                  color: '#fff',
+                                  background: '#007bff',
+                                  fontSize: '11px',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  marginTop: 'auto'
+                                }}
+                              >
+                                <FontAwesomeIcon icon={faEdit} /> Cambiar
+                              </label>
+                              <input
+                                id={`file-${img.id}`}
+                                type="file"
+                                accept="image/*"
+                                style={{ display: 'none' }}
+                                onChange={(e) => handleFileChange(e, img.id)}
+                              />
+                            </div>
+                          </SortableItem>
+                        ))}
+                      </div>
+                    </SortableContext>
+                  </DndContext>
+                </div>
+                {/* ====================================================================== */}
 
-      {imagenPreview2 ? (
-        <img src={imagenPreview2} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen2)} />
-      ) : (
-        <>
-          {producto.imagen2 ? (
-            <img src={producto.imagen2} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen2)} />
-          ) : (
-            <span className='imgNone'>No hay imagen</span>
-          )}
-        </>
-      )}
-
-      {imagenPreview3 ? (
-        <img src={imagenPreview3} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen3)} />
-      ) : (
-        <>
-          {producto.imagen3 ? (
-            <img src={producto.imagen3} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen3)} />
-          ) : (
-            <span className='imgNone'>No hay imagen</span>
-          )}
-        </>
-      )}
-
-      {imagenPreview4 ? (
-        <img src={imagenPreview4} alt="Vista previa de la imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen4)} />
-      ) : (
-        <>
-          {producto.imagen4 ? (
-            <img src={producto.imagen4} alt="imagen" onClick={() => abrirModalImagenSeleccionada(producto.imagen4)} />
-          ) : (
-            <span className='imgNone'>No hay imagen</span>
-          )}
-        </>
-      )}
-
-
-    </div>
-
-    {/* Uploads */}
-    <div className='image-container'>
-      {[
-        { id: 1, setF: setNuevaImagen,  setP: setImagenPreview  },
-        { id: 2, setF: setNuevaImagen2, setP: setImagenPreview2 },
-        { id: 3, setF: setNuevaImagen3, setP: setImagenPreview3 },
-        { id: 4, setF: setNuevaImagen4, setP: setImagenPreview4 },
-      ].map(({ id, setF, setP }) => (
-        <div className='image-input' key={id}>
-          <img
-            src={imageIcon}
-            alt="Imagen de ejemplo"
-            className='image-icon'
-            onClick={() => document.getElementById(`fileInput${id}`).click()}
-          />
-          <input
-            id={`fileInput${id}`}
-            type="file"
-            accept="image/*"
-            style={{ display: 'none' }}
-            onChange={(e) => handleFileChange(e, setF, setP)}
-          />
-        </div>
-      ))}
-    </div>
-
-{/* ====================================================================== */}
-
-    {/* Guardar */}
-    <button className='btnPost' onClick={() => guardarCambios(producto.idProducto)}>
-      Guardar
-    </button>
-  </div>
-</div>
+                {/* Guardar */}
+                <button className='btnPost' onClick={() => guardarCambios(producto.idProducto)}>
+                  Guardar
+                </button>
+              </div>
+            </div>
 
           </div>
         </div>
