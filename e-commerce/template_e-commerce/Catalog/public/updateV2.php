@@ -427,30 +427,32 @@ try {
 
 
 
-    // $tableName = 'pedido_asesores';
-    // $updater->run(
-    //     $tableName,
-    //     "CREATE TABLE pedido_asesores (
-    //         idRelacion INT(10) NOT NULL AUTO_INCREMENT,
-    //         idPedido INT(10) NOT NULL,
-    //         idAsesor INT(10) NOT NULL,
-    //         comision_tipo VARCHAR(10) NOT NULL CHECK (comision_tipo IN ('manual', 'auto','fijo')),
-    //         comision_valor DECIMAL(10,2) NOT NULL,
-    //         medio_pago_comision VARCHAR(50) NOT NULL,
-    //         estado_comision VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado_comision IN ('pendiente', 'pagado', 'cancelado', 'retenido')),
-    //         fecha_pago_comision DATE NULL,
-    //         PRIMARY KEY (idRelacion)
-    //     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
-    //     [
-    //         "ALTER TABLE {table}  ADD COLUMN total_cupon DECIMAL(5,2) NULL DEFAULT '0.00' AFTER comision_valor",
-    //     ],
-    //     [//index
-    //     ],
-    //     [
-    //         "ALTER TABLE {table}  ADD CONSTRAINT fk_{table}_id           FOREIGN KEY (idPedido) REFERENCES pedidos (idPedido) ON DELETE CASCADE",
-    //         "ALTER TABLE {table}  ADD CONSTRAINT fk_{table}_asesor_id    FOREIGN KEY (idAsesor) REFERENCES asesores (idAsesor) ON DELETE CASCADE",
-    //     ]
-    // );
+    $tableName = 'pedido_asesores';
+    $updater->run(
+        $tableName,
+        "CREATE TABLE IF NOT EXISTS pedido_asesores (
+            idRelacion INT(10) NOT NULL AUTO_INCREMENT,
+            idPedido INT(10) NOT NULL,
+            idAsesor INT(10) NOT NULL,
+            comision_tipo VARCHAR(10) NOT NULL CHECK (comision_tipo IN ('manual', 'auto','fijo')),
+            comision_valor DECIMAL(10,2) NOT NULL,
+            medio_pago_comision VARCHAR(50) NOT NULL,
+            estado_comision VARCHAR(20) NOT NULL DEFAULT 'pendiente' CHECK (estado_comision IN ('pendiente', 'pagado', 'cancelado', 'retenido')),
+            fecha_pago_comision DATE NULL,
+            PRIMARY KEY (idRelacion)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci",
+        [
+            // "ALTER TABLE {table}  ADD COLUMN total_cupon DECIMAL(5,2) NULL DEFAULT '0.00' AFTER comision_valor",
+            "ALTER TABLE {table}  ADD COLUMN utilidad_bruta DECIMAL(15, 2) DEFAULT 0.00 AFTER fecha_pago_comision",
+            "ALTER TABLE {table}  ADD COLUMN utilidad_neta DECIMAL(15, 2) DEFAULT 0.00 AFTER utilidad_bruta"
+        ],
+        [//index
+        ],
+        [
+            // "ALTER TABLE {table}  ADD CONSTRAINT fk_{table}_id           FOREIGN KEY (idPedido) REFERENCES pedidos (idPedido) ON DELETE CASCADE",
+            // "ALTER TABLE {table}  ADD CONSTRAINT fk_{table}_asesor_id    FOREIGN KEY (idAsesor) REFERENCES asesores (idAsesor) ON DELETE CASCADE",
+        ]
+    );
 
 $tableName = 'codigos';
     $updater->run(
