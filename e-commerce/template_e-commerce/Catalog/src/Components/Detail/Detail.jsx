@@ -100,14 +100,14 @@ export default function Detail() {
             .catch(error => console.error('Error al cargar datos:', error));
     };
 
-        const mode = process.env.REACT_APP_MODE || "catalogo";
+    const mode = process.env.REACT_APP_MODE || "catalogo";
 
-const modeToBackend = {
-    dropshipper: "dropshipper",
-    catalogo: "catalogo"
-};
+    const modeToBackend = {
+        dropshipper: "dropshipper",
+        catalogo: "catalogo"
+    };
 
-const tipoLista = modeToBackend[mode] || "catalogo";
+    const tipoLista = modeToBackend[mode] || "catalogo";
 
     const cargarProductos = () => {
         fetch(`${baseURL}/productosGet.php?tipo_lista=${tipoLista}`, {
@@ -270,18 +270,30 @@ const tipoLista = modeToBackend[mode] || "catalogo";
         return <DetailLoading />;
     }
 
-function linkify(text) {
-    const urlRegex = /(https?:\/\/[^\s]+)/g;
-    return text?.replace(urlRegex, (url) => {
-        return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
-    });
-}
+    function linkify(text) {
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        return text?.replace(urlRegex, (url) => {
+            return `<a href="${url}" target="_blank" rel="noopener noreferrer">${url}</a>`;
+        });
+    }
+
+    const toNumber = (v) => {
+        if (v === null || v === undefined) return 0;
+        const s = String(v).replace(/\./g, "").replace(",", ".");
+        const n = Number(s);
+        return isNaN(n) ? 0 : n;
+    };
+
+    const formatCOP = (v) => {
+        const n = toNumber(v);
+        return `${moneda} ${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+    };
 
     return (
 
 
         <div className="detail">
-            
+
 
             <h1 className="titles-text-heading">
                 <FontAwesomeIcon icon={faStar} style={{ marginRight: "10px", color: "#ffc107" }} />
@@ -434,25 +446,25 @@ function linkify(text) {
 
                     <div className='deFLexPrice'>
                         <h5 className="price">
-                            {moneda} {String(producto?.precio)?.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                            {formatCOP(producto?.precio)}
 
                         </h5>
 
                         {
                             (producto?.precioAnterior !== 0 && producto?.precioAnterior !== undefined) && (
-                                <h5 className='precioTachadoDetail'> {moneda} {`${producto?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}</h5>
+                                <h5 className='precioTachadoDetail'> {formatCOP(producto?.precioAnterior)}</h5>
                             )
 
                         }
 
 
                     </div>
-                      <p
+                    <p
                         className="descripcion"
                         dangerouslySetInnerHTML={{
                             __html: linkify(producto.descripcion || "")
                         }}
-                        />
+                    />
                     {
                         producto?.verItems === 'Si' && (
                             <div className="itemsDetail">
