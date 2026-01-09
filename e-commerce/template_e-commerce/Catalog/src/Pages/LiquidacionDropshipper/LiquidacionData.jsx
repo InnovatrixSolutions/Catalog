@@ -110,6 +110,8 @@ export default function LiquidacionData() {
     { field: 'medio_pago_comision', header: 'Medio pago comisión', minWidth: '14rem' },
     { field: 'estado_comision', header: 'Estado comisión', minWidth: '10rem' },
     { field: 'fecha_pago_comision', header: 'Fecha pago', minWidth: '10rem' },
+    { field: 'utilidad_bruta', header: 'Utilidad Bruta', minWidth: '10rem' },
+    { field: 'utilidad_neta', header: 'Utilidad Neta', minWidth: '10rem' },
   ];
 
 
@@ -142,6 +144,8 @@ export default function LiquidacionData() {
           total_pedidos: 0,
           total_comision: 0,
           total_a_pagar: 0,
+          total_utilidad_bruta: 0,
+          total_utilidad_neta: 0,
         };
       }
 
@@ -149,10 +153,14 @@ export default function LiquidacionData() {
 
       const comision = parseFloat(item.comision_valor || 0);
       const aPagar = parseFloat(item.valor_a_pagar_asesor || 0);
+      const uBruta = parseFloat(item.utilidad_bruta || 0);
+      const uNeta = parseFloat(item.utilidad_neta || 0);
 
       mapa[id].total_pedidos += 1;
       mapa[id].total_comision += isNaN(comision) ? 0 : comision;
       mapa[id].total_a_pagar += isNaN(aPagar) ? 0 : aPagar;
+      mapa[id].total_utilidad_bruta += isNaN(uBruta) ? 0 : uBruta;
+      mapa[id].total_utilidad_neta += isNaN(uNeta) ? 0 : uNeta;
     });
 
     setResumenAsesores(Object.values(mapa));
@@ -167,6 +175,8 @@ export default function LiquidacionData() {
     { field: 'total_pedidos', header: '# Pedidos', minWidth: '8rem' },
     { field: 'total_comision', header: 'Total Comisión', minWidth: '10rem' },
     { field: 'total_a_pagar', header: 'Total a Pagar', minWidth: '10rem' },
+    { field: 'total_utilidad_bruta', header: 'Total U. Bruta', minWidth: '10rem' },
+    { field: 'total_utilidad_neta', header: 'Total U. Neta', minWidth: '10rem' },
   ];
 
 
