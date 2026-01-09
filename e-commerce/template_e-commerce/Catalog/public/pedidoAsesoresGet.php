@@ -103,6 +103,8 @@ try {
                 pa.medio_pago_comision,
                 pa.estado_comision,
                 pa.fecha_pago_comision,
+                pa.utilidad_bruta,
+                pa.utilidad_neta,
                 pa.observaciones,
 
                 -- ---------------------
