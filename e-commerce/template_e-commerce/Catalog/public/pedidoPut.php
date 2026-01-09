@@ -104,28 +104,38 @@ try {
             if ($costoEnvio !== null) {
                 try {
                     // 1. Verificar si este pedido tiene relación con un asesor
-                    // Traemos también el base_calculo anterior que es el Costo Dropshipper (según la lógica nueva en OrdersManager)
+                    // Traemos también los productos del pedido para recalcular costos
                     $stmtAsesor = $conexion->prepare("
-                        SELECT idRelacion as idPedidoAsesor, base_calculo, total_cupon, valor_pedido 
-                        FROM pedido_asesores 
-                        WHERE idPedido = :idPedido 
+                        SELECT pa.idRelacion as idPedidoAsesor, pa.base_calculo, pa.total_cupon, pa.valor_pedido, p.productos
+                        FROM pedido_asesores pa
+                        JOIN pedidos p ON p.idPedido = pa.idPedido
+                        WHERE pa.idPedido = :idPedido 
                         LIMIT 1
                     ");
                     $stmtAsesor->execute([':idPedido' => $idPedido]);
                     $relacion = $stmtAsesor->fetch(PDO::FETCH_ASSOC);
 
                     if ($relacion) {
+                        require_once 'OrdersManager.php';
+                        
                         // 2. Recalcular
-                        // Fórmula: Ganancia = Valor Pedido - Nuevo Envío - Costo Dropshipper - Cupón
                         $valorPedidoDb       = (float) $relacion['valor_pedido'];
                         $totalCuponDb        = (float) $relacion['total_cupon'];
                         $costoBaseDropshipper= (float) $relacion['base_calculo'];
                         
-                        // Nuevo ingreso neto
+                        // Nuevo ingreso neto (para comisión)
                         $ingresoNeto = $valorPedidoDb - $costoEnvio - $totalCuponDb;
                         
                         // Nueva comisión
                         $nuevaComision = max(0, $ingresoNeto - $costoBaseDropshipper);
+
+                        // --- NUEVO: CÁLCULOS DE UTILIDAD ---
+                        // Calculamos el costo REAL de compra (proveedor) sumando producto.precio
+                        $totales = OrdersManager::calcularTotalesDesdeBD($conexion, $relacion['productos'], 'dropshipper');
+                        $totalCostoCompra = (float)$totales['total_costo_compra']; // Sum(productos.precio * cantidad)
+
+                        $utilidadBruta = $costoBaseDropshipper - $totalCostoCompra;
+                        $utilidadNeta  = $utilidadBruta - $costoEnvio;
                         
                         // 3. Actualizar tabla pedido_asesores
                         $stmtUpdateCom = $conexion->prepare("
@@ -133,12 +143,16 @@ try {
                             SET 
                                 valor_envio = :nuevoEnvio,
                                 comision_valor = :nuevaComision,
-                                valor_a_pagar_asesor = :nuevaComision
+                                valor_a_pagar_asesor = :nuevaComision,
+                                utilidad_bruta = :utilidadBruta,
+                                utilidad_neta = :utilidadNeta
                             WHERE idRelacion = :idRelacion
                         ");
                         $stmtUpdateCom->execute([
                             ':nuevoEnvio'     => $costoEnvio,
                             ':nuevaComision'  => $nuevaComision,
+                            ':utilidadBruta'  => $utilidadBruta,
+                            ':utilidadNeta'   => $utilidadNeta,
                             ':idRelacion'     => $relacion['idPedidoAsesor']
                         ]);
                         
