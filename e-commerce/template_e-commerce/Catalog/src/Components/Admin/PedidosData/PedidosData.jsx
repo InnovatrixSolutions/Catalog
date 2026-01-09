@@ -81,9 +81,9 @@ export default function PedidosData() {
     { field: 'telefono', header: 'Teléfono', minWidth: '16vw' },
     { field: 'telefono_tran', header: 'Tel. Transportador', minWidth: '16vw' },
     { field: 'entrega', header: 'Entrega', minWidth: '16vw' },
-    { field: 'country_id', header: 'País', minWidth: '16vw' },
-    { field: 'state_id', header: 'Departamento', minWidth: '16vw' },
-    { field: 'city_id', header: 'Ciudad', minWidth: '16vw' },
+    { field: 'country_name', header: 'País', minWidth: '16vw' },
+    { field: 'state_name', header: 'Departamento', minWidth: '16vw' },
+    { field: 'city_name', header: 'Ciudad', minWidth: '16vw' },
     { field: 'franja_horario', header: 'Franja Horaria', minWidth: '16vw' },
     { field: 'nota', header: 'Nota', minWidth: '16vw' },
 
@@ -930,7 +930,7 @@ export default function PedidosData() {
     <div>
 
       <ToastContainer />
-      <h1 className='titles-text-heading'>Pedidoxs</h1>
+      <h1 className='titles-text-heading'>Pedidos</h1>
 
       <div className='deFlexContent2'>
         <div className='deFlex2'>
@@ -1263,6 +1263,7 @@ export default function PedidosData() {
             <h4 className="section-title">Actualizar pedido</h4>
             <form onSubmit={handleSubmit(onSubmitEdit)} className="form-grid">
               <div>
+                <label htmlFor="transportadora" className="font-bold block mb-2">Transportadora</label>
                 <Controller
                   name="transportadora"
                   control={control}
@@ -1279,6 +1280,7 @@ export default function PedidosData() {
 
               {watch('transportadora') === 'Otra' && (
                 <div>
+                  <label htmlFor="transportadoraOtra" className="font-bold block mb-2">Otra Transportadora</label>
                   <Controller
                     name="transportadoraOtra"
                     control={control}
@@ -1290,15 +1292,18 @@ export default function PedidosData() {
               )}
 
               <div>
+                <label htmlFor="numeroGuia" className="font-bold block mb-2">Número de Guía</label>
                 <Controller name="numeroGuia" control={control}
                   render={({ field }) => <InputText {...field} placeholder="Número de Guía" className="w-full" />} />
               </div>
               <div>
+                <label htmlFor="valorFlete" className="font-bold block mb-2">Valor del Flete</label>
                 <Controller name="valorFlete" control={control}
                   render={({ field }) => <InputText {...field} placeholder="Valor del Flete" className="w-full" />} />
               </div>
 
               <div>
+                <label htmlFor="estado" className="font-bold block mb-2">Estado</label>
                 <Controller name="estado" control={control} render={({ field }) =>
                   <Dropdown {...field} className="w-full"
                     placeholder="Estado"
@@ -1314,6 +1319,7 @@ export default function PedidosData() {
               </div>
 
               <div>
+                <label htmlFor="pagado" className="font-bold block mb-2">¿Pagado?</label>
                 <Controller name="pagado" control={control} render={({ field }) =>
                   <Dropdown {...field} className="w-full"
                     placeholder="¿Pagado?"
@@ -1325,6 +1331,7 @@ export default function PedidosData() {
 
               {(watch('estado') === 'Devolución' || watch('estado') === 'Cancelado') && (
                 <div className="span-2">
+                  <label htmlFor="notaPedidoInterna" className="font-bold block mb-2">Motivo</label>
                   <Controller name="notaPedidoInterna" control={control}
                     render={({ field }) => <InputText {...field} placeholder="Motivo" className="w-full" />} />
                   {errors.notaPedidoInterna && <small className="p-error">{errors.notaPedidoInterna.message}</small>}

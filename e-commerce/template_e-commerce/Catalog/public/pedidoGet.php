@@ -33,7 +33,16 @@ try {
 
     // Consulta SQL para obtener los datos de pedidos
     if ($metodo == 'GET') {
-        $sqlSelect = "SELECT * FROM pedidos";
+        $sqlSelect = "
+            SELECT p.*, 
+                   c.name AS country_name, 
+                   s.name AS state_name, 
+                   ci.name AS city_name
+            FROM pedidos p
+            LEFT JOIN countries c ON p.country_id = c.id
+            LEFT JOIN states s ON p.state_id = s.id
+            LEFT JOIN cities ci ON p.city_id = ci.id
+        ";
         $sentencia = $conexion->prepare($sqlSelect);
 
         if ($sentencia->execute()) {
