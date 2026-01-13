@@ -344,6 +344,128 @@ export default function LiquidacionData() {
   };
 
 
+
+
+  // --- HANDLERS PARA PAGAR COMISIONES ---
+
+  const handlePagar = (idRelacion) => {
+    Swal.fire({
+      title: '¿Confirmar pago?',
+      text: "Se marcará esta comisión como PAGADA con la fecha actual.",
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#3085d6',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, pagar'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`${baseURL}/pedidoAsesorPut.php`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'pay_single',
+            idRelacion: idRelacion
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('¡Pagado!', data.mensaje, 'success');
+              cargarPedidos(); // Recargar tablas
+            } else {
+              Swal.fire('Error', data.error || 'No se pudo procesar el pago', 'error');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            toast.error("Error de conexión");
+          });
+      }
+    });
+  };
+
+  const handlePagarMasivo = (idAsesor) => {
+    // Tomamos fechas del filtro si existen
+    const desde = formatDateParam(periodoDesde);
+    const hasta = formatDateParam(periodoHasta);
+
+    let msg = "Se pagarán TODAS las comisiones pendientes de este asesor";
+    if (desde || hasta) {
+      msg += ` en el periodo seleccionado (${desde || '...'} a ${hasta || '...'})`;
+    }
+    msg += ".";
+
+    Swal.fire({
+      title: '¿Confirmar pago masivo?',
+      text: msg,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#28a745',
+      cancelButtonColor: '#d33',
+      confirmButtonText: 'Sí, pagar todo'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        fetch(`${baseURL}/pedidoAsesorPut.php`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'pay_bulk',
+            idAsesor: idAsesor,
+            fechaDesde: desde,
+            fechaHasta: hasta
+          })
+        })
+          .then(res => res.json())
+          .then(data => {
+            if (data.success) {
+              Swal.fire('¡Pagado!', data.mensaje, 'success');
+              cargarPedidos(); // Recargar tablas
+              // Opcional: recargar si quieres actualizar
+            } else {
+              Swal.fire('Error', data.error || 'No se pudo procesar el pago', 'error');
+            }
+          })
+          .catch(err => {
+            console.error(err);
+            toast.error("Error de conexión");
+          });
+      }
+    });
+  };
+
+  const pagarBodyTemplate = (rowData) => {
+    // Si ya está pagada, mostramos check o nada
+    if (rowData.estado_comision === 'Pagada') {
+      return <span style={{ color: 'green', fontWeight: 'bold' }}>Pagada</span>;
+    }
+    // Si no tiene idRelacion (por consistencia), no mostramos botón
+    if (!rowData.idRelacion) return null;
+
+    return (
+      <Button
+        icon="pi pi-dollar"
+        className="p-button-rounded p-button-success p-button-sm"
+        tooltip="Pagar Comisión"
+        onClick={() => handlePagar(rowData.idRelacion)}
+      />
+    );
+  };
+
+  const pagarResumenBodyTemplate = (rowData) => {
+    // rowData es el objeto agrupado del asesor
+    // Podemos mostrar botón solo si tiene algo pendiente tal vez?
+    // O siempre mostrar.
+    return (
+      <Button
+        label="Pagar Todo"
+        icon="pi pi-check-circle"
+        className="p-button-success p-button-sm"
+        onClick={() => handlePagarMasivo(rowData.idAsesor)}
+      />
+    );
+  };
+
+
   const handleSectionChange = (section) => {
     setSelectedSection(section);
   };
@@ -1126,6 +1248,15 @@ export default function LiquidacionData() {
                     filterPlaceholder="Search by column"
                   />
                 ))}
+
+                {/* Columna de botón Pagar */}
+                <Column
+                  header="Acción"
+                  body={pagarBodyTemplate}
+                  exportable={false}
+                  style={{ minWidth: '8rem', textAlign: 'center' }}
+                />
+
               </DataTable>
             </div>
           </TabPanel>
@@ -1222,6 +1353,15 @@ export default function LiquidacionData() {
                     filterPlaceholder="Search by column"
                   />
                 ))}
+
+                {/* Columna de botón Pagar Todo */}
+                <Column
+                  header="Acción Masiva"
+                  body={pagarResumenBodyTemplate}
+                  exportable={false}
+                  style={{ minWidth: '10rem', textAlign: 'center' }}
+                />
+
               </DataTable>
             </div>
           </TabPanel>

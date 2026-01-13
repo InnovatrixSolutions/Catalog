@@ -842,7 +842,7 @@ export default function ProductosData() {
 
                   {/* Precio */}
                   <fieldset>
-                    <legend>Costo Venta (*)</legend>
+                    <legend>Costo de venta MCY (*)</legend>
                     <input
                       type="number"
                       value={nuevoPrecio}
@@ -852,7 +852,7 @@ export default function ProductosData() {
 
                   {/* Precio anterior */}
                   <fieldset>
-                    <legend>Costo de compra</legend>
+                    <legend>Costo de compra a proveedor</legend>
                     <input
                       type="number"
                       value={nuevoPrecioAnterior}
@@ -1171,14 +1171,14 @@ export default function ProductosData() {
                 <td>{item.titulo}</td>
 
                 <td style={{ color: '#008000' }}>
-                  {moneda} {`${item?.precio}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                  {moneda} {`${item?.precio ?? 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                 </td>
 
                 <td style={{ color: '#008000' }}>
-                  {moneda} {`${item?.precioAnterior}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
+                  {moneda} {`${item?.precioAnterior ?? 0}`.replace(/\B(?=(\d{3})+(?!\d))/g, ".")}
                 </td>
 
-                <td>Catalogo o Dropshipper</td>
+                <td>{item.tipoLista}</td>
 
                 {categorias
                   ?.filter(categoriaFiltrada => categoriaFiltrada.idCategoria === item.idCategoria)

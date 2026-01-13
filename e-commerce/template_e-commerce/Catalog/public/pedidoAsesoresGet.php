@@ -68,7 +68,8 @@ try {
         //   - Fallback: fecha de pago o, si no existe, fecha de creación del pedido:
         //       $columnaFecha = 'COALESCE(pa.fecha_pago_comision, p.createdAt)';
         //
-        $columnaFecha = 'pa.fecha_pago_comision';
+        // 🔑 CAMBIO: Usamos la fecha de creación del pedido para filtrar el periodo de liquidación
+        $columnaFecha = 'p.createdAt';
 
         if ($fechaDesde) {
             $where[] = "DATE($columnaFecha) >= :fecha_desde";
