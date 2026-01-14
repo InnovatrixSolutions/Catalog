@@ -1062,15 +1062,24 @@ export default function PedidosData() {
                       {detallesVisibles[item.idPedido] ? 'Mostrar menos' : `Mostrar más`}
                     </button>
                     <div className='card-actions'>
-                      <button className='eliminar' onClick={() => eliminar(item.idPedido)}>
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
-                      <button className='editar' onClick={() => abrirModal(item)}>
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
-                      <button onClick={() => imprimirTicket2(item)} className='editar'>
-                        <FontAwesomeIcon icon={faPrint} />
-                      </button>
+                      <Button
+                        onClick={() => eliminar(item.idPedido)}
+                        icon="pi pi-trash"
+                        severity="danger"
+                        aria-label="Eliminar"
+                      />
+                      <Button
+                        onClick={() => abrirModal(item)}
+                        icon="pi pi-eye"
+                        severity="info"
+                        aria-label="Ver"
+                      />
+                      <Button
+                        onClick={() => imprimirTicket2(item)}
+                        icon="pi pi-print"
+                        severity="help"
+                        aria-label="Imprimir"
+                      />
                     </div>
                   </div>
                 ))}
@@ -1133,21 +1142,21 @@ export default function PedidosData() {
               body={(rowData) => (
                 <div className="flex gap-2">
                   <Button
-                    className='editar'
                     onClick={() => abrirModal(rowData)}
                     icon="pi pi-eye"
+                    severity="info"
                     aria-label="Ver"
                   />
                   <Button
-                    className='eliminar'
                     onClick={() => eliminar(rowData.idPedido)}
                     icon="pi pi-trash"
+                    severity="danger"
                     aria-label="Eliminar"
                   />
                   <Button
-                    className='imprimir'
                     onClick={() => imprimirTicket2(rowData)}
                     icon="pi pi-print"
+                    severity="help"
                     aria-label="Imprimir"
                   />
                 </div>

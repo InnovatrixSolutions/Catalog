@@ -1181,26 +1181,26 @@ export default function LiquidacionData() {
                     </button>
 
                     <div className="card-actions">
-                      <button
-                        className="eliminar"
+                      <Button
                         onClick={() => eliminar(item.idPedido)}
-                      >
-                        <FontAwesomeIcon icon={faTrash} />
-                      </button>
+                        icon="pi pi-trash"
+                        severity="danger"
+                        aria-label="Eliminar"
+                      />
 
-                      <button
-                        className="editar"
+                      <Button
                         onClick={() => abrirModal(item)}
-                      >
-                        <FontAwesomeIcon icon={faEye} />
-                      </button>
+                        icon="pi pi-eye"
+                        severity="info"
+                        aria-label="Ver"
+                      />
 
-                      <button
+                      <Button
                         onClick={() => imprimirTicket2(item)}
-                        className="editar"
-                      >
-                        <FontAwesomeIcon icon={faPrint} />
-                      </button>
+                        icon="pi pi-print"
+                        severity="help"
+                        aria-label="Imprimir"
+                      />
                     </div>
                   </div>
                 ))}
