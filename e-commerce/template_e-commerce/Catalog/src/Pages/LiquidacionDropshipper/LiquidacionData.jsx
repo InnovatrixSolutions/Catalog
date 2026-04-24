@@ -99,6 +99,7 @@ export default function LiquidacionData() {
     { field: 'pedido_total', header: 'Total Pedido', minWidth: '10rem' },
     { field: 'costo_envio', header: 'Valor Envío', minWidth: '10rem' },
     { field: 'total_cupon', header: 'Valor Cupón', minWidth: '10rem' },
+    { field: 'incluye_envio', header: 'Incluye Envío', minWidth: '10rem' },
 
     // Liquidación
     { field: 'base_calculo', header: 'Base cálculo', minWidth: '10rem' },
@@ -202,7 +203,7 @@ export default function LiquidacionData() {
     fetch(url, { method: 'GET' })
       .then((response) => response.json())
       .then((data) => {
-        setPedidos((data.pedidos_asesores || []).reverse());
+        setPedidos(data.pedidos_asesores || []);
         console.log(data.pedidos_asesores);
       })
       .catch((error) =>
@@ -465,6 +466,10 @@ export default function LiquidacionData() {
     );
   };
 
+  const incluyeEnvioBodyTemplate = (rowData) => {
+    return rowData.incluye_envio === 1 || rowData.incluye_envio === "1" ? "Sí" : "No";
+  };
+
 
   const handleSectionChange = (section) => {
     setSelectedSection(section);
@@ -517,9 +522,24 @@ export default function LiquidacionData() {
 
   const toNumber = (v) => {
     if (v === null || v === undefined) return 0;
-    const s = String(v).replace(/\./g, "").replace(",", ".");
+    if (typeof v === 'number') return v;
+
+    const str = String(v).trim();
+    // Case 1: Standard float/integer string (e.g. "1234.56" or "1234")
+    // Regex: Numbers, optionally one dot, digits after dot. No thousands separators locally.
+    if (/^-?\d+(\.\d+)?$/.test(str)) {
+      return parseFloat(str);
+    }
+
+    // Case 2: Formatted string (e.g. "1.234,56" or "1.234") - COP/European style
+    const s = str.replace(/\./g, "").replace(",", ".");
     const n = Number(s);
     return isNaN(n) ? 0 : n;
+  };
+
+  const formatCOP = (v) => {
+    const n = toNumber(v);
+    return `${moneda} ${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
   };
 
   // Edit handler
@@ -625,6 +645,16 @@ export default function LiquidacionData() {
   };
   const getPrettyHeader = (key) => pedidoPrettyHeaders[key] || key;
 
+
+
+  const moneyFields = [
+    'pedido_total', 'costo_envio', 'total_cupon',
+    'base_calculo', 'comision_valor', 'valor_a_pagar_asesor',
+    'utilidad_bruta', 'utilidad_neta',
+    'total_comision', 'total_a_pagar',
+    'total_utilidad_bruta', 'total_utilidad_neta'
+  ];
+
   function descargarExcel() {
     if (!pedidos.length && !resumenAsesores.length) {
       toast.warn("No hay datos para exportar");
@@ -639,7 +669,13 @@ export default function LiquidacionData() {
       const rowsDetalle = pedidos.map((p) => {
         const row = {};
         dynamicColumns.forEach((col) => {
-          row[col.header] = p[col.field] ?? "";
+          let val = p[col.field] ?? "";
+          if (moneyFields.includes(col.field)) {
+            val = formatCOP(val);
+          } else if (col.field === 'incluye_envio') {
+            val = (val === 1 || val === "1") ? "Sí" : "No";
+          }
+          row[col.header] = val;
         });
         return row;
       });
@@ -653,7 +689,11 @@ export default function LiquidacionData() {
       const rowsResumen = resumenAsesores.map((r) => {
         const row = {};
         resumenColumns.forEach((col) => {
-          row[col.header] = r[col.field] ?? "";
+          let val = r[col.field] ?? "";
+          if (moneyFields.includes(col.field)) {
+            val = formatCOP(val);
+          }
+          row[col.header] = val;
         });
         return row;
       });
@@ -680,7 +720,15 @@ export default function LiquidacionData() {
     if (pedidos.length) {
       const headDetalle = [dynamicColumns.map((c) => c.header)];
       const bodyDetalle = pedidos.map((p) =>
-        dynamicColumns.map((col) => p[col.field] ?? "")
+        dynamicColumns.map((col) => {
+          let val = p[col.field] ?? "";
+          if (moneyFields.includes(col.field)) {
+            val = formatCOP(val);
+          } else if (col.field === 'incluye_envio') {
+            val = (val === 1 || val === "1") ? "Sí" : "No";
+          }
+          return val;
+        })
       );
 
       pdf.autoTable({
@@ -702,7 +750,11 @@ export default function LiquidacionData() {
 
       const headResumen = [resumenColumns.map((c) => c.header)];
       const bodyResumen = resumenAsesores.map((r) =>
-        resumenColumns.map((col) => r[col.field] ?? "")
+        resumenColumns.map((col) => {
+          let val = r[col.field] ?? "";
+          if (moneyFields.includes(col.field)) val = formatCOP(val);
+          return val;
+        })
       );
 
       pdf.autoTable({
@@ -742,7 +794,7 @@ export default function LiquidacionData() {
       [`Entrega:`, `${pedidoActual.entrega}`],
       [`Nota:`, `${pedidoActual.nota}`],
       [`Código:`, `${pedidoActual.codigo}`],
-      [`Total:`, `${moneda} ${pedidoActual.total}`],
+      [`Total:`, `${moneda} ${Math.round(pedidoActual.total)}`],
       [`Fecha:`, `${pedidoActual.createdAt}`]
     ];
     pdf.autoTable({
@@ -1085,11 +1137,95 @@ export default function LiquidacionData() {
 
 
 
+  const moneyFieldsPedidos = ['pedido_total', 'costo_envio', 'total_cupon', 'base_calculo', 'comision_valor', 'valor_a_pagar_asesor', 'utilidad_bruta', 'utilidad_neta'];
+  const moneyFieldsResumen = ['total_comision', 'total_a_pagar', 'total_utilidad_bruta', 'total_utilidad_neta'];
+
+  const priceBodyTemplate = (rowData, { field }) => {
+    return (
+      <span style={{ color: '#008000' }}>
+        {formatCOP(rowData[field])}
+      </span>
+    );
+  };
+
+  // === ESTADO PARA PEDIDOS CATÁLOGO ===
+  const [pedidosCatalogo, setPedidosCatalogo] = useState([]);
+  const [filtersPedidosCatalogo, setFiltersPedidosCatalogo] = useState(null);
+
+  // Columnas para catálogo
+  const catalogColumns = [
+    { field: 'idPedido', header: 'Pedido', minWidth: '6rem' },
+    { field: 'createdAt', header: 'Fecha', minWidth: '10rem' },
+    { field: 'estado', header: 'Estado', minWidth: '8rem' },
+    { field: 'total_venta', header: 'Total Venta', minWidth: '10rem' },
+    { field: 'costo_envio', header: 'Costo Envío', minWidth: '10rem' },
+    { field: 'total_cupon', header: 'Cupón', minWidth: '8rem' },
+    { field: 'total_costo_compra', header: 'Costo Compra', minWidth: '10rem' },
+    { field: 'incluye_envio', header: 'Incluye Envío', minWidth: '8rem' },
+    { field: 'utilidad_bruta', header: 'Utilidad Bruta', minWidth: '10rem' },
+    { field: 'utilidad_neta', header: 'Utilidad Neta', minWidth: '10rem' },
+  ];
+
+  useEffect(() => {
+    cargarPedidos();
+    cargarPedidosCatalogo(); // <--- Cargar catálogo
+    cargarTienda();
+    cargarMetodos();
+    initFiltersPedidosCatalogo(); // <--- Init filtros catálogo
+  }, []);
+
+  const initFiltersPedidosCatalogo = () => {
+    const baseFilters = {
+      global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
+    catalogColumns.forEach(col => {
+      baseFilters[col.field] = { value: null, matchMode: FilterMatchMode.CONTAINS };
+    });
+    setFiltersPedidosCatalogo(baseFilters);
+  };
+
+  const cargarPedidosCatalogo = (opciones = {}) => {
+    const params = new URLSearchParams();
+    if (opciones.fecha_desde) params.append('fecha_desde', opciones.fecha_desde);
+    if (opciones.fecha_hasta) params.append('fecha_hasta', opciones.fecha_hasta);
+
+    const qs = params.toString();
+    const url = `${baseURL}/liquidacionCatalogoGet.php${qs ? `?${qs}` : ''}`;
+
+    fetch(url)
+      .then(res => res.json())
+      .then(data => {
+        if (data.ok) {
+          setPedidosCatalogo(data.data || []);
+        } else {
+          console.error("Error cargando catálogo:", data.error);
+        }
+      })
+      .catch(err => console.error(err));
+  };
+
+  const aplicarPeriodoCatalogo = () => {
+    const desde = formatDateParam(periodoDesde);
+    const hasta = formatDateParam(periodoHasta); // Reusamos los mismos dates del componente
+    cargarPedidosCatalogo({ fecha_desde: desde, fecha_hasta: hasta });
+  };
+
+  // Totales para footer de catálogo
+  const totalCatalogoBruta = pedidosCatalogo.reduce((acc, el) => acc + (parseFloat(el.utilidad_bruta) || 0), 0);
+  const totalCatalogoNeta = pedidosCatalogo.reduce((acc, el) => acc + (parseFloat(el.utilidad_neta) || 0), 0);
+
+  const footerGroupCatalogo = (
+    <div className="flex justify-content-end gap-5 p-3" style={{ fontWeight: 'bold' }}>
+      <span>Total U. Bruta: <span style={{ color: 'green' }}>{formatCOP(totalCatalogoBruta)}</span></span>
+      <span>Total U. Neta: <span style={{ color: 'green' }}>{formatCOP(totalCatalogoNeta)}</span></span>
+    </div>
+  );
+
   return (
     <div>
       <ToastContainer />
 
-      <h1 className="titles-text-heading">Liquidacion Dropshipper</h1>
+      <h1 className="titles-text-heading">Liquidación</h1>
 
       {/* Barra superior: botones y links */}
       <div className="deFlexContent2">
@@ -1212,7 +1348,7 @@ export default function LiquidacionData() {
         <TabView scrollable className="mt-4">
 
           {/* TABLA 1 — DETALLE DE PEDIDOS */}
-          <TabPanel header="Detalle de pedidos">
+          <TabPanel header="Detalle de pedidos (Dropshipping)">
             <div className="table-container">
               <DataTable
                 className="tabla-pedidos"
@@ -1246,6 +1382,11 @@ export default function LiquidacionData() {
                     sortable
                     filter
                     filterPlaceholder="Search by column"
+                    body={
+                      moneyFields.includes(col.field)
+                        ? priceBodyTemplate
+                        : (col.field === 'incluye_envio' ? incluyeEnvioBodyTemplate : null)
+                    }
                   />
                 ))}
 
@@ -1308,6 +1449,7 @@ export default function LiquidacionData() {
                     setPeriodoDesde(null);
                     setPeriodoHasta(null);
                     cargarPedidos(); // volvemos a traer todo sin filtro
+                    cargarPedidosCatalogo();
                   }}
                   className="p-button-sm p-button-text"
                 />
@@ -1316,7 +1458,10 @@ export default function LiquidacionData() {
                 <Button
                   type="button"
                   label="Aplicar periodo"
-                  onClick={aplicarPeriodo}
+                  onClick={() => {
+                    aplicarPeriodo();
+                    aplicarPeriodoCatalogo();
+                  }}
                   className="p-button-sm p-button-help"
                 />
               </div>
@@ -1351,6 +1496,7 @@ export default function LiquidacionData() {
                     sortable
                     filter
                     filterPlaceholder="Search by column"
+                    body={moneyFieldsResumen.includes(col.field) ? priceBodyTemplate : null}
                   />
                 ))}
 
@@ -1366,6 +1512,46 @@ export default function LiquidacionData() {
             </div>
           </TabPanel>
 
+          {/* TABLA 3 — LIQUIDACIÓN CATÁLOGO */}
+          <TabPanel header="Liquidación Catálogo">
+            <div className="table-container">
+              <div className="flex gap-2 mb-3 align-items-center">
+                <span>(Usa los mismos filtros de fecha de la pestana "Resumen")</span>
+              </div>
+
+              <DataTable
+                className="tabla-pedidos"
+                value={pedidosCatalogo}
+                filters={filtersPedidosCatalogo}
+                filterDisplay="row"
+                header="Liquidación Ventas de Catálogo"
+                footer={footerGroupCatalogo}
+                scrollable
+                scrollHeight="400px"
+                stripedRows
+                paginator
+                rows={20}
+                tableStyle={{ minWidth: "50rem" }}
+              >
+                {catalogColumns.map((col) => (
+                  <Column
+                    key={col.field}
+                    field={col.field}
+                    header={col.header}
+                    style={{ minWidth: col.minWidth }}
+                    sortable
+                    filter
+                    filterPlaceholder="Search"
+                    body={
+                      ['total_venta', 'costo_envio', 'total_cupon', 'total_costo_compra', 'utilidad_bruta', 'utilidad_neta'].includes(col.field)
+                        ? priceBodyTemplate
+                        : (col.field === 'incluye_envio' ? incluyeEnvioBodyTemplate : null)
+                    }
+                  />
+                ))}
+              </DataTable>
+            </div>
+          </TabPanel>
 
         </TabView>
 
@@ -1632,5 +1818,4 @@ export default function LiquidacionData() {
       )}
     </div>
   );
-
 };

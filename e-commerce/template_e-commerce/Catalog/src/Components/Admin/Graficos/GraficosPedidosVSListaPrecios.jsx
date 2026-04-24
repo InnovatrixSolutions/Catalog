@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './GraficoPedidos.css';
 import { Chart } from 'primereact/chart';
+import 'chart.js/auto';
 import baseURL from '../../url';
 
 
@@ -16,7 +17,7 @@ export default function GraficoPedidosVSListaPrecios() {
     const [totalMes, setTotalMes] = useState(0);
     const [activeChart, setActiveChart] = useState('listaPrecio');
 
-    
+
 
 
     const VALORES_DEFAULT = [0, 0];
@@ -188,7 +189,7 @@ export default function GraficoPedidosVSListaPrecios() {
     const generarGraficoPastel = (labels, data, setChartData) => {
         const backgroundColors = ['#FF6384', '#36A2EB', '#FFCE56', '#8E44AD', '#2ECC71', '#E67E22'];
         const total = data.reduce((acc, val) => acc + val, 0);
-    
+
         const chartData = {
             labels,
             datasets: [
@@ -199,7 +200,7 @@ export default function GraficoPedidosVSListaPrecios() {
                 }
             ]
         };
-    
+
         const options = {
             responsive: true,
             maintainAspectRatio: false, // 👈 añade esta línea
@@ -219,13 +220,13 @@ export default function GraficoPedidosVSListaPrecios() {
                 }
             }
         };
-    
+
         setChartOptions(options);
         setChartData(chartData);
     };
-    
 
-    
+
+
     const generarSemanasDelMes = (año, mes) => {
         const fechaInicioMes = new Date(año, mes, 1);
         const fechaFinMes = new Date(año, mes + 1, 0);
@@ -256,14 +257,14 @@ export default function GraficoPedidosVSListaPrecios() {
         <div className="GraficoContent">
             <h3 className='titleGrafico'>Pedidos vs Lista de Precios</h3>
             <div className="botones-grafico">
-            <button className={activeChart === 'listaPrecio' ? 'activeBtnGraf' : 'desactiveBtn'} onClick={() => manejarCambioGrafico('listaPrecio')}>Lista de Precios</button>
+                <button className={activeChart === 'listaPrecio' ? 'activeBtnGraf' : 'desactiveBtn'} onClick={() => manejarCambioGrafico('listaPrecio')}>Lista de Precios</button>
                 <button className={activeChart === 'dia' ? 'activeBtnGraf' : 'desactiveBtn'} onClick={() => manejarCambioGrafico('dia')}>Día</button>
                 <button className={activeChart === 'semana' ? 'activeBtnGraf' : 'desactiveBtn'} onClick={() => manejarCambioGrafico('semana')}>Semana</button>
                 <button className={activeChart === 'mes' ? 'activeBtnGraf' : 'desactiveBtn'} onClick={() => manejarCambioGrafico('mes')}>Mes</button>
-                
+
             </div>
             <div className="grafico-container">
-            {/* <div className="chart-wrapper"> */}
+                {/* <div className="chart-wrapper"> */}
                 {activeChart === 'dia' && <Chart type="line" data={chartDataDia} options={chartOptions} />}
                 {activeChart === 'semana' && <Chart type="line" data={chartDataSemana} options={chartOptions} />}
                 {activeChart === 'mes' && <Chart type="line" data={chartDataMes} options={chartOptions} />}

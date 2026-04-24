@@ -407,26 +407,17 @@ export default function ProductosData() {
       verItems: verItems !== '' ? verItems : producto.verItems,
     };
 
-    fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
+    const response = await fetch(`${baseURL}/productoTextPut.php?idProducto=${idProducto}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payload),
-    })
+    });
 
-      .then(response => response.json())
-      .then(data => {
-        if (data.error) {
-          Swal.fire('Error!', data.error, 'error');
-        } else {
-          Swal.fire('Editado!', data.mensaje, 'success');
-          cargarProductos();
-          cerrarModal();
-        }
-      })
-      .catch(error => {
-        console.log(error.message);
-        toast.error(error.message);
-      });
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
   };
 
   const handleDragEnd = (event) => {
@@ -467,27 +458,18 @@ export default function ProductosData() {
       }
     });
 
-    fetch(`${baseURL}/productoImagePut.php`, {
+    const response = await fetch(`${baseURL}/productoImagePut.php`, {
       method: 'POST',
       body: formData
-    })
-      .then(response => {
-        if (!response.ok) throw new Error('La solicitud no fue exitosa');
-        return response.json();
-      })
-      .then(data => {
-        if (data.error) {
-          toast.error(data.error);
-        } else {
-          toast.success(data.mensaje);
-          cargarProductos(); // refresca tabla sin matar el modal
+    });
 
-        }
-      })
-      .catch(error => {
-        console.log(error)
-        toast.error(error.message);
-      });
+    if (!response.ok) throw new Error('La solicitud de imágenes no fue exitosa');
+
+    const data = await response.json();
+    if (data.error) {
+      throw new Error(data.error);
+    }
+    return data;
   };
 
   const handleSectionChange = (section) => {
@@ -533,7 +515,8 @@ export default function ProductosData() {
     try {
       await handleEditarImagenBanner(idProducto);
       await handleUpdateText(idProducto);
-      await guardarPreciosEditados();
+      // Pasamos idProducto para poder crear si hace falta
+      await guardarPreciosEditados(idProducto);
 
       // ✅ refresca lo que acabas de guardar
       await cargarListasDePrecios(idProducto);
@@ -574,32 +557,48 @@ export default function ProductosData() {
     if (!res.ok || data?.error) throw new Error(data?.error || 'Error actualizando precio');
   };
 
-  const guardarPreciosEditados = async () => {
+  const crearPrecio = async (idProducto, precio, tipoLista, estado) => {
+    const fd = new FormData();
+    fd.append('idProducto', idProducto);
+    fd.append('precio', String(precio));
+    fd.append('tipoLista', tipoLista);
+    fd.append('estado', estado);
+    // VIGENCIA: por defecto ponemos el día de hoy como "desde"
+    const today = new Date().toISOString().split('T')[0];
+    fd.append('vigenciaDesde', today);
+
+    const res = await fetch(`${baseURL}/listaPreciosPost.php`, { method: 'POST', body: fd });
+    const data = await res.json();
+    if (!res.ok || data?.error) throw new Error(data?.error || 'Error creando precio');
+  };
+
+  const guardarPreciosEditados = async (idProducto) => {
     const tasks = [];
 
-    const push = (idLP, val, label) => {
+    const push = (idLP, val, label, tipoLista, estado) => {
       const n = Number(val);
-      if (!idLP) {
-        // Si quieres: aquí podrías CREAR la lista en vez de ignorarla
-        throw new Error(`No existe idListaPrecio para: ${label}. Debes crear esa lista primero.`);
-      }
       if (isNaN(n) || n < 0) {
         throw new Error(`Precio inválido en: ${label}`);
       }
-      tasks.push(actualizarPrecio(idLP, n));
+
+      if (idLP) {
+        // ACTUALIZAR
+        tasks.push(actualizarPrecio(idLP, n));
+      } else {
+        // CREAR (si tiene valor y no tiene ID)
+        tasks.push(crearPrecio(idProducto, n, tipoLista, estado));
+      }
     };
 
-    // ojo: solo empuja si el input tiene valor, si no, puedes dejarlo opcional
-    if (catPrecioActual !== '') push(idCatActual, catPrecioActual, 'Catálogo Actual');
-    if (catPrecioAnterior !== '') push(idCatAnterior, catPrecioAnterior, 'Catálogo Anterior');
-    if (dropPrecioActual !== '') push(idDropActual, dropPrecioActual, 'Dropshipper Actual');
-    if (dropPrecioAnterior !== '') push(idDropAnterior, dropPrecioAnterior, 'Dropshipper Anterior');
+    // ojo: solo empuja si el input tiene valor
+    if (catPrecioActual !== '') push(idCatActual, catPrecioActual, 'Catálogo Actual', 'catalogo', 'actual');
+    if (catPrecioAnterior !== '') push(idCatAnterior, catPrecioAnterior, 'Catálogo Anterior', 'catalogo', 'anterior');
+    if (dropPrecioActual !== '') push(idDropActual, dropPrecioActual, 'Dropshipper Actual', 'dropshipper', 'actual');
+    if (dropPrecioAnterior !== '') push(idDropAnterior, dropPrecioAnterior, 'Dropshipper Anterior', 'dropshipper', 'anterior');
 
-    if (tasks.length === 0) {
-      throw new Error('No hay precios para actualizar.');
+    if (tasks.length > 0) {
+      await Promise.all(tasks);
     }
-
-    await Promise.all(tasks);
   };
 
   // =========================

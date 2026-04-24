@@ -13,9 +13,19 @@ $dbname = $_ENV['DB_NAME'];
 try {
     $dsn = "mysql:host=$servidor;dbname=$dbname";
     $conexion = new PDO($dsn, $usuario, $contrasena);
-    $stmt = $conexion->query("SHOW COLUMNS FROM pedido_asesores WHERE `Key` = 'PRI'");
+    echo "--- TABLE: pedidos ---\n";
+    $stmt = $conexion->query("SHOW COLUMNS FROM pedidos");
     $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    echo json_encode($columns, JSON_PRETTY_PRINT);
+    foreach($columns as $col) {
+        echo $col['Field'] . "\t" . $col['Type'] . "\n";
+    }
+
+    echo "\n--- TABLE: pedido_asesores ---\n";
+    $stmt = $conexion->query("SHOW COLUMNS FROM pedido_asesores");
+    $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    foreach($columns as $col) {
+        echo $col['Field'] . "\t" . $col['Type'] . "\n";
+    }
 } catch (Exception $e) {
     echo $e->getMessage();
 }

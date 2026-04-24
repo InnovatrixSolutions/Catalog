@@ -599,10 +599,15 @@ textarea {
 
 #descripcion {
   width: 100%;
+  align-items: flex-start !important;
 }
 
 #descripcion textarea {
   font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  min-height: 120px;
+  resize: vertical;
+  padding: 12px;
+  line-height: 1.5;
 }
 
 .btnSave,

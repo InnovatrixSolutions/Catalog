@@ -28,6 +28,9 @@ try {
         Utils::responder(false, "Método no permitido");
     }
 
+    error_log("--- pedidosPost.php INCOMING POST ---");
+    error_log(print_r($_POST, true));
+
     $conexion->beginTransaction();
 
     // VALIDACIONES

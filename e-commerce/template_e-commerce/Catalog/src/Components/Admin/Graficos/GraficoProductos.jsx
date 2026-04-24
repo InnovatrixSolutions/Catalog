@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './GraficoPedidos.css';
 import { Chart } from 'primereact/chart';
+import 'chart.js/auto';
 import baseURL from '../../url';
 import moneda from '../../moneda';
 

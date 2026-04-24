@@ -141,7 +141,7 @@ export default function Navbar() {
                     <FontAwesomeIcon icon={faMoneyBill} /> Lista de precios
                 </Anchor>
 
-{/*                 <Anchor
+                {/*                 <Anchor
                     to="/dashboard/pedidos"
                     className={location.pathname === '/dashboard/pedidos' ? 'activeLink' : ''}
                 >
@@ -155,7 +155,7 @@ export default function Navbar() {
                     <FontAwesomeIcon icon={faRectangleList} /> Pedidos
                 </Anchor>
 
-{/*                 <Anchor
+                {/*                 <Anchor
                     to="/dashboard/pedidos-catalogo"
                     className={location.pathname === '/dashboard/pedidos-catalogo' ? 'activeLink' : ''}
                 >
@@ -166,7 +166,7 @@ export default function Navbar() {
                     to="/dashboard/liquidacion-dropshipper"
                     className={location.pathname === '/dashboard/liquidacion-dropshipper' ? 'activeLink' : ''}
                 >
-                    <FontAwesomeIcon icon={faProductHunt} /> Liquidación Dropshipper
+                    <FontAwesomeIcon icon={faProductHunt} /> Liquidación
                 </Anchor>
 
                 <Anchor

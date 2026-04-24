@@ -137,6 +137,7 @@ try {
                 p.pagado              AS pedido_pagado,
                 p.pagoRecibir,
                 p.createdAt           AS pedido_createdAt,
+                p.incluye_envio,
 
                 -- ---------------------
                 -- DATOS DEL ASESOR

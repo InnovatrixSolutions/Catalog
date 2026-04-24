@@ -27,7 +27,7 @@
 5.  Guarde los cambios.
 
 ### 3. Verificar Liquidación
-1.  Revise la sección de **Liquidación Dropshipper** (o la tabla `pedido_asesores` si tiene acceso).
+1.  Revise la sección de **Liquidación** (o la tabla `pedido_asesores` si tiene acceso).
 2.  **Resultado Esperado**: La ganancia del asesor debe haber disminuido exactamente por el valor del envío ($15.000).
     *   `Nueva Ganancia = Ganancia Inicial - $15.000`.
 

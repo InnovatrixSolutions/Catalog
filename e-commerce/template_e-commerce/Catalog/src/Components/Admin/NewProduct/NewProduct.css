@@ -52,6 +52,18 @@
   color:#333;
 }
 
+#crearForm textarea {
+  min-height: 120px;
+  resize: vertical;
+  line-height: 1.5;
+  padding: 12px;
+  font-family: inherit;
+}
+
+#descripcion {
+  align-items: flex-start !important;
+}
+
 /* Imágenes (4 columnas en desktop, scroll x si falta espacio) */
 .images-grid{
   display:grid;

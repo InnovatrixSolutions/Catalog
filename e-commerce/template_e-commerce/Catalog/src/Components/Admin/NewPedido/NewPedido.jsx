@@ -300,6 +300,7 @@ export default function NewPedido({ onPedidoCreado }) {
         franja_horario: data.franjaEntrega.join(','),
         nota: data.notas || '',
         pago_recibir: data.valor,
+        incluye_envio: data.incluyeEnvio === 'Sí' ? 1 : 0, // 👈 NUEVO CAMPO
         medio_pago: 'efectivo',
         forma_pago: data.metodoPago || 'efectivo',
         // ...otros campos según tu lógica
@@ -329,6 +330,7 @@ export default function NewPedido({ onPedidoCreado }) {
         franja_horario: data.franjaEntrega.join(','),
         nota: data.notas || '',
         pago_recibir: data.productosSeleccionados.reduce((acc, p) => acc + p.precio * p.cantidad, 0),
+        incluye_envio: 1, // Catálogo siempre incluye por defecto o según lógica
         medio_pago: 'efectivo',
         forma_pago: data.metodoPago || 'efectivo',
         // ...otros campos que necesites
@@ -586,403 +588,403 @@ export default function NewPedido({ onPedidoCreado }) {
             {/* <ToastContainer /> */}
 
             <div className="modal-body">
-            <form onSubmit={handleSubmit(onSubmit, onFormError)}>
+              <form onSubmit={handleSubmit(onSubmit, onFormError)}>
 
 
 
-              <TabView>
-
-                {esDropshipper && (
-
-
-                  <TabPanel header="Asesor" >
-
-                    <Card title="Datos de tu asesor" style={{ marginBottom: 20 }}>
-                      <label>Documento</label>
-                      <InputText {...register("documento")} />
-                      {errors.documento && <small className="p-error">{errors.documento.message}</small>}
-
-                      <label>PIN Asesor</label>
-                      <InputText {...register("pin_asesor")} />
-
-                      <label>Email</label>
-                      <InputText {...register("email")} />
-                      {errors.email && <small className="p-error">{errors.email.message}</small>}
-
-                      <label>Nombre</label>
-                      <InputText {...register("nombre")} />
-                      {errors.nombre && <small className="p-error">{errors.nombre.message}</small>}
-
-                      <label>Teléfono</label>
-                      <InputText {...register("telefono")} />
-                      {errors.telefono && <small className="p-error">{errors.telefono.message}</small>}
-
-                      <label>¿Dónde recibe el dropshipper la comisión?</label>
-                      <Controller
-                        name="medioComision"
-                        control={control}
-                        render={({ field }) => (
-                          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione comisión" />
-                        )}
-                      />
-                      {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
-                      {watch("medioComision") === "Otro" && (
-                        <>
-                          <label>¿Cuál?</label>
-                          <InputText {...register("otroMedio")} />
-                        </>
-                      )}
-
-                    </Card>
-
-                  </TabPanel>
-                )}
-                {/* 2. Cliente */}
-
-                <TabPanel header="Cliente">
-                  <Card title="Datos de tu cliente" style={{ marginBottom: 20 }}>
-                    <label>Nombre de tu cliente</label>
-                    <InputText {...register("clienteNombre")} />
-                    {errors.clienteNombre && <small className="p-error">{errors.clienteNombre.message}</small>}
-
-                    <label>Documento de tu cliente</label>
-                    <InputText {...register("clienteDocumento")} />
-                    {errors.clienteDocumento && <small className="p-error">{errors.clienteDocumento.message}</small>}
-
-                    <label>Celular Whatsapp de tu cliente</label>
-                    <InputText {...register("clienteCelular")} />
-                    {errors.clienteCelular && <small className="p-error">{errors.clienteCelular.message}</small>}
-
-                    <label>Celular Llamadas de tu cliente</label>
-                    <InputText {...register("clienteTransportadora")} />
-                    {errors.clienteTransportadora && <small className="p-error">{errors.clienteTransportadora.message}</small>}
-                  </Card>
-                </TabPanel>
-                {/* 3. Entrega */}
-                <TabPanel header="Entrega">
-
-                  <Card title="Datos de la entrega" style={{ marginBottom: 20 }}>
-                    <label>Fecha Despacho</label>
-                    <InputText type="date" {...register("fechaDespacho")} />
-                    {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
-
-                    <label>Franja Horaria</label>
-                    <Controller
-                      name="franjaEntrega"
-                      control={control}
-                      render={({ field }) => (
-                        <MultiSelect {...field} options={franjasHorarias}
-                          disabled={franjasHorarias.length === 1} // si solo hay una opción
-                          placeholder="Selecciona una o más" display="chip" />
-                      )}
-                    />
-                    {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
-
-                    <div className="formgrid grid">
-
-
-
-
-                      <div className="col-12 md:col-6">
-                        <label>Departamento</label>
-                        <Controller
-                          name="departamento"
-                          control={control}
-                          render={({ field }) => (
-                            <Dropdown
-                              {...field}
-                              options={departamentos}
-                              placeholder="Seleccione un departamento"
-                              className="w-full"
-                              disabled={!country_id}
-                            />
-                          )}
-                        />
-                        {errors.departamento && <small className="p-error">{errors.departamento.message}</small>}
-                      </div>
-
-                      <div className="col-12 md:col-6">
-                        <label>Ciudad</label>
-                        <Controller
-                          name="ciudad"
-                          control={control}
-                          render={({ field }) => (
-                            <Dropdown
-                              {...field}
-                              options={ciudades}
-                              placeholder="Seleccione una ciudad"
-                              className="w-full"
-                              disabled={!departamentoSeleccionado}
-                            />
-                          )}
-                        />
-                        {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
-                      </div>
-
-
-                    </div>
-
-                    <label>Dirección</label>
-                    <InputText {...register("direccion")} />
-                    {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
-
-                    <label>Barrio</label>
-                    <InputText {...register("barrio")} />
-                    {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
-
-                    <label>Notas</label>
-                    <InputTextarea {...register("notas")} rows={3} autoResize />
-                  </Card>
-
-
-                </TabPanel>
-
-
-                {/* 4. Productos */}
-                <TabPanel header="Productos">
-                  <Card title="Lista de productos" style={{ marginBottom: 20 }}>
-                    {/* Filtro de búsqueda de PrimeReact */}
-                    <div style={{ marginBottom: 12 }}>
-                      <InputText
-                        value={filtroTitulo}
-                        onChange={filtrarProductos}
-                        placeholder="Buscar producto..."
-                        className="w-full"
-                      />
-                    </div>
-                    {/* Lista con scroll */}
-                    <div style={{ maxHeight: 350, overflowY: 'auto', marginBottom: 12, paddingRight: 8 }}>
-                      {productosFiltrados.length === 0 && (
-                        <div style={{ padding: 16, color: '#888' }}>No se encontraron productos</div>
-                      )}
-                      {productosFiltrados.map((producto) => {
-                        const checked = productosSeleccionados.some((p) => p.idProducto === producto.idProducto);
-                        const selectedProd = productosSeleccionados.find((p) => p.idProducto === producto.idProducto);
-                        return (
-
-                          <div
-                            key={producto.idProducto}
-                            style={{
-                              display: "flex",
-                              alignItems: "center",
-                              gap: 10,
-                              marginBottom: 8,
-                              borderBottom: "1px solid #e0e0e0",
-                              paddingBottom: 6,
-                            }}
-                          >
-
-                            <img src={producto.imagen} alt="imagen" />
-
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => seleccionarProducto(producto)}
-                            />
-
-                            <span style={{ minWidth: 120, flex: 1 }}> {producto.titulo}</span>
-                            <span style={{ minWidth: 120, flex: 1 }}>  (${producto.precio})</span>
-                            {checked && (
-                              <>
-                                <Button
-                                  type="button"
-                                  icon="pi pi-minus"
-                                  onClick={() => {
-                                    const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
-                                    if (idx !== -1) actualizarCantidad(idx, -1);
-                                  }}
-                                  disabled={selectedProd?.cantidad <= 1}
-                                  size="small"
-                                  severity="secondary"
-                                  rounded
-                                  text
-                                />
-                                <span style={{ margin: "0 8px" }}>{selectedProd?.cantidad || 1}</span>
-                                <Button
-                                  type="button"
-                                  icon="pi pi-plus"
-                                  onClick={() => {
-                                    const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
-                                    if (idx !== -1) actualizarCantidad(idx, 1);
-                                  }}
-                                  size="small"
-                                  severity="success"
-                                  rounded
-                                  text
-                                />
-                              </>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                    <div style={{ marginTop: 12, fontWeight: 600 }}>
-                      Total: ${total}
-                    </div>
-                    {errors.productosSeleccionados && (
-                      <small className="p-error">{errors.productosSeleccionados.message}</small>
-                    )}
-                  </Card>
-                </TabPanel>
-
-                {/* 5. Pago */}
-                <TabPanel header="Pago">
+                <TabView>
 
                   {esDropshipper && (
-                  <div className="field">
-                    <label>Valor a cobrar al cliente</label>
 
-                    <Controller
-                      name="valor"
-                      control={control}
-                      render={({ field }) => (
-                        <InputNumber
-                          inputRef={field.ref}
-                          value={typeof field.value === "number" && !isNaN(field.value) ? field.value : 0}
-                          onValueChange={e => field.onChange(e.value ?? 0)}
-                          onBlur={field.onBlur}
-                          mode="decimal"
-                          min={0}
-                          useGrouping={false}
+
+                    <TabPanel header="Asesor" >
+
+                      <Card title="Datos de tu asesor" style={{ marginBottom: 20 }}>
+                        <label>Documento</label>
+                        <InputText {...register("documento")} />
+                        {errors.documento && <small className="p-error">{errors.documento.message}</small>}
+
+                        <label>PIN Asesor</label>
+                        <InputText {...register("pin_asesor")} />
+
+                        <label>Email</label>
+                        <InputText {...register("email")} />
+                        {errors.email && <small className="p-error">{errors.email.message}</small>}
+
+                        <label>Nombre</label>
+                        <InputText {...register("nombre")} />
+                        {errors.nombre && <small className="p-error">{errors.nombre.message}</small>}
+
+                        <label>Teléfono</label>
+                        <InputText {...register("telefono")} />
+                        {errors.telefono && <small className="p-error">{errors.telefono.message}</small>}
+
+                        <label>¿Dónde recibe el dropshipper la comisión?</label>
+                        <Controller
+                          name="medioComision"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione comisión" />
+                          )}
                         />
+                        {errors.medioComision && <small className="p-error">{errors.medioComision.message}</small>}
+                        {watch("medioComision") === "Otro" && (
+                          <>
+                            <label>¿Cuál?</label>
+                            <InputText {...register("otroMedio")} />
+                          </>
+                        )}
+
+                      </Card>
+
+                    </TabPanel>
+                  )}
+                  {/* 2. Cliente */}
+
+                  <TabPanel header="Cliente">
+                    <Card title="Datos de tu cliente" style={{ marginBottom: 20 }}>
+                      <label>Nombre de tu cliente</label>
+                      <InputText {...register("clienteNombre")} />
+                      {errors.clienteNombre && <small className="p-error">{errors.clienteNombre.message}</small>}
+
+                      <label>Documento de tu cliente</label>
+                      <InputText {...register("clienteDocumento")} />
+                      {errors.clienteDocumento && <small className="p-error">{errors.clienteDocumento.message}</small>}
+
+                      <label>Celular Whatsapp de tu cliente</label>
+                      <InputText {...register("clienteCelular")} />
+                      {errors.clienteCelular && <small className="p-error">{errors.clienteCelular.message}</small>}
+
+                      <label>Celular Llamadas de tu cliente</label>
+                      <InputText {...register("clienteTransportadora")} />
+                      {errors.clienteTransportadora && <small className="p-error">{errors.clienteTransportadora.message}</small>}
+                    </Card>
+                  </TabPanel>
+                  {/* 3. Entrega */}
+                  <TabPanel header="Entrega">
+
+                    <Card title="Datos de la entrega" style={{ marginBottom: 20 }}>
+                      <label>Fecha Despacho</label>
+                      <InputText type="date" {...register("fechaDespacho")} />
+                      {errors.fechaDespacho && <small className="p-error">{errors.fechaDespacho.message}</small>}
+
+                      <label>Franja Horaria</label>
+                      <Controller
+                        name="franjaEntrega"
+                        control={control}
+                        render={({ field }) => (
+                          <MultiSelect {...field} options={franjasHorarias}
+                            disabled={franjasHorarias.length === 1} // si solo hay una opción
+                            placeholder="Selecciona una o más" display="chip" />
+                        )}
+                      />
+                      {errors.franjaEntrega && <small className="p-error">{errors.franjaEntrega.message}</small>}
+
+                      <div className="formgrid grid">
+
+
+
+
+                        <div className="col-12 md:col-6">
+                          <label>Departamento</label>
+                          <Controller
+                            name="departamento"
+                            control={control}
+                            render={({ field }) => (
+                              <Dropdown
+                                {...field}
+                                options={departamentos}
+                                placeholder="Seleccione un departamento"
+                                className="w-full"
+                                disabled={!country_id}
+                              />
+                            )}
+                          />
+                          {errors.departamento && <small className="p-error">{errors.departamento.message}</small>}
+                        </div>
+
+                        <div className="col-12 md:col-6">
+                          <label>Ciudad</label>
+                          <Controller
+                            name="ciudad"
+                            control={control}
+                            render={({ field }) => (
+                              <Dropdown
+                                {...field}
+                                options={ciudades}
+                                placeholder="Seleccione una ciudad"
+                                className="w-full"
+                                disabled={!departamentoSeleccionado}
+                              />
+                            )}
+                          />
+                          {errors.ciudad && <small className="p-error">{errors.ciudad.message}</small>}
+                        </div>
+
+
+                      </div>
+
+                      <label>Dirección</label>
+                      <InputText {...register("direccion")} />
+                      {errors.direccion && <small className="p-error">{errors.direccion.message}</small>}
+
+                      <label>Barrio</label>
+                      <InputText {...register("barrio")} />
+                      {errors.barrio && <small className="p-error">{errors.barrio.message}</small>}
+
+                      <label>Notas</label>
+                      <InputTextarea {...register("notas")} rows={3} autoResize />
+                    </Card>
+
+
+                  </TabPanel>
+
+
+                  {/* 4. Productos */}
+                  <TabPanel header="Productos">
+                    <Card title="Lista de productos" style={{ marginBottom: 20 }}>
+                      {/* Filtro de búsqueda de PrimeReact */}
+                      <div style={{ marginBottom: 12 }}>
+                        <InputText
+                          value={filtroTitulo}
+                          onChange={filtrarProductos}
+                          placeholder="Buscar producto..."
+                          className="w-full"
+                        />
+                      </div>
+                      {/* Lista con scroll */}
+                      <div style={{ maxHeight: 350, overflowY: 'auto', marginBottom: 12, paddingRight: 8 }}>
+                        {productosFiltrados.length === 0 && (
+                          <div style={{ padding: 16, color: '#888' }}>No se encontraron productos</div>
+                        )}
+                        {productosFiltrados.map((producto) => {
+                          const checked = productosSeleccionados.some((p) => p.idProducto === producto.idProducto);
+                          const selectedProd = productosSeleccionados.find((p) => p.idProducto === producto.idProducto);
+                          return (
+
+                            <div
+                              key={producto.idProducto}
+                              style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 10,
+                                marginBottom: 8,
+                                borderBottom: "1px solid #e0e0e0",
+                                paddingBottom: 6,
+                              }}
+                            >
+
+                              <img src={producto.imagen} alt="imagen" />
+
+                              <input
+                                type="checkbox"
+                                checked={checked}
+                                onChange={() => seleccionarProducto(producto)}
+                              />
+
+                              <span style={{ minWidth: 120, flex: 1 }}> {producto.titulo}</span>
+                              <span style={{ minWidth: 120, flex: 1 }}>  (${producto.precio})</span>
+                              {checked && (
+                                <>
+                                  <Button
+                                    type="button"
+                                    icon="pi pi-minus"
+                                    onClick={() => {
+                                      const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
+                                      if (idx !== -1) actualizarCantidad(idx, -1);
+                                    }}
+                                    disabled={selectedProd?.cantidad <= 1}
+                                    size="small"
+                                    severity="secondary"
+                                    rounded
+                                    text
+                                  />
+                                  <span style={{ margin: "0 8px" }}>{selectedProd?.cantidad || 1}</span>
+                                  <Button
+                                    type="button"
+                                    icon="pi pi-plus"
+                                    onClick={() => {
+                                      const idx = productosSeleccionados.findIndex((p) => p.idProducto === producto.idProducto);
+                                      if (idx !== -1) actualizarCantidad(idx, 1);
+                                    }}
+                                    size="small"
+                                    severity="success"
+                                    rounded
+                                    text
+                                  />
+                                </>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <div style={{ marginTop: 12, fontWeight: 600 }}>
+                        Total: ${total}
+                      </div>
+                      {errors.productosSeleccionados && (
+                        <small className="p-error">{errors.productosSeleccionados.message}</small>
                       )}
-                    />
+                    </Card>
+                  </TabPanel>
 
-                    <br></br>
+                  {/* 5. Pago */}
+                  <TabPanel header="Pago">
 
-                    <label className="p-sr-only">(*Debe ser mayor o igual a ${total})</label>
-                    <div>
+                    {esDropshipper && (
+                      <div className="field">
+                        <label>Valor a cobrar al cliente</label>
 
-                      {/* <pre>typeof valor: {typeof valor}</pre>
+                        <Controller
+                          name="valor"
+                          control={control}
+                          render={({ field }) => (
+                            <InputNumber
+                              inputRef={field.ref}
+                              value={typeof field.value === "number" && !isNaN(field.value) ? field.value : 0}
+                              onValueChange={e => field.onChange(e.value ?? 0)}
+                              onBlur={field.onBlur}
+                              mode="decimal"
+                              min={0}
+                              useGrouping={false}
+                            />
+                          )}
+                        />
+
+                        <br></br>
+
+                        <label className="p-sr-only">(*Debe ser mayor o igual a ${total})</label>
+                        <div>
+
+                          {/* <pre>typeof valor: {typeof valor}</pre>
                       <pre>valor: {String(valor)}</pre>
                       <pre>typeof total: {typeof total}</pre>
                       <pre>total: {total}</pre> */}
-                    </div>
-                    
-
-                  </div>
-                  )}
-                  {errors.valor && <small className="p-error">{errors.valor.message}</small>}
-
-{esDropshipper && (
-  <div className="field">
-    <label>Incluye Envío</label>
-    <Controller
-      name="incluyeEnvio"
-      control={control}
-      render={({ field }) => (
-        <Dropdown
-          {...field}
-          options={[
-            { label: "Sí", value: "Sí" },
-            { label: "No", value: "No" }
-          ]}
-          placeholder="Seleccione"
-        />
-      )}
-    />
-    {errors.incluyeEnvio && (
-      <small className="p-error">{errors.incluyeEnvio.message}</small>
-    )}
-  </div>
-)}
-
-  <div className="field">
-    <label>¿Pago contraentrega?</label>
-    <Controller
-      name="contraentrega"
-      control={control}
-      render={({ field }) => (
-        <Dropdown {...field} options={[
-          { label: "Sí", value: "Sí" },
-          { label: "No", value: "No" }
-        ]} placeholder="Seleccione" />
-      )}
-    />
-    {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
-  </div>
-
-  {/* Mostrar Transferencia SÍ SOLO si contraentrega es No */}
-  {watch("contraentrega") === "No" && (
-    <div className="field">
-      <label>¿Pago por transferencia?</label>
-      <Controller
-        name="transferencia"
-        control={control}
-        render={({ field }) => (
-          <Dropdown
-            {...field}
-            options={[{ label: "Sí", value: "Sí" }]}
-            placeholder="Sí"
-            disabled
-          />
-        )}
-      />
-      {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
-    </div>
-  )}
-
-  {/* Método de pago obligatorio si no es contraentrega */}
-  {watch("contraentrega") === "No" && (
-    <div className="field">
-      <label>Método de Pago</label>
-      <Controller
-        name="metodoPago"
-        control={control}
-        render={({ field }) => (
-          <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
-        )}
-      />
-      {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
-
-      {watch("metodoPago") === "Otro" && (
-        <div className="field">
-          <label>¿Cuál?</label>
-          <InputText {...register("otroMetodoPago")} />
-        </div>
-      )}
-    </div>
-  )}
-
-                </TabPanel>
+                        </div>
 
 
-
-                {/* 6. Resumen */}
-                <TabPanel header="Resumen">
-
-                  <Card title="Resumen del Pedido" style={{ marginBottom: 20 }}>
-                    <div style={{ height: 350, overflow: 'auto' }}>
-                      <h3 style={{ marginBottom: 12 }}>Resumen del Pedido</h3>
-                      <DataTable value={resumenPedido.filter(item => item.valor && item.valor !== "")} showGridlines size="small" style={{ marginBottom: 20 }}>
-                        <Column field="campo" header="Campo" />
-                        <Column field="valor" header="Valor" />
-                      </DataTable>
-
-
-                      <h3 style={{ margin: "18px 0 12px" }}>Productos Seleccionados</h3>
-                      <DataTable value={productosSeleccionados} showGridlines responsiveLayout="scroll" size="small" style={{ marginBottom: 20 }}>
-                        <Column field="titulo" header="Producto" />
-                        <Column field="cantidad" header="Cantidad" style={{ width: 80, textAlign: 'center' }} />
-                        <Column field="precio" header="Precio Unitario" body={(row) => `$${Number(row.precio).toLocaleString()}`} style={{ width: 120, textAlign: 'right' }} />
-                        <Column header="Subtotal" body={(row) => `$${(row.precio * row.cantidad).toLocaleString()}`} style={{ width: 120, textAlign: 'right', fontWeight: 600 }} />
-                      </DataTable>
-                      <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
-                        Total: ${total.toLocaleString()}
                       </div>
+                    )}
+                    {errors.valor && <small className="p-error">{errors.valor.message}</small>}
 
+                    {esDropshipper && (
+                      <div className="field">
+                        <label>Incluye Envío</label>
+                        <Controller
+                          name="incluyeEnvio"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown
+                              {...field}
+                              options={[
+                                { label: "Sí", value: "Sí" },
+                                { label: "No", value: "No" }
+                              ]}
+                              placeholder="Seleccione"
+                            />
+                          )}
+                        />
+                        {errors.incluyeEnvio && (
+                          <small className="p-error">{errors.incluyeEnvio.message}</small>
+                        )}
+                      </div>
+                    )}
+
+                    <div className="field">
+                      <label>¿Pago contraentrega?</label>
+                      <Controller
+                        name="contraentrega"
+                        control={control}
+                        render={({ field }) => (
+                          <Dropdown {...field} options={[
+                            { label: "Sí", value: "Sí" },
+                            { label: "No", value: "No" }
+                          ]} placeholder="Seleccione" />
+                        )}
+                      />
+                      {errors.contraentrega && <small className="p-error">{errors.contraentrega.message}</small>}
                     </div>
-                  </Card>
-                  <Button type="submit" className="p-button-success" >
-                    Guardar Pedido
-                  </Button>
+
+                    {/* Mostrar Transferencia SÍ SOLO si contraentrega es No */}
+                    {watch("contraentrega") === "No" && (
+                      <div className="field">
+                        <label>¿Pago por transferencia?</label>
+                        <Controller
+                          name="transferencia"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown
+                              {...field}
+                              options={[{ label: "Sí", value: "Sí" }]}
+                              placeholder="Sí"
+                              disabled
+                            />
+                          )}
+                        />
+                        {errors.transferencia && <small className="p-error">{errors.transferencia.message}</small>}
+                      </div>
+                    )}
+
+                    {/* Método de pago obligatorio si no es contraentrega */}
+                    {watch("contraentrega") === "No" && (
+                      <div className="field">
+                        <label>Método de Pago</label>
+                        <Controller
+                          name="metodoPago"
+                          control={control}
+                          render={({ field }) => (
+                            <Dropdown {...field} options={medioPagoLista} placeholder="Seleccione" />
+                          )}
+                        />
+                        {errors.metodoPago && <small className="p-error">{errors.metodoPago.message}</small>}
+
+                        {watch("metodoPago") === "Otro" && (
+                          <div className="field">
+                            <label>¿Cuál?</label>
+                            <InputText {...register("otroMetodoPago")} />
+                          </div>
+                        )}
+                      </div>
+                    )}
+
+                  </TabPanel>
 
 
-                </TabPanel>
-              </TabView>
-              <h1>Total: ${total}</h1>
-            </form>
-          </div>
+
+                  {/* 6. Resumen */}
+                  <TabPanel header="Resumen">
+
+                    <Card title="Resumen del Pedido" style={{ marginBottom: 20 }}>
+                      <div style={{ height: 350, overflow: 'auto' }}>
+                        <h3 style={{ marginBottom: 12 }}>Resumen del Pedido</h3>
+                        <DataTable value={resumenPedido.filter(item => item.valor && item.valor !== "")} showGridlines size="small" style={{ marginBottom: 20 }}>
+                          <Column field="campo" header="Campo" />
+                          <Column field="valor" header="Valor" />
+                        </DataTable>
+
+
+                        <h3 style={{ margin: "18px 0 12px" }}>Productos Seleccionados</h3>
+                        <DataTable value={productosSeleccionados} showGridlines responsiveLayout="scroll" size="small" style={{ marginBottom: 20 }}>
+                          <Column field="titulo" header="Producto" />
+                          <Column field="cantidad" header="Cantidad" style={{ width: 80, textAlign: 'center' }} />
+                          <Column field="precio" header="Precio Unitario" body={(row) => `$${Number(row.precio).toLocaleString()}`} style={{ width: 120, textAlign: 'right' }} />
+                          <Column header="Subtotal" body={(row) => `$${(row.precio * row.cantidad).toLocaleString()}`} style={{ width: 120, textAlign: 'right', fontWeight: 600 }} />
+                        </DataTable>
+                        <div style={{ textAlign: 'right', fontWeight: 'bold', fontSize: 18 }}>
+                          Total: ${total.toLocaleString()}
+                        </div>
+
+                      </div>
+                    </Card>
+                    <Button type="submit" className="p-button-success" >
+                      Guardar Pedido
+                    </Button>
+
+
+                  </TabPanel>
+                </TabView>
+                <h1>Total: ${total}</h1>
+              </form>
+            </div>
             {debugMode && (
               <div style={{
                 background: "#2b2b2b",

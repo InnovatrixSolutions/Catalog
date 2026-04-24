@@ -73,15 +73,35 @@ class OrdersManager
             // Esto nos da cuánto le cuesta al dropshipper comprarle a la plataforma.
             $totalesCalculados = self::calcularTotalesDesdeBD($conexion, $productosJson, 'dropshipper');
             $costoBaseDropshipper = $totalesCalculados['total_productos'];
+            $totalCostoCompra     = $totalesCalculados['total_costo_compra']; // Costo real para la plataforma
         } catch (Exception $e) {
             throw new RuntimeException("Error calculando costo base dropshipper: " . $e->getMessage());
         }
 
         // Fórmula Confirmada
-        $ingresoNetoVenta = $valorPedido - $valorEnvio - $totalCupon;
+        // Validar si incluye envio
+        $incluyeEnvio = isset($datos['incluye_envio']) ? (int)$datos['incluye_envio'] : 1; 
+
+        if ($incluyeEnvio === 1) {
+             // Si incluye envío, restamos el envío del total para sacar el neto
+             $ingresoNetoVenta = $valorPedido - $valorEnvio - $totalCupon;
+        } else {
+             // Si NO incluye envío, el valorPedido es producto puro (el cliente pagó envío aparte o no se cobra de aquí)
+             // Entonces NO restamos el envío.
+             $ingresoNetoVenta = $valorPedido - $totalCupon;
+        }
         
         // La ganancia es lo que queda después de pagar el costo del producto + envío + cupón
         $comisionValor = max(0, $ingresoNetoVenta - $costoBaseDropshipper);
+
+        // --- CÁLCULOS DE UTILIDAD ---
+        $utilidadBruta = $costoBaseDropshipper - $totalCostoCompra;
+        
+        if ($incluyeEnvio === 1) {
+            $utilidadNeta = $utilidadBruta - $valorEnvio;
+        } else {
+            $utilidadNeta = $utilidadBruta;
+        }
         
         // El base_calculo en BD ahora representará el Costo Dropshipper (para referencia)
         $baseCalculo = $costoBaseDropshipper;
@@ -112,13 +132,13 @@ class OrdersManager
                 idPedido, idAsesor, base_calculo, valor_pedido, valor_envio,
                 comision_tipo, porcentaje_comision, comision_valor,
                 valor_a_pagar_asesor, total_cupon, medio_pago_comision,
-                estado_comision
+                estado_comision, utilidad_bruta, utilidad_neta
             )
             VALUES (
                 :idPedido, :idAsesor, :base_calculo, :valor_pedido, :valor_envio,
                 :comision_tipo, :porcentaje_comision, :comision_valor,
                 :valor_a_pagar_asesor, :total_cupon, :medio_pago_comision,
-                'pendiente'
+                'pendiente', :utilidadBruta, :utilidadNeta
             )
         ";
 
@@ -136,6 +156,8 @@ class OrdersManager
                 ':valor_a_pagar_asesor'  => $valorAPagarAsesor,
                 ':total_cupon'           => $totalCupon,
                 ':medio_pago_comision'   => $medioPagoComision,
+                ':utilidadBruta'         => $utilidadBruta,
+                ':utilidadNeta'          => $utilidadNeta
             ]);
         } catch (PDOException $e) {
             throw new RuntimeException("Error al insertar relación pedido_asesores: " . $e->getMessage());
@@ -202,7 +224,7 @@ class OrdersManager
                     nombre, codigo, entrega, city_id, state_id, country_id,
                     fecha_despacho, franja_horario, telefono, telefono_tran,
                     pago, forma_pago, pagado, pagoRecibir,
-                    transportadora, numero_guia, createdAt
+                    transportadora, numero_guia, createdAt, incluye_envio
                 )
                 VALUES (
                     :tipo, :estado, :productos, :total,
@@ -210,9 +232,11 @@ class OrdersManager
                     :nombre, :codigo, :entrega, :city_id, :state_id, :country_id,
                     :fechaDespacho, :franja_horario, :telefono, :telefono_tran,
                     :pago, :formaPago, :pagado, :pagoRecibir,
-                    :transportadora, :numero_guia, NOW()
+                    :transportadora, :numero_guia, NOW(), :incluye_envio
                 )
             ";
+
+            $sanitizedData[':incluye_envio'] = isset($datos['incluye_envio']) ? $datos['incluye_envio'] : 1;
 
             $stmt = $conexion->prepare($sql);
             $stmt->execute($sanitizedData);

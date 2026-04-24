@@ -106,7 +106,7 @@ try {
                     // 1. Verificar si este pedido tiene relación con un asesor
                     // Traemos también los productos del pedido para recalcular costos
                     $stmtAsesor = $conexion->prepare("
-                        SELECT pa.idRelacion as idPedidoAsesor, pa.base_calculo, pa.total_cupon, pa.valor_pedido, p.productos
+                        SELECT pa.idRelacion as idPedidoAsesor, pa.base_calculo, pa.total_cupon, pa.valor_pedido, p.productos, p.incluye_envio
                         FROM pedido_asesores pa
                         JOIN pedidos p ON p.idPedido = pa.idPedido
                         WHERE pa.idPedido = :idPedido 
@@ -122,9 +122,14 @@ try {
                         $valorPedidoDb       = (float) $relacion['valor_pedido'];
                         $totalCuponDb        = (float) $relacion['total_cupon'];
                         $costoBaseDropshipper= (float) $relacion['base_calculo'];
-                        
+                        $incluyeEnvio        = isset($relacion['incluye_envio']) ? (int)$relacion['incluye_envio'] : 1;
+
                         // Nuevo ingreso neto (para comisión)
-                        $ingresoNeto = $valorPedidoDb - $costoEnvio - $totalCuponDb;
+                        if ($incluyeEnvio === 1) {
+                            $ingresoNeto = $valorPedidoDb - $costoEnvio - $totalCuponDb;
+                        } else {
+                            $ingresoNeto = $valorPedidoDb - $totalCuponDb;
+                        }
                         
                         // Nueva comisión
                         $nuevaComision = max(0, $ingresoNeto - $costoBaseDropshipper);
@@ -135,7 +140,11 @@ try {
                         $totalCostoCompra = (float)$totales['total_costo_compra']; // Sum(productos.precio * cantidad)
 
                         $utilidadBruta = $costoBaseDropshipper - $totalCostoCompra;
-                        $utilidadNeta  = $utilidadBruta - $costoEnvio;
+                        if ($incluyeEnvio === 1) {
+                            $utilidadNeta = $utilidadBruta - $costoEnvio;
+                        } else {
+                            $utilidadNeta = $utilidadBruta;
+                        }
                         
                         // 3. Actualizar tabla pedido_asesores
                         $stmtUpdateCom = $conexion->prepare("

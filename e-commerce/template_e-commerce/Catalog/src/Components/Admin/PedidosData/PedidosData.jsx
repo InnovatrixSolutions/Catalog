@@ -98,12 +98,24 @@ export default function PedidosData() {
     { field: 'costo_envio', header: 'Costo Envío', minWidth: '16vw' },
 
     { field: 'total', header: 'Total', minWidth: '16vw' },
+    { field: 'incluye_envio', header: 'Incluye Envío', minWidth: '12vw' }, // 👈 NEW
     { field: 'total_productos', header: 'Total Productos', minWidth: '16vw' },
   ];
 
   const toNumber = (v) => {
     if (v === null || v === undefined) return 0;
-    const s = String(v).replace(/\./g, "").replace(",", ".");
+    if (typeof v === 'number') return v;
+
+    const str = String(v).trim();
+    // Case 1: Standard float/integer string (e.g. "1234.56" or "1234")
+    // Regex: Numbers, optionally one dot, digits after dot. No thousands separators locally.
+    if (/^-?\d+(\.\d+)?$/.test(str)) {
+      return parseFloat(str);
+    }
+
+    // Case 2: Formatted string (e.g. "1.234,56" or "1.234") - COP/European style
+    // We assume if it has dots and it's not a simple float, the dots are thousands separators.
+    const s = str.replace(/\./g, "").replace(",", ".");
     const n = Number(s);
     return isNaN(n) ? 0 : n;
   };
@@ -111,6 +123,19 @@ export default function PedidosData() {
   const formatCOP = (v) => {
     const n = toNumber(v);
     return `${moneda} ${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, ".")}`;
+  };
+
+  const moneyFields = ['pagoRecibir', 'valor_cupon', 'total_cupon', 'costo_envio', 'total'];
+  const priceBodyTemplate = (rowData, { field }) => {
+    return (
+      <span style={{ color: '#008000' }}>
+        {formatCOP(rowData[field])}
+      </span>
+    );
+  };
+
+  const incluyeEnvioBodyTemplate = (rowData) => {
+    return rowData.incluye_envio === 1 || rowData.incluye_envio === "1" ? "Sí" : "No";
   };
 
   const handleShowMore = () => {
@@ -460,6 +485,8 @@ export default function PedidosData() {
           } catch {
             row['Productos'] = '';
           }
+        } else if (moneyFields.includes(key)) {
+          row[key] = formatCOP(item[key]);
         } else {
           row[key] = item[key] ?? '';
         }
@@ -518,6 +545,8 @@ export default function PedidosData() {
           } catch {
             row['Productos'] = '';
           }
+        } else if (moneyFields.includes(key)) {
+          row[key] = formatCOP(item[key]);
         } else {
           row[key] = item[key] ?? '';
         }
@@ -713,7 +742,7 @@ export default function PedidosData() {
       y = yProductos + 5;
       pdf.text(`-----------------------------------------------------`, 5, y - 5);
       pdf.setFontSize(10);
-      pdf.text(`Total: ${moneda}${total.toFixed(2)}`, 5, y);
+      pdf.text(`Total: ${moneda}${Math.round(total)}`, 5, y);
 
       // Mensaje de agradecimiento
       y += 10;
@@ -734,7 +763,7 @@ export default function PedidosData() {
       format: [80, 150], // Tamaño de ticket estándar
     });
 
-    const total = parseFloat(pedido.total); // Convertir a número
+    const total = Math.round(parseFloat(pedido.total)); // Convertir a número
     let productos = [];
 
     // Verificar si "productos" existe y es un JSON válido antes de intentar parsearlo
@@ -813,7 +842,7 @@ export default function PedidosData() {
     y = yProductos + 5;
     pdf.text(`-----------------------------------------------------`, 5, y - 5);
     pdf.setFontSize(10);
-    pdf.text(`Total: ${moneda}${total.toFixed(2)}`, 5, y);
+    pdf.text(`Total: ${moneda}${Math.round(total)}`, 5, y);
 
     y += 10;
     pdf.text("¡Gracias por su compra!", 40, y, { align: 'center' });
@@ -1129,7 +1158,11 @@ export default function PedidosData() {
                 sortable
                 filter
                 filterPlaceholder="Search by column"
-
+                body={
+                  moneyFields.includes(col.field)
+                    ? priceBodyTemplate
+                    : (col.field === 'incluye_envio' ? incluyeEnvioBodyTemplate : null)
+                }
 
               />
             ))}

@@ -116,9 +116,12 @@ try {
                 $total = 0;
             }
 
+            // Validar si incluye envio (default 1 si no viene)
+            $incluyeEnvio = isset($_POST['incluye_envio']) ? $_POST['incluye_envio'] : 1;
+
             // Insertar el pedido en la base de datos con la fecha de creación proporcionada por el cliente
-            $sqlInsertPedido = "INSERT INTO `pedidos` (estado, productos, total, nombre, telefono, entrega, nota, codigo, pago, pagado,pagoRecibir, createdAt) 
-            VALUES (:estado, :productos, :total, :nombre, :telefono, :entrega, :nota, :codigo, :pago, :pagado,:pagoRecibir, :createdAt)";
+            $sqlInsertPedido = "INSERT INTO `pedidos` (estado, productos, total, nombre, telefono, entrega, nota, codigo, pago, pagado,pagoRecibir, createdAt, incluye_envio) 
+            VALUES (:estado, :productos, :total, :nombre, :telefono, :entrega, :nota, :codigo, :pago, :pagado,:pagoRecibir, :createdAt, :incluye_envio)";
             $stmtPedido = $conexion->prepare($sqlInsertPedido);
             $stmtPedido->bindParam(':estado', $estado);
             $stmtPedido->bindParam(':productos', $_POST['productos']);
@@ -132,6 +135,7 @@ try {
             $stmtPedido->bindParam(':pagado', $pagado);
             $stmtPedido->bindParam(':pagoRecibir', $pagoRecibir);
             $stmtPedido->bindParam(':createdAt', $createdAt);
+            $stmtPedido->bindParam(':incluye_envio', $incluyeEnvio);
             $stmtPedido->execute();
 
 // Obtener el ID del último pedido insertado

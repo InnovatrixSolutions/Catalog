@@ -118,10 +118,9 @@ hr{
 .detail-contain p{
     color: var(--text-color2);
     white-space: pre-line;
-    max-height: 5rem;
-    min-height: 5rem;
-    overflow-y: scroll;
-    font-size: 0.8em;
+    max-height: 400px;
+    overflow-y: auto;
+    font-size: 0.9em;
 }
 .detail-contain p::-webkit-scrollbar{
     width: 7px;
@@ -269,12 +268,12 @@ hr{
     white-space: pre-wrap;
     word-wrap: break-word;
     max-width: 100%;
-    font-size: 1.1rem;       /* Increase font size */
-    line-height: 1.6;        /* Improve line spacing */
-    padding: 100px;           /* Add some space inside */
-    margin-top: 10px;        /* Space from previous element */
-    background-color: #f9f9f9; /* Optional: subtle background */
-    border-radius: 6px;      /* Optional: rounded edges */
-    border: 1px solid #ddd;  /* Optional: soft border */
+    font-size: 1rem;       
+    line-height: 1.6;        
+    padding: 15px 20px;          
+    margin-top: 15px;        
+    background-color: #f9f9f9; 
+    border-radius: 8px;      
+    border: 1px solid #e0e0e0;  
   }
   
